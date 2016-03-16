@@ -1,19 +1,19 @@
 
 ieInit;
 
-data = load('./data/McNamaraBoswell.mat');
+data = load('./data/LifeTechnologies.mat');
 
-for i=1:length(data.McNamaraBoswell)
+for i=1:length(data.LifeTechnologies)
    
-    sample = data.McNamaraBoswell(i);
-    
+    sample = data.LifeTechnologies(i);
+    fl = [];
     if ~isempty(sample.excitation)
-    fl = fluorophoreCreate('type','custom',...             
-                            'wave',sample.wave,...
-                            'name',sample.dye,...
-                            'solvent',sample.solvent,...
-                            'excitation',sample.excitation,...
-                            'emission',sample.emission);
+        fl = fluorophoreCreate('type','custom',...             
+                                'wave',sample.wave,...
+                                'name',sample.dye,...
+                                'solvent',sample.solvent,...
+                                'excitation',sample.excitation,...
+                                'emission',sample.emission);
     else
         fl = fluorophoreCreate('type','custom',...             
                             'wave',sample.wave,...
@@ -24,12 +24,12 @@ for i=1:length(data.McNamaraBoswell)
     end
                         
     cName = regexprep(sample.dye,'[^\d\w~!@#$%^&()_\-{}.]*','');                  
-    solName = regexprep(sample.solvent,'[^\d\w~!@#$%^&()_\-{}.]*',''); 
+    % solName = regexprep(sample.solvent,'[^\d\w~!@#$%^&()_\-{}.]*',''); 
     
-    fName = fullfile(fiToolboxRootPath,'data','McNamara-Boswell',[cName '+' solName '.mat']);
-    
+    % fName = fullfile(fiToolboxRootPath,'data','McNamara-Boswell',[cName '+' solName '.mat']);
+    fName = fullfile(fiToolboxRootPath,'data','LifeTechnologies',[cName '.mat']);
         
-    fiSaveFluorophore(fName,fl,'McNamara-Boswell dataset');
+    fiSaveFluorophore(fName,fl,'Life Technologies dataset');
     
     
 end

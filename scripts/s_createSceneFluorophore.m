@@ -9,11 +9,8 @@ nWaves = length(wave);
 
 
 % Create a default fluorophore
-fl = fluorophoreCreate('',wave);
-fl = fluorophoreSet(fl,'qe',1);
-
-light = fluorophoreGet(fl,'excitation photons')*10^17;
-energy = Quanta2Energy(wave,light);
+fl = fluorophoreCreate('wave',wave);
+fl = fluorophoreSet(fl,'qe',0.01);
 
 
 % Create a reflective scene

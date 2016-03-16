@@ -21,15 +21,36 @@ switch param
         % Should always be 'fluorophore'
         val = fl.type;
        
-    case {'emission photons','Emission photons','emissionphotons'}
+    case {'emission','emission photons','Emission photons','emissionphotons'}
         
         if ~checkfields(fl,'emission'), val = []; return; end
         val = fl.emission;
 
+    case {'norm emission','normemission'}
+        if ~checkfields(fl,'emission'), val = []; return; end
+        val = fl.emission/max(fl.emission);
+        
     case {'excitation','excitationphotons'}
         
         if ~checkfields(fl,'excitation'), val = []; return; end
         val = fl.excitation;
+        
+    case {'norm excitation','normexcitation'}
+        if ~checkfields(fl,'excitation'), val = []; return; end
+        val = fl.excitation/max(fl.excitation);
+        
+    case {'peakexcitation','peak excitation'}
+        if ~checkfields(fl,'excitation'), val = []; return; end
+        [~, id] = max(fl.excitation);
+        val = fl.spectrum.wave(id);    
+        
+    case {'peakemission','peak emission'}
+        if ~checkfields(fl,'emission'), val = []; return; end
+        [~, id] = max(fl.emission);
+        val = fl.spectrum.wave(id);
+        
+    case {'Stokes shift','stokesshift'}
+        val = fluorophoreGet(fl,'peakemission') - fluorophoreGet(fl,'peakexcitation');
         
     case 'wave'
         if isfield(fl,'spectrum'), val = fl.spectrum.wave; end
@@ -38,7 +59,15 @@ switch param
     case {'deltawave','deltaWave'}
         wave = fluorophoreGet(fl,'wave');
         val = wave(2) - wave(1);
+     
+    case {'donaldsonmatrix'}
+        ex = fluorophoreGet(fl,'excitation photons');
+        em = fluorophoreGet(fl,'emission photons');
+        qe = fluorophoreGet(fl,'qe');
+        deltaL = fluorophoreGet(fl,'deltaWave');
         
+        % Apply the Stoke's constraint
+        val = qe*tril(em*ex',-1)*deltaL;
         
     case {'photons'}
         illWave  = illuminantGet(varargin{1},'wave');

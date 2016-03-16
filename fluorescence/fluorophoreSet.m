@@ -35,19 +35,13 @@ switch param
         qe = 1/(sum(val)*deltaL);
         
         if qe ~= 1, warning('Emission not normalized, adjusting qe'); end
-        fl = fluorophoreSet(fl,'qe',qe);
+        % oldQe = fluorescenceGet(fl,'qe');
+        % fl = fluorophoreSet(fl,'qe',qe*oldQe);
         
         val = val*qe;
         fl.emission = val(:);
         
-    %{    
-    case {'emision energy','Emission energy'}
-        
-        wave = fluorescenceGet(fl,'wave');
-        val = Energy2Quanta(wave,val);
-        
-        fl = fluorescenceSet(fl,'emission photons',val);
-    %}    
+      
         
     case {'excitationphotons','excitation photons','Excitation photons'}
         
@@ -61,16 +55,10 @@ switch param
         fl.excitation = val(:);
         
         
-      %{  
-    case {'excitation energy','Excitation energy'}
-        %}
-
-    
-        
     case {'wave','wavelength'}
         
         % Need to interpolate data sets and reset when wave is adjusted.
-        oldW = fluorescenceGet(fl,'wave');
+        oldW = fluorophoreGet(fl,'wave');
         newW = val(:);
         fl.spectrum.wave = newW;
 
