@@ -1,38 +1,48 @@
-function fl = fluorophoreCreate(name, wave, varargin)
+function fl = fluorophoreCreate(varargin)
 
 % Creates a fluorophore structure.
 %
 % Copyright Henryk Blasinski 2014
 
-%% Initialize parameters
-if ieNotDefined('name'), name = 'Default'; end
-if ieNotDefined('wave'), wave = 400:10:700; wave=wave(:); end
+p = inputParser;
 
-fl.name = name;
+p.addParamValue('type','Default',@ischar);
+p.addParamValue('wave',400:10:700,@isvector);
+p.addParamValue('name','',@(x)(ischar(x) || isempty(x)));
+p.addParamValue('solvent','',@(x)(ischar(x) || isempty(x)));
+p.addParamValue('excitation',zeros(31,1),@isnumeric);
+p.addParamValue('emission',zeros(31,1),@isnumeric);
+p.addParamValue('qe',1,@isscalar);
+
+p.parse(varargin{:});
+inputs = p.Results;
+
+
+fl.name = inputs.name;
 fl.type = 'fluorophore';
-fl = initDefaultSpectrum(fl,'custom',wave);
+fl = initDefaultSpectrum(fl,'custom',inputs.wave);
 
 
 %% There is no default
 % The absence of a default could be a problem.
 
-switch ieParamFormat(name)
+switch ieParamFormat(inputs.type)
     
     case 'custom'
     
-        fl = fluorophoreCreate('',wave);
-        fl = fluorophoreSet(fl,'name',varargin{1});
-        fl = fluorophoreSet(fl,'solvent',varargin{2});
-        fl = fluorophoreSet(fl,'excitation photons',varargin{3});
-        fl = fluorophoreSet(fl,'emission photons',varargin{4});
-        fl = fluorophoreSet(fl,'qe',varargin{5});
+        fl = fluorophoreCreate('wave',inputs.wave);
+        fl = fluorophoreSet(fl,'name',inputs.name);
+        fl = fluorophoreSet(fl,'solvent',inputs.solvent);
+        fl = fluorophoreSet(fl,'excitation photons',inputs.excitation);
+        fl = fluorophoreSet(fl,'emission photons',inputs.emission);
+        fl = fluorophoreSet(fl,'qe',inputs.qe);
     
     otherwise
         
         % Create a default, idealized fluorophore with gaussian excitation
         % and emission spectra
         
-        deltaL = wave(2) - wave(1);
+        deltaL = inputs.wave(2) - inputs.wave(1);
 
         
         emWave = 550;

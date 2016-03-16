@@ -21,20 +21,20 @@ switch param
         fl.type = val;
         
     case 'qe'
-        if (val > 1), warning('Qe greater than one, truncating to 1\n'); end
+        if (val > 1), warning('Qe greater than one, truncating to 1'); end
         val = min(max(val,0),1);
         
         fl.qe = val;
         
     case {'emission photons','Emission photons','emissionphotons'}
-        if length(fluorophoreGet(fl,'wave')) ~= length(val), error('Wavelength sampling mismatch\n'); end
-        if sum(val<0) > 0, warning('Emission less than zero, truncating\n'); end
+        if length(fluorophoreGet(fl,'wave')) ~= length(val), error('Wavelength sampling mismatch'); end
+        if sum(val<0) > 0, warning('Emission less than zero, truncating'); end
         val = max(val,0);
         
         deltaL = fluorophoreGet(fl,'deltaWave');
         qe = 1/(sum(val)*deltaL);
         
-        if qe ~= 1, warning('Emission not normalized, adjusting qe\n'); end
+        if qe ~= 1, warning('Emission not normalized, adjusting qe'); end
         fl = fluorophoreSet(fl,'qe',qe);
         
         val = val*qe;
@@ -51,11 +51,11 @@ switch param
         
     case {'excitationphotons','excitation photons','Excitation photons'}
         
-        if length(fluorophoreGet(fl,'wave')) ~= length(val), error('Wavelength sampling mismatch\n'); end
-        if sum(val<0) > 0, warning('Excitation less than zero, truncating\n'); end
+        if length(fluorophoreGet(fl,'wave')) ~= length(val), error('Wavelength sampling mismatch'); end
+        if sum(val<0) > 0, warning('Excitation less than zero, truncating'); end
         val = max(val,0);
         
-        if max(val) ~= 1, warning('Peak excitation different from 1, rescaling\n'); end
+        if max(val) ~= 1, warning('Peak excitation different from 1, rescaling'); end
         val = val/max(val);
         
         fl.excitation = val(:);
