@@ -10,7 +10,8 @@ if ~exist('param','var') || isempty(param), error('param required'); end
 val = [];
 
 %% Main switch statement
-param = ieParamFormat(param);
+param = lower(param);
+param = strrep(param,' ','');
 
 switch param
     case 'name'
