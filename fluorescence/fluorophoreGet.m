@@ -26,7 +26,7 @@ switch param
         if ~checkfields(fl,'emission'), val = []; return; end
         val = fl.emission;
 
-    case {'norm emission','normemission'}
+    case {'norm emission','normemission','normalizedemission'}
         if ~checkfields(fl,'emission'), val = []; return; end
         val = fl.emission/max(fl.emission);
         
@@ -35,7 +35,7 @@ switch param
         if ~checkfields(fl,'excitation'), val = []; return; end
         val = fl.excitation;
         
-    case {'norm excitation','normexcitation'}
+    case {'norm excitation','normexcitation','normalizedexcitation'}
         if ~checkfields(fl,'excitation'), val = []; return; end
         val = fl.excitation/max(fl.excitation);
         

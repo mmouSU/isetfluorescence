@@ -12,6 +12,7 @@ p.addParamValue('peakEmRange',[420 680],@isvector);
 p.addParamValue('peakExRange',[420 680],@isvector);
 p.addParamValue('nFluorophores',1,@isscalar);
 p.addParamValue('qe',1,@isscalar);
+p.addParamValue('fluorophoreIDs',1,@isnumeric);
 
 p.parse(varargin{:});
 inputs = p.Results;
@@ -21,6 +22,19 @@ flScene.name = inputs.name;
 flScene = initDefaultSpectrum(flScene,'custom',inputs.wave);
 
 switch inputs.type
+
+    case {'onefluorophore','singlefluorophore'}
+        setName = fullfile(fiToolboxRootPath,'data','LifeTechnologies');
+        flSet = fiReadFluorophoreSet(setName,'wave',inputs.wave,...
+            'stokesShiftRange',inputs.stokesShiftRange,...
+            'peakEmRange',inputs.peakEmRange,...
+            'peakExRange',inputs.peakExRange);
+
+        flScene = fluorescentSceneSet(flScene,'fluorophores',flSet(inputs.fluorophoreIDs));        
+        flScene = fluorescentSceneSet(flScene,'qe',inputs.qe/inputs.nFluorophores);
+        flScene = fluorescentSceneSet(flScene,'size', [1 1]);
+        flScene = fluorescentSceneSet(flScene,'scene size',[1 1]);
+        fluorophoreIDs = inputs.fluorophoreIDs;
     
     otherwise
         % Create a default fluorescent scene

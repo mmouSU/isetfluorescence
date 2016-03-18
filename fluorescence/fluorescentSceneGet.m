@@ -69,7 +69,52 @@ switch param
 
         val = imresize(photons,[flScene.height,flScene.width],'nearest');
         
+    case {'wave'}
+        val = flScene.spectrum.wave;
+
+    case {'donaldsonreference'}
+        
+        sz = fluorescentSceneGet(flScene,'size');
+        val = cell(sz(1)*sz(2),1);
+        for xx=1:sz(2)
+            for yy=1:sz(1)
+                DM = fluorescentSceneGet(flScene,'Donaldson matrix',yy,xx);
+                val{(xx-1)*sz(1) + yy} = DM;
+            end
+        end
     
+    case {'excitationreference'}
+        sz = fluorescentSceneGet(flScene,'size');
+        nFluorophores = fluorescentSceneGet(flScene,'nFluorophores');
+        nWaves = fluorescentSceneGet(flScene,'nWaves');
+
+
+        val = zeros(nWaves,sz(1)*sz(2)*nFluorophores);
+        for xx=1:sz(2)
+            for yy=1:sz(1)
+                for zz=1:nFluorophores
+                    val(:,(xx-1)*nFluorophores*sz(1) + (yy-1)*nFluorophores + zz) = fluorophoreGet(flScene.fluorophores(yy,xx,zz),'excitation');
+                end
+            end
+        end 
+
+    case {'emissionreference'}
+        sz = fluorescentSceneGet(flScene,'size');
+        nFluorophores = fluorescentSceneGet(flScene,'nFluorophores');
+        nWaves = fluorescentSceneGet(flScene,'nWaves');
+
+
+        val = zeros(nWaves,sz(1)*sz(2)*nFluorophores);
+        for xx=1:sz(2)
+            for yy=1:sz(1)
+                for zz=1:nFluorophores
+                    qe = fluorophoreGet(flScene.fluorophores(yy,xx,zz),'qe');
+                    deltaL = fluorophoreGet(flScene.fluorophores(yy,xx,zz),'deltaWave');
+                    val(:,(xx-1)*nFluorophores*sz(1) + (yy-1)*nFluorophores + zz) = deltaL*qe*fluorophoreGet(flScene.fluorophores(yy,xx,zz),'emission');
+                end
+            end
+        end 
+
     otherwise
         error('Unknown fluorescent scene parameter %s\n',param)
 end
