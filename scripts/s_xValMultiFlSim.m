@@ -11,9 +11,9 @@ load(fName);
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
-alphaRange = logspace(-2,1,3);
-betaRange = logspace(-2,1,3);
-nuRange = logspace(-2,1,3);
+alphaRange = logspace(-2,1,1);
+betaRange = logspace(-2,1,1);
+nuRange = logspace(-2,1,1);
 
 [alpha, beta, nu] = ndgrid(alphaRange, betaRange, nuRange);
 nSets = numel(alpha);
@@ -88,7 +88,7 @@ parfor i=1:nSets
     [reflErr(i), reflStd(i)] = fiComputeError(reflEst, reflRef, '');
     
     [dMatErr(i), dMatStd(i)] = fiComputeError(dMatEst, dMatRef, '');
-    [dMatNormErr(i), dMatNorm(i)] = fiComputeError(dMatEst, dMatRef, 'normalized');
+    [dMatNormErr(i), dMatNormStd(i)] = fiComputeError(dMatEst, dMatRef, 'normalized');
     
 end
 
@@ -98,12 +98,12 @@ catch
 end
 
 %% Save results
-dirName = fullfile(fiToolboxRootPath,'results');
+dirName = fullfile(fiToolboxRootPath,'results','xVal');
 if ~exist(dirName,'dir'), mkdir(dirName); end
 
-fName = fullfile(dirName,[inFName '_xVal.mat']);
+fName = fullfile(dirName,[inFName '_xVal_multiFl.mat']);
 
-save(fName,'alpha','beta','gamma',...
+save(fName,'alpha','beta','nu',...
            'totalPixelErr','reflPixelErr','flPixelErr','reflErr','dMatErr','dMatNormErr',...
            'totalPixelStd','reflPixelStd','flPixelStd','reflStd','dMatStd','dMatNormStd');
 
