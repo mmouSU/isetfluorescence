@@ -3,6 +3,7 @@ function [ flScene, fluorophoreIDs ] = fluorescentSceneCreate( varargin )
 p = inputParser;
 
 p.addParamValue('type','Default',@ischar);
+p.addParamValue('dataset','McNamara-Boswell',@(x) strcmp(x,validatestring(x,{'McNamara-Boswell','LifeTechnologies'})))
 p.addParamValue('wave',400:10:700,@isvector);
 p.addParamValue('name','Default',@ischar);
 p.addParamValue('height',1,@isscalar);
@@ -24,7 +25,7 @@ flScene = initDefaultSpectrum(flScene,'custom',inputs.wave);
 switch inputs.type
 
     case {'onefluorophore','singlefluorophore'}
-        setName = fullfile(fiToolboxRootPath,'data','LifeTechnologies');
+        setName = fullfile(fiToolboxRootPath,'data',inputs.dataset);
         flSet = fiReadFluorophoreSet(setName,'wave',inputs.wave,...
             'stokesShiftRange',inputs.stokesShiftRange,...
             'peakEmRange',inputs.peakEmRange,...
@@ -38,7 +39,7 @@ switch inputs.type
     
     otherwise
         % Create a default fluorescent scene
-        setName = fullfile(fiToolboxRootPath,'data','LifeTechnologies');
+        setName = fullfile(fiToolboxRootPath,'data',inputs.dataset);
         [flSet, fluorophoreIDs] = fiReadFluorophoreSet(setName,'wave',inputs.wave,...
             'stokesShiftRange',inputs.stokesShiftRange,...
             'peakEmRange',inputs.peakEmRange,...

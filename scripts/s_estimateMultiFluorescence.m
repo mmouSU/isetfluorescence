@@ -2,7 +2,10 @@ close all;
 clear all;
 clc;
 
-wave = 400:4:1000;
+inFName = 'McNamara-Boswell_4x6x1_qe_0.10';
+fName = fullfile(fiToolboxRootPath,'data','simulations',[inFName '.mat']);
+load(fName);
+
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
@@ -17,7 +20,7 @@ nEmBasis = 12;
 
 [reflBasis, reflScore] = createBasisSet('reflectance','wave',wave','n',nReflBasis);
 [exBasis, exScore] = createBasisSet('excitation','wave',wave','n',nExBasis);
-[emBasis, emScore] = createBasisSet('emission','wave',wave','n',nExBasis);
+[emBasis, emScore] = createBasisSet('emission','wave',wave','n',nEmBasis);
 
 
 % Load the light spectra (in photons)
@@ -37,25 +40,48 @@ camera = diag(qe)*filters;
 nFilters = size(camera,2);
        
 %% Load simulation data 
-load('simulation.mat');
 
 nSamples = size(measVals,3);
 cameraGain = repmat(cameraGain,[1 1 nSamples]);
 cameraOffset = repmat(cameraOffset,[1 1 nSamples]);
 
-[ reflEst, reflCoeffs, emEst, emCoeffs, exEst, exCoeffs, dMatEst, predRefl, predFl, hist  ] = ...
-    recReflAndMultiFl( measVals, camera, illuminant, cameraGain*deltaL,...
-                       cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, nu, 'maxIter',500);
+[ reflEst, reflCoeffs, emEst, emCoeffs, exEst, exCoeffs, dMatEst, reflValsEst, flValsEst, hist  ] = ...
+    fiRecReflAndMultiFl( measVals, camera, illuminant, cameraGain*deltaL,...
+                         cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, nu, 'maxIter',250);
+
+
+
+%% Compute errors
+
+measValsEst = reflValsEst + flValsEst + cameraOffset;
+
+[err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals,[nChannels*nFilters,nSamples]), 'default');
+fprintf('Total pixel error %.3f, std %.3f\n',err,std);
+
+[err, std] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(reflValsRef,[nChannels*nFilters,nSamples]), 'default');
+fprintf('Reflected pixel error %.3f, std %.3f\n',err,std);
+
+[err, std] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(flValsRef,[nChannels*nFilters,nSamples]), 'default');
+fprintf('Fluoresced pixel error %.3f, std %.3f\n',err,std);
+
+[err, std] = fiComputeError(reflEst, reflRef, '');
+fprintf('Reflectance error %.3f, std %.3f\n',err,std);
+
+[err, std] = fiComputeError(dMatEst, dMatRef, '');
+fprintf('Donaldson Matrix error %f, std %f\n',err,std);
+
+[err, std] = fiComputeError(dMatEst, dMatRef, 'normalized');
+fprintf('Donaldson Matrix (normalized) %.3f, std %.3f\n',err,std);
+
+
 
 
 %% Plot the results
 
-% Predicted vs. simulated pixel intensities
-predVals = predRefl + predFl;
 
 figure;
 hold all; grid on; box on;
-plot(predVals(:),measVals(:),'.');
+plot(measValsEst(:),measVals(:),'.');
 xlabel('Model predicted pixel value');
 ylabel('ISET pixel value');
 
@@ -70,8 +96,9 @@ for yy=1:4
     subplot(4,6,plotID);
     hold all; grid on; box on;
     plot([hist{sampleID}.prRes, hist{sampleID}.dualRes],'LineWidth',2);
-    
-
+    xlim([0 length(hist{sampleID}.prRes)]);
+    ylim([1e-5 10]);
+    set(gca,'yscale','log');
 end
 end
 
@@ -107,9 +134,9 @@ for yy=1:4
     subplot(4,6,plotID);
     hold all; grid on; box on;
 
-    plot(dMatEst{sampleID}(:),dMatRef(:,sampleID),'.');
+    plot(dMatEst{sampleID}(:),dMatRef{sampleID}(:),'.');
 
-    rmse = sqrt(mean((dMatEst{sampleID}(:) - dMatRef(:,sampleID)).^2));
+    rmse = sqrt(mean((dMatEst{sampleID}(:) - dMatRef{sampleID}(:)).^2));
     title(sprintf('RMSE %.2e',rmse));
 end
 end
@@ -124,7 +151,7 @@ for yy=1:4
 
     subplot(4,6,plotID);
     
-    data = [dMatEst{sampleID} reshape(dMatRef(:,sampleID),nWaves,nWaves)];
+    data = [dMatEst{sampleID} dMatRef{sampleID}];
     imagesc(data);
 
 end

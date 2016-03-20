@@ -41,7 +41,7 @@ u3 = zeros(nEmBasis,nExBasis);
 sol = [];
 
 % Pre-compute useful matrices
-% [A1, b1, AtA1, Atb1] = generateLSMatrices(measVals,cameraMat,illuminant,cameraGain,basisRefl,basisEx,basisFl, alpha, beta, gamma);
+[~, ~, AtA1, Atb1] = generateLSMatrices(measVals,cameraMat,illuminant,cameraGain,basisRefl,basisEx,basisEm, alpha, beta, gamma);
 lowerTr = logical(tril(ones(nWaves),-1));
 
 hist.rho = ones(inputs.maxIter+1,1);
@@ -50,26 +50,28 @@ hist.dualRes = zeros(inputs.maxIter+1,1);
 hist.pcgIter = zeros(inputs.maxIter,1);
 hist.pcgAcc = zeros(inputs.maxIter,1);
 
+tElapsed = 0; t2 = tic;
 for i=1:inputs.maxIter
     
     % Solve for reflectance and fluorescence
-    %{
+    
     t1 = tic;
-    [A2, b2, AtA2, Atb2] = generatePenaltyMatrices(y1-u1,y2-u2,y3-u3,basisRefl,basisEx,basisFl);
+    [~, ~, AtA2, Atb2] = generatePenaltyMatrices(y1-u1,y2-u2,y3-u3,basisRefl,basisEx,basisEm);
     
-    % The iterative pcg method is 100 times faster.
+    % The iterative pcg method is 10 times faster than using function
+    % handles
     [sol, ~, hist.pcgAcc(i), hist.pcgIter(i)] = pcg(AtA1 + (hist.rho(i)/2)*AtA2,Atb1 + (hist.rho(i)/2)*Atb2,[],10000,[],[],sol);
-    tElapsed = toc(t1);
-    %}
+    tElapsed = tElapsed + toc(t1);
     
     
+    %{
     t1 = tic;
     b = applyAtb(measVals, cameraMat, illuminant, cameraGain, basisRefl, basisEx, basisEm, y1-u1, y2-u2, y3-u3, hist.rho(i)/2);
     AtAhndl = @(x) applyAtA(x, cameraMat, illuminant, cameraGain, basisRefl, basisEx, basisEm, hist.rho(i)/2, alpha, beta, gamma);
     
     [sol, ~, hist.pcgAcc(i), hist.pcgIter(i)] = pcg(AtAhndl,b,[],10000,[],[],sol);
-    tElapsed = toc(t1);
-    
+    tElapsed = tElapsed + toc(t1);
+    %}
     
     reWEst = sol(1:nReflBasis);
     wEst = reshape(sol(nReflBasis+1:end),nEmBasis,nExBasis);
@@ -120,8 +122,14 @@ for i=1:inputs.maxIter
     hist.dualRes(i) = sqrt(norm(y1-y1minus,'fro')^2 + norm(y2-y2minus,'fro')^2 + norm(y3-y3minus,'fro')^2);
     
     if (mod(i,10) == 0)
+        
+        tTotal = toc(t2);
         fprintf('Iter %i pr. res %f, dual res %f\n',i,hist.prRes(i),hist.dualRes(i));
-        fprintf('     -> PCG time: %f seconds\n',tElapsed);
+        fprintf('     -> Total time: %.3f sec\n',tTotal);
+        fprintf('     -> PCG time:   %.3f sec\n',tElapsed);
+
+        t2 = tic;
+        tElapsed = 0;
     end
     
     if max(hist.prRes(i),hist.dualRes(i)) < inputs.epsilon && (inputs.epsilon >=0)
