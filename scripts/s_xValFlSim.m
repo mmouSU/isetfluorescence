@@ -164,19 +164,19 @@ lw = 2;
 % Alpha
 
 [pixelErrPlot, minLoc] = min(totalPixelErr,[],2);
-inds = sub2ind([nAlpha, nBeta],1:nAlpha,minLoc);
+inds = sub2ind([nAlpha, nBeta],(1:nAlpha)',minLoc);
 pixelErrPlotStd = totalPixelErr(inds)/sqrt(24);
 
 [reflErrPlot, minLoc] = min(reflErr,[],2);
-inds = sub2ind([nAlpha, nBeta],1:nAlpha,minLoc);
+inds = sub2ind([nAlpha, nBeta],(1:nAlpha)',minLoc);
 reflErrPlotStd = reflErr(inds)/sqrt(24);
 
 [exNormErrPlot, minLoc] = min(exNormErr,[],2);
-inds = sub2ind([nAlpha, nBeta],1:nAlpha,minLoc);
+inds = sub2ind([nAlpha, nBeta],(1:nAlpha)',minLoc);
 exNormPlotStd = exNormErr(inds)/sqrt(24);
 
 [emNormErrPlot, minLoc] = min(emNormErr,[],2);
-inds = sub2ind([nAlpha, nBeta],1:nAlpha,minLoc);
+inds = sub2ind([nAlpha, nBeta],(1:nAlpha)',minLoc);
 emNormPlotStd = emNormErr(inds)/sqrt(24);
 
 figure;
