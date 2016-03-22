@@ -187,10 +187,10 @@ pl(3) = errorbar(alphaRange,exNormErrPlot,exNormPlotStd,lineStyle{3});
 pl(4) = errorbar(alphaRange,emNormErrPlot,emNormPlotStd,lineStyle{4});
 set(pl,'lineWidth',lw);
 set(gca,'xscale','log');
-ylim([0 0.05]);
+ylim([0 0.5]);
 xlim([0.95*min(alphaRange) 1.05*max(alphaRange)]);
 xlabel('\alpha');
-ylabel('min_{\beta,\nu}(RMSE)');
+ylabel('min_{\beta}(RMSE)');
 
 % Beta
 
@@ -216,13 +216,13 @@ figure;
 hold all; grid on; box on;
 pl(1) = errorbar(betaRange,pixelErrPlot,pixelErrPlotStd,lineStyle{1});
 pl(2) = errorbar(betaRange,reflErrPlot,reflErrPlotStd,lineStyle{2});
-pl(3) = errorbar(betaRange,dMatNormErrPlot,dMatNormPlotStd,lineStyle{3});
+pl(3) = errorbar(betaRange,exNormErrPlot,exNormPlotStd,lineStyle{3});
 pl(4) = errorbar(betaRange,emNormErrPlot,emNormPlotStd,lineStyle{4});
 set(gca,'xscale','log');
 set(pl,'lineWidth',lw);
 xlim([0.95*min(betaRange) 1.05*max(betaRange)]);
-ylim([0 0.05]);
+ylim([0 0.5]);
 xlabel('\beta');
-ylabel('min_{\alpha,\nu}(RMSE)');
+ylabel('min_{\alpha}(RMSE)');
 
 
