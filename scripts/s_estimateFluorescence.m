@@ -2,7 +2,10 @@ close all;
 clear all;
 clc;
 
-wave = 400:4:1000;
+inFName = 'McNamara-Boswell_4x6x1_qe_0.10';
+fName = fullfile(fiToolboxRootPath,'data','simulations',[inFName '.mat']);
+load(fName);
+
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
@@ -37,7 +40,7 @@ camera = diag(qe)*filters;
 nFilters = size(camera,2);
        
 %% Load simulation data 
-load('simulation.mat');
+
 
 nSamples = size(measVals,3);
 cameraGain = repmat(cameraGain,[1 1 nSamples]);

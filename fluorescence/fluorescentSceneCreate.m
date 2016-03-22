@@ -14,6 +14,7 @@ p.addParamValue('peakExRange',[420 680],@isvector);
 p.addParamValue('nFluorophores',1,@isscalar);
 p.addParamValue('qe',1,@isscalar);
 p.addParamValue('fluorophoreIDs',1,@isnumeric);
+p.addParamValue('fluorophore',[],@isstruct);
 
 p.parse(varargin{:});
 inputs = p.Results;
@@ -23,6 +24,13 @@ flScene.name = inputs.name;
 flScene = initDefaultSpectrum(flScene,'custom',inputs.wave);
 
 switch inputs.type
+
+    case {'fromfluorophore'}
+        flScene = fluorescentSceneSet(flScene,'fluorophores',inputs.fluorophore);        
+        flScene = fluorescentSceneSet(flScene,'qe',inputs.qe);
+        flScene = fluorescentSceneSet(flScene,'size', [1 1]);
+        flScene = fluorescentSceneSet(flScene,'scene size',[1 1]);
+        fluorophoreIDs = [];
 
     case {'onefluorophore','singlefluorophore'}
         setName = fullfile(fiToolboxRootPath,'data',inputs.dataset);
