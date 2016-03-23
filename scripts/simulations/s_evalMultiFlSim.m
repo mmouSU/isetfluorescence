@@ -88,16 +88,10 @@ for i=1:nCompounds
     flScene = fluorescentSceneCreate('type','fromfluorophore','wave',wave,'qe',flQe,...
                                      'fluorophore',fluorophores(i));
          
-    dMatRef = fluorescentSceneGet(flScene,'Donaldson reference');        
-    exRef = fluorescentSceneGet(flScene,'excitation reference');
-    emRef = fluorescentSceneGet(flScene,'emission reference');
+    dMatRef = fluorescentSceneGet(flScene,'Donaldson reference','sceneSize',[4 6]);        
+    exRef = fluorescentSceneGet(flScene,'excitation reference','sceneSize',[4 6]); 
+    emRef = fluorescentSceneGet(flScene,'emission reference','sceneSize',[4 6]); 
     
-    % We have to copy the reference data - Something to solve for globally
-    % ...
-
-    dMatRef = repmat(dMatRef,[24, 1]);
-    exRef = repmat(exRef,[1 24]);
-    emRef = repmat(emRef,[1 24]);
     
     %% Run ISET simulations
     
@@ -187,6 +181,15 @@ for i=1:nCompounds
     [dMatErr(i), dMatStd(i)] = fiComputeError(dMatEst, dMatRef, '');
     [dMatNormErr(i), dMatNormStd(i)] = fiComputeError(dMatEst, dMatRef, 'normalized');
     
+    %% ISET cleanup, remove all objects.
+
+    scenes = vcGetObjects('scene');
+    vcDeleteSomeObjects('scene',1:length(scenes));
+    oi = vcGetObjects('oi');
+    vcDeleteSomeObjects('oi',1:length(oi));
+    sensor = vcGetObjects('sensor');
+    vcDeleteSomeObjects('sensor',1:length(sensor));
+
 end
 
 try

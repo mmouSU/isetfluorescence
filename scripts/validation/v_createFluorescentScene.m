@@ -17,19 +17,19 @@ sceneWindow();
 multiFlScene = fluorescentSceneCreate('height',4,'width',6,'nFluorophores',2);
 multiFlScene = fluorescentSceneSet(multiFlScene,'qe',0.5);
 
+% Create a single fluorophore scene
 singleFlScene = fluorescentSceneCreate('type','onefluorophore','fluorophoreIDs',50);
 singleFlScene = fluorescentSceneSet(singleFlScene,'qe',0.5);
 
 
+% Combine reflectance and fluorescence
 sceneMultiFl = fiSceneAddFluorescence(scene,multiFlScene);
 sceneMultiFl = sceneSet(sceneMultiFl,'name','Multi-fluorophore');
-ieAddObject(sceneMultiFl);
-sceneWindow();
-
-
 
 sceneSingleFl = fiSceneAddFluorescence(scene,singleFlScene);
 sceneSingleFl = sceneSet(sceneSingleFl,'name','Single-fluorophore');
+
+ieAddObject(sceneMultiFl);
 ieAddObject(sceneSingleFl);
 sceneWindow();
 

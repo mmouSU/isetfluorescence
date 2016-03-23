@@ -9,8 +9,8 @@ ill = sceneGet(scene,'illuminant');
 sz = sceneGet(scene,'size');
 rePhotons = sceneGet(scene,'photons');
 
-flScene = fluorescentSceneSet(flScene,'scenesize',sz);
-flPhotons = fluorescentSceneGet(flScene,'photons',ill);
+flPhotons = fluorescentSceneGet(flScene,'photons','illuminant',ill);
+flPhotons = imresize(flPhotons,sz,'nearest');
 
 scene = sceneSet(scene,'photons',rePhotons + flPhotons);
 

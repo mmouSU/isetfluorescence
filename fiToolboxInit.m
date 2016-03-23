@@ -10,7 +10,8 @@ addpath(fullfile(fiToolboxRootPath,'io'));
 
 addpath(fullfile(fiToolboxRootPath,'scripts'));
 addpath(fullfile(fiToolboxRootPath,'scripts','validation'));
-
+addpath(fullfile(fiToolboxRootPath,'scripts','simulation'));
+addpath(fullfile(fiToolboxRootPath,'scripts','experiments'));
 
 
 

@@ -6,11 +6,11 @@ p.addParamValue('type','Default',@ischar);
 p.addParamValue('dataset','McNamara-Boswell',@(x) strcmp(x,validatestring(x,{'McNamara-Boswell','LifeTechnologies'})))
 p.addParamValue('wave',400:10:700,@isvector);
 p.addParamValue('name','Default',@ischar);
-p.addParamValue('height',1,@isscalar);
-p.addParamValue('width',1,@isscalar);
 p.addParamValue('stokesShiftRange',[0 Inf],@isvector);
 p.addParamValue('peakEmRange',[420 680],@isvector);
 p.addParamValue('peakExRange',[420 680],@isvector);
+p.addParamValue('height',1,@isscalar);
+p.addParamValue('width',1,@isscalar);
 p.addParamValue('nFluorophores',1,@isscalar);
 p.addParamValue('qe',1,@isscalar);
 p.addParamValue('fluorophoreIDs',1,@isnumeric);
@@ -28,8 +28,6 @@ switch inputs.type
     case {'fromfluorophore'}
         flScene = fluorescentSceneSet(flScene,'fluorophores',inputs.fluorophore);        
         flScene = fluorescentSceneSet(flScene,'qe',inputs.qe);
-        flScene = fluorescentSceneSet(flScene,'size', [1 1]);
-        flScene = fluorescentSceneSet(flScene,'scene size',[1 1]);
         fluorophoreIDs = [];
 
     case {'onefluorophore','singlefluorophore'}
@@ -41,8 +39,6 @@ switch inputs.type
 
         flScene = fluorescentSceneSet(flScene,'fluorophores',flSet(inputs.fluorophoreIDs));        
         flScene = fluorescentSceneSet(flScene,'qe',inputs.qe/inputs.nFluorophores);
-        flScene = fluorescentSceneSet(flScene,'size', [1 1]);
-        flScene = fluorescentSceneSet(flScene,'scene size',[1 1]);
         fluorophoreIDs = inputs.fluorophoreIDs;
     
     otherwise
@@ -61,8 +57,6 @@ switch inputs.type
         
         flScene = fluorescentSceneSet(flScene,'fluorophores',reshape(selFl,[inputs.height, inputs.width, inputs.nFluorophores]));        
         flScene = fluorescentSceneSet(flScene,'qe',inputs.qe/inputs.nFluorophores);
-        flScene = fluorescentSceneSet(flScene,'size', [inputs.height inputs.width]);
-        flScene = fluorescentSceneSet(flScene,'scene size',[inputs.height inputs.width]);
         
 end
 
