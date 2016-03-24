@@ -158,8 +158,15 @@ save(fName,'alpha','beta','alphaRange','betaRange',...
 
 %% Display results
 
+close all;
+
+saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
 lineStyle = {'rs-','gd-','bo-','c^-'};
 lw = 2;
+mkSz = 8;
+fs = 8;
+figSize = [0 0 4.5 2.75];
+
 
 % Alpha
 
@@ -185,12 +192,17 @@ pl(1) = errorbar(alphaRange,pixelErrPlot,pixelErrPlotStd,lineStyle{1});
 pl(2) = errorbar(alphaRange,reflErrPlot,reflErrPlotStd,lineStyle{2});
 pl(3) = errorbar(alphaRange,exNormErrPlot,exNormPlotStd,lineStyle{3});
 pl(4) = errorbar(alphaRange,emNormErrPlot,emNormPlotStd,lineStyle{4});
-set(pl,'lineWidth',lw);
-set(gca,'xscale','log');
-ylim([0 0.5]);
-xlim([0.95*min(alphaRange) 1.05*max(alphaRange)]);
+set(pl,'lineWidth',lw,'markerSize',mkSz);
+set(gcf,'PaperUnits','inches');
+set(gcf,'PaperPosition',figSize);
+ylim([0 0.4]);
+xlim([0.9*min(alphaRange) 1.1*max(alphaRange)]);
 xlabel('\alpha');
 ylabel('min_{\beta}(RMSE)');
+set(gca,'fontSize',fs);
+set(gca,'xscale','log');
+print('-depsc',fullfile(saveDir,'singleFl_xVal_alpha.eps'));
+
 
 % Beta
 
@@ -218,11 +230,16 @@ pl(1) = errorbar(betaRange,pixelErrPlot,pixelErrPlotStd,lineStyle{1});
 pl(2) = errorbar(betaRange,reflErrPlot,reflErrPlotStd,lineStyle{2});
 pl(3) = errorbar(betaRange,exNormErrPlot,exNormPlotStd,lineStyle{3});
 pl(4) = errorbar(betaRange,emNormErrPlot,emNormPlotStd,lineStyle{4});
-set(gca,'xscale','log');
-set(pl,'lineWidth',lw);
-xlim([0.95*min(betaRange) 1.05*max(betaRange)]);
-ylim([0 0.5]);
+set(pl,'lineWidth',lw,'markerSize',mkSz);
+set(gcf,'PaperUnits','inches');
+set(gcf,'PaperPosition',figSize);
+xlim([0.9*min(betaRange) 1.1*max(betaRange)]);
+ylim([0 0.4]);
 xlabel('\beta');
 ylabel('min_{\alpha}(RMSE)');
+set(gca,'fontSize',fs);
+set(gca,'xscale','log');
+print('-depsc',fullfile(saveDir,'singleFl_xVal_beta.eps'));
+
 
 

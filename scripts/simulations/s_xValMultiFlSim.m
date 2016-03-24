@@ -131,10 +131,15 @@ save(fName,'alpha','beta','nu','alphaRange','betaRange','nuRange',...
            'totalPixelStd','reflPixelStd','flPixelStd','reflStd','dMatStd','dMatNormStd');
 
 
-%% Display results
+%% Display figures
+close all;
 
+saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
 lineStyle = {'rs-','gd-','bo-'};
 lw = 2;
+mkSz = 8;
+fs = 8;
+figSize = [0 0 4.5 2.75];
 
 % Alpha
 
@@ -158,12 +163,17 @@ hold all; grid on; box on;
 pl(1) = errorbar(alphaRange,pixelErrPlot,pixelErrPlotStd,lineStyle{1});
 pl(2) = errorbar(alphaRange,reflErrPlot,reflErrPlotStd,lineStyle{2});
 pl(3) = errorbar(alphaRange,dMatNormErrPlot,dMatNormPlotStd,lineStyle{3});
-set(pl,'lineWidth',lw);
-set(gca,'xscale','log');
-ylim([0 0.05]);
-xlim([0.95*min(alphaRange) 1.05*max(alphaRange)]);
+set(pl,'lineWidth',lw,'markerSize',mkSz);
+set(gcf,'PaperUnits','inches');
+set(gcf,'PaperPosition',figSize);
+ylim([0 0.07]);
+xlim([0.9*min(alphaRange) 1.1*max(alphaRange)]);
 xlabel('\alpha');
 ylabel('min_{\beta,\nu}(RMSE)');
+set(gca,'fontSize',fs);
+set(gca,'xscale','log');
+print('-depsc',fullfile(saveDir,'multiFl_xVal_alpha.eps'));
+
 
 % Beta
 
@@ -189,12 +199,16 @@ hold all; grid on; box on;
 pl(1) = errorbar(betaRange,pixelErrPlot,pixelErrPlotStd,lineStyle{1});
 pl(2) = errorbar(betaRange,reflErrPlot,reflErrPlotStd,lineStyle{2});
 pl(3) = errorbar(betaRange,dMatNormErrPlot,dMatNormPlotStd,lineStyle{3});
-set(gca,'xscale','log');
-set(pl,'lineWidth',lw);
-xlim([0.95*min(betaRange) 1.05*max(betaRange)]);
-ylim([0 0.05]);
+set(pl,'lineWidth',lw,'markerSize',mkSz);
+set(gcf,'PaperUnits','inches');
+set(gcf,'PaperPosition',figSize);
+xlim([0.9*min(betaRange) 1.1*max(betaRange)]);
+ylim([0 0.07]);
 xlabel('\beta');
 ylabel('min_{\alpha,\nu}(RMSE)');
+set(gca,'fontSize',fs);
+set(gca,'xscale','log');
+print('-depsc',fullfile(saveDir,'multiFl_xVal_beta.eps'));
 
 
 % Nu
@@ -221,9 +235,13 @@ hold all; grid on; box on;
 pl(1) = errorbar(nuRange,pixelErrPlot,pixelErrPlotStd,lineStyle{1});
 pl(2) = errorbar(nuRange,reflErrPlot,reflErrPlotStd,lineStyle{2});
 pl(3) = errorbar(nuRange,dMatNormErrPlot,dMatNormPlotStd,lineStyle{3});
-set(gca,'xscale','log');
-set(pl,'lineWidth',lw);
-xlim([0.95*min(nuRange) 1.05*max(nuRange)]);
-ylim([0 0.05]);
+set(pl,'lineWidth',lw,'markerSize',mkSz);
+set(gcf,'PaperUnits','inches');
+set(gcf,'PaperPosition',figSize);
+xlim([0.9*min(nuRange) 1.1*max(nuRange)]);
+ylim([0 0.07]);
 xlabel('\nu');
 ylabel('min_{\alpha,\beta}(RMSE)');
+set(gca,'fontSize',fs);
+set(gca,'xscale','log');
+print('-depsc',fullfile(saveDir,'multiFl_xVal_nu.eps'));
