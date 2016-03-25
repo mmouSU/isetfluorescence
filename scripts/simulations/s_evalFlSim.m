@@ -65,15 +65,21 @@ totalPixelErr = zeros(nCompounds,1);
 reflPixelErr = zeros(nCompounds,1);
 flPixelErr = zeros(nCompounds,1);
 reflErr = zeros(nCompounds,1);
-dMatErr = zeros(nCompounds,1);
-dMatNormErr = zeros(nCompounds,1);
+exErr = zeros(nCompounds,1);
+exNormErr = zeros(nCompounds,1);
+emErr = zeros(nCompounds,1);
+emNormErr = zeros(nCompounds,1);
+
+
 
 totalPixelStd = zeros(nCompounds,1);
 reflPixelStd = zeros(nCompounds,1);
 flPixelStd = zeros(nCompounds,1);
 reflStd = zeros(nCompounds,1);
-dMatStd = zeros(nCompounds,1);
-dMatNormStd = zeros(nCompounds,1);
+exStd = zeros(nCompounds,1);
+exNormStd = zeros(nCompounds,1);
+emStd = zeros(nCompounds,1);
+emNormStd = zeros(nCompounds,1);
 
 %% The main cross-validation loop
 
@@ -163,10 +169,9 @@ for i=1:nCompounds
     cameraOffset = repmat(cameraOffset,[1 1 24]);
     
     
-    [ reflEst, reflCoeffs, emEst, emCoeffs, exEst, exCoeffs, dMatEst, reflValsEst, flValsEst, hist  ] = ...
-        fiRecReflAndMultiFl( measVals, camera, illuminantPhotons, cameraGain*deltaL,...
-        cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, nu, 'maxIter',250);
-    
+    [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, reflValsEst, flValsEst, hist  ] = ...
+        fiRecReflAndFl( measVals, camera, cameraGain*deltaL, cameraOffset, illuminant, reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter',250 );
+
     
     %% Evaluation
     
@@ -178,8 +183,11 @@ for i=1:nCompounds
     
     [reflErr(i), reflStd(i)] = fiComputeError(reflEst, reflRef, '');
     
-    [dMatErr(i), dMatStd(i)] = fiComputeError(dMatEst, dMatRef, '');
-    [dMatNormErr(i), dMatNormStd(i)] = fiComputeError(dMatEst, dMatRef, 'normalized');
+    [emErr(i), emStd(i)] = fiComputeError(emEst, emRef, '');
+    [emNormErr(i), emNormStd(i)] = fiComputeError(emEst, emRef, 'normalized');
+    
+    [exErr(i), exStd(i)] = fiComputeError(exEst, exRef, '');
+    [exNormErr(i), exNormStd(i)] = fiComputeError(exEst, exRef, 'normalized');
     
     %% ISET cleanup, remove all objects.
 
@@ -201,11 +209,11 @@ end
 dirName = fullfile(fiToolboxRootPath,'results');
 if ~exist(dirName,'dir'), mkdir(dirName); end
 
-fName = fullfile(dirName,[dataset '_sim_multiFl.mat']);
+fName = fullfile(dirName,[dataset '_sim_Fl.mat']);
 
-save(fName,'fluorophores','ids',...
-           'totalPixelErr','reflPixelErr','flPixelErr','reflErr','dMatErr','dMatNormErr',...
-           'totalPixelStd','reflPixelStd','flPixelStd','reflStd','dMatStd','dMatNormStd');
+save(fName,'fluorophores','ids','nCompounds',...
+           'totalPixelErr','reflPixelErr','flPixelErr','reflErr','exErr','exNormErr','emErr','emNormErr',...
+           'totalPixelStd','reflPixelStd','flPixelStd','reflStd','exStd','exNormStd','emStd','emNormStd');
 
        
 %% Plot the results
