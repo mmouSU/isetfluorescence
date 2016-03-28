@@ -203,46 +203,54 @@ if ~exist(dirName,'dir'), mkdir(dirName); end
 
 fName = fullfile(dirName,[dataset '_sim_multiFl.mat']);
 
-save(fName,'fluorophores','ids',...
+save(fName,'fluorophores','ids','nCompounds',...
            'totalPixelErr','reflPixelErr','flPixelErr','reflErr','dMatErr','dMatNormErr',...
            'totalPixelStd','reflPixelStd','flPixelStd','reflStd','dMatStd','dMatNormStd');
 
        
 %% Plot the results
 % Sort the fluorophores in the increasing pixel prediction error order.
+close all;
 
 saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
-lineStyle = {'rs-','gd-','bo-'};
 lw = 2;
 mkSz = 8;
 fs = 8;
 figSize = [0 0 4.5 2.75];
+
+% Pixel values
+
 [sortedTotalPixelErr, indx] = sort(totalPixelErr,'ascend');
-nFluorophores = length(fluorophores);
+nCompounds = length(fluorophores);
 
 figure;
-hold all;
-pl(1) = plot(1:nFluorophores,sortedTotalPixelErr,'lineWidth',lw);
-pl(2) = plot(1:nFluorophores,sortedTotalPixelErr - totalPixelStd(indx)/sqrt(24),'lineWidth',0.5*lw);
-pl(3) = plot(1:nFluorophores,sortedTotalPixelErr + totalPixelStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+hold all; grid on; box on;
+pl(1) = plot(1:nCompounds,sortedTotalPixelErr,'lineWidth',lw);
+pl(2) = plot(1:nCompounds,sortedTotalPixelErr - totalPixelStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+pl(3) = plot(1:nCompounds,sortedTotalPixelErr + totalPixelStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+set(pl,'color','red');
 
-pl(4) = plot(1:nFluorophores,reflErr(indx),'lineWidth',lw);
-pl(5) = plot(1:nFluorophores,reflErr(indx) - reflStd(indx)/sqrt(24),'lineWidth',0.5*lw);
-pl(6) = plot(1:nFluorophores,reflErr(indx) + reflStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+% Reflectance
+[sortedReflErr, indx] = sort(reflErr,'ascend');
 
-pl(7) = plot(1:nFluorophores,dMatNormErr(indx),'lineWidth',lw);
-pl(8) = plot(1:nFluorophores,dMatNormErr(indx) - dMatNormStd(indx)/sqrt(24),'lineWidth',0.5*lw);
-pl(9) = plot(1:nFluorophores,dMatNormErr(indx) + dMatNormStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+pl(1) = plot(1:nCompounds,sortedReflErr,'lineWidth',lw);
+pl(2) = plot(1:nCompounds,sortedReflErr - reflStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+pl(3) = plot(1:nCompounds,sortedReflErr + reflStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+set(pl,'color','green');
 
+% Donaldson Matrix
+[sorteddMatNormErr, indx] = sort(dMatNormErr,'ascend');
 
-set(pl(1:3),'markerSize',mkSz,'color','red');
-set(pl(4:6),'markerSize',mkSz,'color','green');
-set(pl(7:9),'markerSize',mkSz,'color','blue');
-
+pl(1) = plot(1:nCompounds,sorteddMatNormErr,'lineWidth',lw);
+pl(2) = plot(1:nCompounds,sorteddMatNormErr - dMatNormStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+pl(3) = plot(1:nCompounds,sorteddMatNormErr + dMatNormStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+set(pl,'color','blue');
 
 set(gcf,'PaperUnits','inches');
 set(gcf,'PaperPosition',figSize);
-xlabel('Fluorophore index');
+xlabel('Fluorophore order');
 ylabel('RMSE');
+xlim([1 nCompounds]);
 set(gca,'fontSize',fs);
-% print('-depsc',fullfile(saveDir,'multiFl_xVal_alpha.eps'));
+
+print('-depsc',fullfile(saveDir,'multiFl_eval.eps'));
