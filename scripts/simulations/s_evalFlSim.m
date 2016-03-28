@@ -13,7 +13,6 @@ flQe = 0.1;
 
 alpha = 0.1;
 beta = 0.1;
-nu = 0.1;
 
 % Create basis function sets
 nReflBasis = 5;
@@ -170,7 +169,7 @@ for i=1:nCompounds
     
     
     [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, reflValsEst, flValsEst, hist  ] = ...
-        fiRecReflAndFl( measVals, camera, cameraGain*deltaL, cameraOffset, illuminant, reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter',250 );
+        fiRecReflAndFl( measVals, camera, cameraGain*deltaL, cameraOffset, illuminantPhotons, reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter',250 );
 
     
     %% Evaluation
@@ -206,7 +205,7 @@ catch
 end
 
 %% Save results
-dirName = fullfile(fiToolboxRootPath,'results');
+dirName = fullfile(fiToolboxRootPath,'results','evaluation');
 if ~exist(dirName,'dir'), mkdir(dirName); end
 
 fName = fullfile(dirName,[dataset '_sim_Fl.mat']);
@@ -218,39 +217,55 @@ save(fName,'fluorophores','ids','nCompounds',...
        
 %% Plot the results
 % Sort the fluorophores in the increasing pixel prediction error order.
+close all;
 
 saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
-lineStyle = {'rs-','gd-','bo-'};
 lw = 2;
 mkSz = 8;
 fs = 8;
 figSize = [0 0 4.5 2.75];
+
+% Pixel values
+
 [sortedTotalPixelErr, indx] = sort(totalPixelErr,'ascend');
-nFluorophores = length(fluorophores);
 
 figure;
-hold all;
-pl(1) = plot(1:nFluorophores,sortedTotalPixelErr,'lineWidth',lw);
-pl(2) = plot(1:nFluorophores,sortedTotalPixelErr - totalPixelStd(indx)/sqrt(24),'lineWidth',0.5*lw);
-pl(3) = plot(1:nFluorophores,sortedTotalPixelErr + totalPixelStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+hold all; grid on; box on;
+pl(1) = plot(1:nCompounds,sortedTotalPixelErr,'lineWidth',lw);
+pl(2) = plot(1:nCompounds,sortedTotalPixelErr - totalPixelStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+pl(3) = plot(1:nCompounds,sortedTotalPixelErr + totalPixelStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+set(pl,'color','red');
 
-pl(4) = plot(1:nFluorophores,reflErr(indx),'lineWidth',lw);
-pl(5) = plot(1:nFluorophores,reflErr(indx) - reflStd(indx)/sqrt(24),'lineWidth',0.5*lw);
-pl(6) = plot(1:nFluorophores,reflErr(indx) + reflStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+% Reflectance
+[sortedReflErr, indx] = sort(reflErr,'ascend');
 
-pl(7) = plot(1:nFluorophores,dMatNormErr(indx),'lineWidth',lw);
-pl(8) = plot(1:nFluorophores,dMatNormErr(indx) - dMatNormStd(indx)/sqrt(24),'lineWidth',0.5*lw);
-pl(9) = plot(1:nFluorophores,dMatNormErr(indx) + dMatNormStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+pl(1) = plot(1:nCompounds,sortedReflErr,'lineWidth',lw);
+pl(2) = plot(1:nCompounds,sortedReflErr - reflStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+pl(3) = plot(1:nCompounds,sortedReflErr + reflStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+set(pl,'color','green');
 
+% Excitation
+[sortedExNormErr, indx] = sort(exNormErr,'ascend');
 
-set(pl(1:3),'markerSize',mkSz,'color','red');
-set(pl(4:6),'markerSize',mkSz,'color','green');
-set(pl(7:9),'markerSize',mkSz,'color','blue');
+pl(1) = plot(1:nCompounds,sortedExNormErr,'lineWidth',lw);
+pl(2) = plot(1:nCompounds,sortedExNormErr - exNormStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+pl(3) = plot(1:nCompounds,sortedExNormErr + exNormStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+set(pl,'color','blue');
 
+% Emission
+[sortedEmNormErr, indx] = sort(emNormErr,'ascend');
+
+pl(1) = plot(1:nCompounds,sortedEmNormErr,'lineWidth',lw);
+pl(2) = plot(1:nCompounds,sortedEmNormErr - emNormStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+pl(3) = plot(1:nCompounds,sortedEmNormErr + emNormStd(indx)/sqrt(24),'lineWidth',0.5*lw);
+set(pl,'color','cyan');
 
 set(gcf,'PaperUnits','inches');
 set(gcf,'PaperPosition',figSize);
-xlabel('Fluorophore index');
+xlabel('Fluorophore order');
 ylabel('RMSE');
+xlim([1 nCompounds]);
 set(gca,'fontSize',fs);
-% print('-depsc',fullfile(saveDir,'multiFl_xVal_alpha.eps'));
+
+% print('-depsc',fullfile(saveDir,'Fl_eval.eps'));
+
