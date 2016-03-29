@@ -4,9 +4,14 @@ close all;
 clear all;
 clc;
 
+addpath(fullfile(fiToolboxRootPath));
+
 addpath(fullfile(fiToolboxRootPath,'camera'));
 addpath(fullfile(fiToolboxRootPath,'data'));
+
 addpath(fullfile(fiToolboxRootPath,'estimation'));
+addpath(fullfile(fiToolboxRootPath,'estimation','multistep'));
+
 addpath(fullfile(fiToolboxRootPath,'fluorescence'));
 addpath(fullfile(fiToolboxRootPath,'io'));
 

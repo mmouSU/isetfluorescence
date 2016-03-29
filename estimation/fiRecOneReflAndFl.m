@@ -4,7 +4,7 @@ function [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, predRefl, predFl
 p = inputParser;
 p.KeepUnmatched = true;
 p.addParamValue('forceIter',false,@islogical);
-p.addParamValue('epsilon',1e-6);
+p.addParamValue('epsilon',1e-4);
 p.addParamValue('maxIter',100);
 p.parse(varargin{:});
 inputs = p.Results;
