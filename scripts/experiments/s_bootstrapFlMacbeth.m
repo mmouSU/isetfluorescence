@@ -5,7 +5,7 @@ clc;
 ieInit;
 
 %%
-nBootstrap = 100;
+nBootstrap = 1;
 sampleSize = 10;
 
 nSamples = 24;
@@ -170,7 +170,7 @@ end
 % gains accordingly.
 nF = max(max(mean(measVals,4),[],1),[],2);
 nF = repmat(nF,[nFilters nChannels 1]);
-measVals = measVals./nF;
+measVals = measVals./repmat(nF,[1 1 1 nPixels]);
 cameraGain = cameraGain./nF;
 
 
@@ -195,7 +195,7 @@ end
 parfor b=1:nBootstrap
 
     % Pick a bootstrap sample, and average selected pixels
-    inds{b} = randi(nPixel,[sampleSize 1]);
+    inds{b} = randi(nPixels,[sampleSize 1]);
     bootstrapMeasVals = mean(measVals(:,:,:,inds{b}),4);
     
     
