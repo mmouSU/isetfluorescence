@@ -6,7 +6,7 @@ ieInit;
 
 %%
 nBootstrap = 100;
-sampleSize = 10;
+sampleSize = 1;
 
 nSamples = 24;
 
@@ -170,7 +170,7 @@ end
 % gains accordingly.
 nF = max(max(mean(measVals,4),[],1),[],2);
 nF = repmat(nF,[nFilters nChannels 1]);
-measVals = measVals./nF;
+measVals = measVals./repmat(nF,[1 1 1 nPixels]);
 cameraGain = cameraGain./nF;
 
 
@@ -194,7 +194,7 @@ end
 parfor b=1:nBootstrap
 
     % Pick a bootstrap sample, and average selected pixels
-    inds{b} = randi(nPixel,[sampleSize 1]);
+    inds{b} = randi(nPixels,[sampleSize 1]);
     bootstrapMeasVals = mean(measVals(:,:,:,inds{b}),4);
     
     
@@ -215,10 +215,10 @@ end
 dirName = fullfile(fiToolboxRootPath,'results','bootstrap');
 if ~exist(dirName,'dir'), mkdir(dirName); end;
 
-fName = fullfile(dirName,sprintf('emMacbeth_bootstrap_%i.mat',nBootstrap));
+fName = fullfile(dirName,sprintf('em_%s_bootstrap_%i_%i.mat',testFileName,nBootstrap,sampleSize));
 
 
 save(fName,'reflEst','rfCoeffs','emEst','emCoeffs','emWghts','reflValsEst','flValsEst','hist','inds',...
-           'measVals','nBootstrap','sampleSize','reflRef','emRef','alpha','beta');
+           'measVals','nBootstrap','sampleSize','reflRef','emRef','exRef','alpha','beta','wave');
 
 
