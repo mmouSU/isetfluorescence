@@ -5,8 +5,8 @@ clc;
 ieInit;
 
 %%
-nBootstrap = 1;
-sampleSize = 10;
+nBootstrap = 100;
+sampleSize = 1;
 
 nSamples = 24;
 
@@ -215,10 +215,10 @@ end
 dirName = fullfile(fiToolboxRootPath,'results','bootstrap');
 if ~exist(dirName,'dir'), mkdir(dirName); end;
 
-fName = fullfile(dirName,sprintf('flMacbeth_bootstrap_%i.mat',nBootstrap));
+fName = fullfile(dirName,sprintf('flMacbeth_bootstrap_%i_%i.mat',nBootstrap,sampleSize));
 
 
 save(fName,'reflEst','rfCoeffs','emEst','emCoeffs','exEst','exCoeffs','reflValsEst','flValsEst','hist','inds',...
-           'measVals','nBootstrap','sampleSize','reflRef','emRef','exRef','alpha','beta');
+           'measVals','nBootstrap','sampleSize','reflRef','emRef','exRef','alpha','beta','wave');
 
 

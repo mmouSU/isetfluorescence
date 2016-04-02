@@ -2,14 +2,14 @@ close all;
 clear all;
 clc;
 
-inFName = 'McNamara-Boswell_4x6x1_qe_1.00';
+inFName = 'McNamara-Boswell_4x6x1_qe_0.10';
 fName = fullfile(fiToolboxRootPath,'data','simulations',[inFName '.mat']);
 load(fName);
 
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
-alpha = 0.1;
+alpha = 0.01;
 gamma = 0.1;
 
 % Create basis function sets
@@ -59,7 +59,6 @@ cameraOffset = repmat(cameraOffset,[1 1 nSamples]);
     camera, cameraGain*deltaL, cameraOffset, illuminant, reflBasis, DB, exBasis, alpha, gamma );
 
 measValsEst = reflValsEst + flValsEst;
-
 
 
 [err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals - cameraOffset,[nChannels*nFilters,nSamples]), '');

@@ -9,10 +9,10 @@ ieInit;
 nSamples = 24;
 
 nReflBasis = 5;
-nEmBasis = 12;
+nExBasis = 12;
 
-alpha = 0.1;
-beta = 0.2;
+alpha = 1;
+gamma = 1;
 
 testFileName = 'Macbeth+Fl';
 backgroundFileName = 'Background';
@@ -22,8 +22,7 @@ deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
 % Create basis function sets
-reflBasis = createBasisSet('reflectance','wave',wave','n',nReflBasis);
-emBasis = createBasisSet('emission','wave',wave','n',nEmBasis);
+[exBasis, exScore] = createBasisSet('excitation','wave',wave','n',nExBasis);
 
 % Load the light spectra (in photons). We scale by the maximum for
 % numerical stability. This does not matter in the long run as we are
@@ -45,12 +44,6 @@ qe = ieReadSpectra(fName,wave);
 camera = diag(qe)*filters;
 nFilters = size(camera,2);
 
-
-% Load the calibration target reflectance
-% fName = fullfile(fiToolboxRootPath,'data','experiments','chalk');
-% calibRefl = ieReadSpectra(fName,wave);
-% calibRefl = ones(nWaves,1);
-
 % Load the test target reflectance
 fName = fullfile(fiToolboxRootPath,'data','experiments','macbethChart');
 reflRef = ieReadSpectra(fName,wave);
@@ -66,6 +59,11 @@ reflRef(:,[3:4:24 4:4:24]) = diag(redTr)*reflRef(:,[3:4:24 4:4:24]);
 
 flQe = [0.25 0.53];
 
+% Use the reflectance corrected for transmittance to derive basis
+% functions.
+reflBasis = pca(reflRef','centered',false);
+reflBasis = reflBasis(:,1:nReflBasis);
+
 % Load fluorescence data and get reference spectra
 fName = fullfile(fiToolboxRootPath,'data','redFl');
 redFl = fiReadFluorophore(fName,'wave',wave);
@@ -80,6 +78,15 @@ dMatRef = fluorescentSceneGet(flScene,'donaldsonReference','sceneSize',[4 6]);
 exRef = fluorescentSceneGet(flScene,'excitationReference','sceneSize',[4 6]);
 emRef = fluorescentSceneGet(flScene,'emissionReference','sceneSize',[4 6]);
 
+
+% Create a database of emission spectra
+fName = fullfile(fiToolboxRootPath,'data','McNamara-Boswell');
+[flSet, fluorophoreIDs] = fiReadFluorophoreSet(fName,'wave',wave,...
+            'peakEmRange',[wave(5) wave(end-5)],...
+            'peakExRange',[wave(5) wave(end-5)]);
+
+tmpScene = fluorescentSceneCreate('type','fromfluorophore','fluorophore',flSet,'wave',wave);
+DB = fluorescentSceneGet(tmpScene,'emissionReference');
 
 
 %% Calibration
@@ -170,16 +177,15 @@ cameraGain = cameraGain./nF;
 %% Estimate the reflectance and single fluorescence
 
 
-[ reflEst, reflCoeffs, emEst, emCoeffs, emWghts, reflValsEst, flValsEst, hist  ] = ...
-    fiRecReflAndEm( measVals, camera, cameraGain*deltaL, cameraOffset,...
-    illuminantPhotons, reflBasis, emBasis, alpha, beta, 'maxIter', 20);
+[ reflEst, reflCoeffs, emEst, emChromaticity, exEst, exCoeffs, reflValsEst, flValsEst, hist ] = fiRecReflAndFlMultistep( measVals,...
+    camera, cameraGain*deltaL, cameraOffset, illuminantPhotons, reflBasis, DB, exBasis, alpha, gamma );
+
 
 dirName = fullfile(fiToolboxRootPath,'results','experiments');
 if ~exist(dirName,'dir'), mkdir(dirName); end;
-
-fName = fullfile(dirName,sprintf('em_%s.mat',testFileName));
-save(fName,'reflEst','reflCoeffs','emEst','emCoeffs','emWghts','reflValsEst','flValsEst','hist',...
-            'wave','alpha','beta','reflRef','exRef','emRef','measVals');
+fName = fullfile(dirName,sprintf('multistep_%s.mat',testFileName));
+save(fName,'reflEst','reflCoeffs','emEst','emChromaticity','exEst','exCoeffs','reflValsEst','flValsEst','hist',...
+            'wave','alpha','gamma','reflRef','exRef','emRef','measVals');
 
 measValsEst = reflValsEst + flValsEst;
 
@@ -202,15 +208,97 @@ fprintf('Emission error %.3f, std %.3f\n',err,std);
 [err, std] = fiComputeError(emEst, emRef, 'normalized');
 fprintf('Emission error (normalized) %.3f, std %.3f\n',err,std);
 
+[err, std] = fiComputeError(exEst, exRef, 'normalized');
+fprintf('Excitation error %.3f, std %.3f\n',err,std);
+
+
 
 %% Plot the results
 
-
+% Predicted vs. simulated pixel intensities
 figure;
+subplot(1,3,1);
 hold all; grid on; box on;
 plot(measValsEst(:),measVals(:),'.');
 xlabel('Model predicted pixel value');
-ylabel('ISET pixel value');
+ylabel('Measured pixel value');
+title('Total');
+
+subplot(1,3,2);
+hold all; grid on; box on;
+plot(reflValsEst(:),reflValsRef(:),'.');
+xlabel('Model predicted pixel value');
+ylabel('Measured pixel value');
+title('Reflected');
+
+subplot(1,3,3);
+hold all; grid on; box on;
+plot(flValsEst(:),flValsRef(:),'.');
+xlabel('Model predicted pixel value');
+ylabel('Measured pixel value');
+title('Fluoresced');
+
+
+% Prediction for different filters
+tmp1 = reshape(measValsEst,[nFilters nChannels*nSamples])';
+tmp2 = reshape(measVals,[nFilters nChannels*nSamples])';
+maxVal = max([tmp1(:); tmp2(:)]);
+
+figure;
+for f=1:nFilters
+    subplot(3,3,f);
+    hold all; grid on; box on;
+    plot(tmp1(:,f),tmp2(:,f),'.');
+    plot(linspace(0,maxVal,10),linspace(0,maxVal,10),'r');
+    xlabel('Model');
+    ylabel('Measured');
+    title(sprintf('F: %i',f));
+    xlim([0 maxVal]);
+    ylim([0 maxVal]);
+end
+
+
+% Prediction for a specific filter
+fID = 5;
+tmp1 = squeeze(measValsEst(fID,:,:))';
+tmp2 = squeeze(measVals(fID,:,:))';
+maxVal = max([tmp1(:); tmp2(:)]);
+
+figure;
+for c=1:nChannels
+    subplot(4,4,c);
+    hold all; grid on; box on;
+    plot(tmp1(:,c),tmp2(:,c),'.');
+    plot(linspace(0,maxVal,10),linspace(0,maxVal,10),'r');
+    xlim([0 maxVal]);
+    ylim([0 maxVal]);
+    xlabel('Model');
+    ylabel('Measured');
+    title(sprintf('F: %i, C: %i',fID,c));
+end
+
+
+
+% Pixel prediction per patch
+figure;
+for xx=1:6
+for yy=1:4
+
+    plotID = (yy-1)*6 + xx;
+    sampleID = (xx-1)*4 + yy;
+
+    subplot(4,6,plotID);
+    hold all; grid on; box on;
+    
+    tmp1 = measValsEst(:,:,sampleID)';
+    tmp2 = measVals(:,:,sampleID)';
+    
+    plot(tmp1,tmp2,'.');
+
+end
+end
+
+%%
 
 % Convergence
 figure;
@@ -222,12 +310,11 @@ for yy=1:4
 
     subplot(4,6,plotID);
     hold all; grid on; box on;
-    plot([hist{sampleID}.objValsReEm, hist{sampleID}.objValsReWe],'LineWidth',2);
+    plot([hist{sampleID}.objValsRefl, hist{sampleID}.objValsChr],'LineWidth',2);
     
 
 end
 end
-
 
 % Estimated vs. ground truth reflectance
 figure;
@@ -245,6 +332,27 @@ for yy=1:4
     ylim([-0.05 1.05]);
 
     rmse = sqrt(mean((reflEst(:,sampleID) - reflRef(:,sampleID)).^2));
+    title(sprintf('RMSE %.2f',rmse));
+
+end
+end
+
+% Estimated vs. ground truth excitation
+figure;
+for xx=1:6
+for yy=1:4
+
+    plotID = (yy-1)*6 + xx;
+    sampleID = (xx-1)*4 + yy;
+
+    subplot(4,6,plotID);
+    hold all; grid on; box on;
+    plot(wave,exEst(:,sampleID),'g','LineWidth',2);
+    plot(wave,exRef(:,sampleID),'b--','LineWidth',2);
+    xlim([min(wave) max(wave)]);
+    ylim([-0.05 1.05]);
+
+    rmse = sqrt(mean((exEst(:,sampleID) - exRef(:,sampleID)).^2));
     title(sprintf('RMSE %.2f',rmse));
 
 end
@@ -272,7 +380,6 @@ for yy=1:4
 
 end
 end
-
 
 
 

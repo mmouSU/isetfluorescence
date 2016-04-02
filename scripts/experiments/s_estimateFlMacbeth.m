@@ -87,6 +87,9 @@ dMatRef = fluorescentSceneGet(flScene,'donaldsonReference','sceneSize',[4 6]);
 exRef = fluorescentSceneGet(flScene,'excitationReference','sceneSize',[4 6]);
 emRef = fluorescentSceneGet(flScene,'emissionReference','sceneSize',[4 6]);
 
+% Chalk reflectance
+% fName = fullfile(fiToolboxRootPath,'data','experiments','chalk');
+% chalk = ieReadSpectra(fName,wave);
 
 
 %% Calibration
@@ -144,7 +147,7 @@ fName = fullfile(fiToolboxRootPath,'data','experiments',testFileName);
 linearVals = scaledMacbeth.*scaleMap;
 
 % Read the sensor data
-cp = [];
+cp = [28 873;1262 919;1271 138;58 74];
 measVals = zeros(nFilters,nChannels,24);
 for f=1:nFilters
     sensor = createCameraModel(f);
@@ -178,8 +181,14 @@ cameraGain = cameraGain./nF;
 
 
 [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, reflValsEst, flValsEst, hist  ] = ...
-fiRecReflAndFl( measVals, camera, cameraGain*deltaL, cameraOffset, illuminantPhotons, reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter', 20);
+fiRecReflAndFl( measVals, camera, cameraGain*deltaL, cameraOffset, illuminantPhotons, reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter', 50);
 
+dirName = fullfile(fiToolboxRootPath,'results','experiments');
+if ~exist(dirName,'dir'), mkdir(dirName); end;
+
+fName = fullfile(dirName,sprintf('fl_%s.mat',testFileName));
+save(fName,'reflEst','rfCoeffs','emEst','emCoeffs','exEst','exCoeffs','reflValsEst','flValsEst','hist',...
+            'wave','alpha','beta','reflRef','exRef','emRef','measVals');
 
 measValsEst = reflValsEst + flValsEst;
 
