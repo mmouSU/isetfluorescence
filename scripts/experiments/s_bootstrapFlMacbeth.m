@@ -5,7 +5,7 @@ clc;
 ieInit;
 
 %%
-nBootstrap = 1;
+nBootstrap = 100;
 sampleSize = 10;
 
 nSamples = 24;
@@ -200,7 +200,7 @@ parfor b=1:nBootstrap
     
     
     [ reflEst{b}, rfCoeffs{b}, emEst{b}, emCoeffs{b}, exEst{b}, exCoeffs{b}, reflValsEst{b}, flValsEst{b}, hist{b}  ] = ...
-        fiRecReflAndFl( measVals, camera, cameraGain*deltaL, cameraOffset, illuminantPhotons, reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter', 50);
+        fiRecReflAndFl( bootstrapMeasVals, camera, cameraGain*deltaL, cameraOffset, illuminantPhotons, reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter', 50);
 
 end
 
@@ -215,10 +215,10 @@ end
 dirName = fullfile(fiToolboxRootPath,'results','bootstrap');
 if ~exist(dirName,'dir'), mkdir(dirName); end;
 
-fName = fullfile(dirName,sprintf('flMacbeth_bootstrap_%i.mat',nBootstrap));
+fName = fullfile(dirName,sprintf('fl_%s_bootstrap_%i_%i.mat',testFileName,nBootstrap,sampleSize));
 
 
 save(fName,'reflEst','rfCoeffs','emEst','emCoeffs','exEst','exCoeffs','reflValsEst','flValsEst','hist','inds',...
-           'measVals','nBootstrap','sampleSize','reflRef','emRef','exRef','alpha','beta');
+           'measVals','nBootstrap','sampleSize','reflRef','emRef','exRef','alpha','beta','wave');
 
 
