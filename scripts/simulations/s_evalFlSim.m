@@ -265,7 +265,8 @@ set(gcf,'PaperPosition',figSize);
 xlabel('Fluorophore order');
 ylabel('RMSE');
 xlim([1 nCompounds]);
+ylim([0.0 0.5]);
 set(gca,'fontSize',fs);
 
-% print('-depsc',fullfile(saveDir,'Fl_eval.eps'));
+print('-depsc',fullfile(saveDir,'Fl_eval.eps'));
 

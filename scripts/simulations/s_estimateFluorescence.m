@@ -9,9 +9,8 @@ load(fName);
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
-alpha = 0.1;
-beta = 0.1;
-nu = 0.1;
+alpha = 0.01;
+beta = 0.01;
 
 % Create basis function sets
 nReflBasis = 5;
@@ -47,7 +46,7 @@ cameraGain = repmat(cameraGain,[1 1 nSamples]);
 cameraOffset = repmat(cameraOffset,[1 1 nSamples]);
 
 [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, reflValsEst, flValsEst, hist  ] = ...
-fiRecReflAndFl( measVals, camera, cameraGain*deltaL, cameraOffset, illuminant, reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter',10 );
+fiRecReflAndFl( measVals, camera, cameraGain*deltaL, cameraOffset, illuminant, reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter',20 );
 
 
 measValsEst = reflValsEst + flValsEst;

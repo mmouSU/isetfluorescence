@@ -2,15 +2,15 @@ close all;
 clear all;
 clc;
 
-inFName = 'McNamara-Boswell_4x6x1_qe_0.10';
+inFName = 'McNamara-Boswell_4x6x1_qe_1.00';
 fName = fullfile(fiToolboxRootPath,'data','simulations',[inFName '.mat']);
 load(fName);
 
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
-alpha = 0.01;
-gamma = 0.01;
+alpha = 0.1;
+gamma = 0.1;
 
 % Create basis function sets
 nReflBasis = 5;
@@ -94,6 +94,24 @@ hold all; grid on; box on;
 plot(measValsEst(:),measVals(:),'.');
 xlabel('Model predicted pixel value');
 ylabel('ISET pixel value');
+
+figure;
+for xx=1:6
+for yy=1:4
+
+    plotID = (yy-1)*6 + xx;
+    sampleID = (xx-1)*4 + yy;
+
+    subplot(4,6,plotID);
+    hold all; grid on; box on; axis square;
+
+    tmp1 = measValsEst(:,:,sampleID);
+    tmp2 = measVals(:,:,sampleID);
+    plot(tmp1(:),tmp2(:),'.');
+
+end
+end
+
 
 % Convergence
 figure;

@@ -1,4 +1,4 @@
-function [ reflectanceEst, rfCoeffs, fluorescenceEst, flCoeffs, absorptanceEst, abCoeffs, donaldsonMat, predRefl, predFl, hist  ] = fiRecReflAndMultiFl( measVals, cameraMat, illuminant, cameraGain, cameraOffset, basisRefl, basisEm, basisEx, alpha, beta, gamma, eta, varargin)
+function [ reflectanceEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, donaldsonMat, predRefl, predFl, hist  ] = fiRecReflAndMultiFl( measVals, cameraMat, illuminant, cameraGain, cameraOffset, basisRefl, basisEm, basisEx, alpha, beta, gamma, eta, varargin)
 
 nSamples = size(measVals,3);
 nFilters = size(cameraMat,2);
@@ -11,11 +11,11 @@ nBasisEx = size(basisEx,2);
 reflectanceEst = zeros(nWaves,nSamples);
 rfCoeffs = zeros(nBasisRefl,nSamples);
 
-fluorescenceEst = zeros(nWaves,nSamples);
-flCoeffs = zeros(nBasisEm,nSamples);
+emEst = zeros(nWaves,nSamples);
+emCoeffs = zeros(nBasisEm,nSamples);
 
-absorptanceEst = zeros(nWaves,nSamples);
-abCoeffs = zeros(nBasisEx,nSamples);
+exEst = zeros(nWaves,nSamples);
+exCoeffs = zeros(nBasisEx,nSamples);
 
 donaldsonMat = cell(nSamples,1);
 
@@ -30,7 +30,7 @@ for i=1:nSamples
     
     input = measVals(:,:,i) - cameraOffset(:,:,i);
 
-    [reflectanceEst(:,i), rfCoeffs(:,i), fluorescenceEst(:,i), flCoeffs(:,i), absorptanceEst(:,i), abCoeffs(:,i), donaldsonMat{i}, predRefl(:,:,i), predFl(:,:,i), hist{i}] = ...
+    [reflectanceEst(:,i), rfCoeffs(:,i), emEst(:,i), emCoeffs(:,i), exEst(:,i), exCoeffs(:,i), donaldsonMat{i}, predRefl(:,:,i), predFl(:,:,i), hist{i}] = ...
     fiRecOneReflAndMultiFl(input,cameraMat,illuminant,cameraGain(:,:,i),basisRefl,basisEm,basisEx,alpha,beta,gamma,eta,varargin{:});
     
     fprintf('Done!\n');

@@ -35,7 +35,15 @@ switch param
 
         
         for i=1:allFluorophores
-            flScene.fluorophores(i) = fluorophoreSet(flScene.fluorophores(i),'qe',val/nFluorophores);
+            if isscalar(val)
+                % If we provide a scalr qe then we set the same value at
+                % all spatial locations
+                flScene.fluorophores(i) = fluorophoreSet(flScene.fluorophores(i),'qe',val/nFluorophores);
+            else
+                % If it is a matrix, then each fluorophore get set a
+                % specific value
+                flScene.fluorophores(i) = fluorophoreSet(flScene.fluorophores(i),'qe',val(i));
+            end
         end
         
     case 'fluorophores'

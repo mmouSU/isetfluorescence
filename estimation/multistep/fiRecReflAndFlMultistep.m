@@ -65,6 +65,8 @@ for i=1:nSamples
     nF = max(exEst(:,i));
     exEst(:,i) = exEst(:,i)/nF;
     emEst(:,i) = emEst(:,i)*nF*wf;
+    
+    % tmp = cameraGain(:,:,i).*(cameraMat'*(emEst(:,i)*exEst(:,i)')*illuminant)
 end
 
 

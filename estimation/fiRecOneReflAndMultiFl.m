@@ -160,23 +160,33 @@ rfCoeffs = reWEst;
 reflEst = basisRefl*rfCoeffs;
 
 % Fluorescence
-W = y3;
-[U,S,V] = svd(W);
+% W = y3;
+%[U,S,V] = svd(W);
 
 % We are returning the coefficients of the largest component
-emCoeffs = U(:,1)*sqrt(S(1,1));
-exCoeffs = V(:,1)*sqrt(S(1,1));
+% emCoeffs = U(:,1)*sqrt(S(1,1));
+%exCoeffs = V(:,1)*sqrt(S(1,1));
 
-% Fluorescence emission shapes
-emEst = abs(basisEm*emCoeffs);
+% Fluorescence emission and excitation shapes
+% emEst = abs(basisEm*emCoeffs);
+% exEst = abs(basisEx*exCoeffs);
 
-% Fluorescence excitation shapes
-exEst = abs(basisEx*exCoeffs);
+dMat = tril(y2,-1);
+[U,S,V] = svd(dMat);
+
+emEst = U(:,1)*sqrt(S(1,1))*sign(min(U(:,1)));
+exEst = V(:,1)*sqrt(S(1,1))*sign(min(V(:,1)));
+
+nF = max(exEst);
+exEst = exEst/nF;
+emEst = emEst*nF;
+
+emCoeffs = basisEm'*emEst;
+exCoeffs = basisEx'*exEst;
 
 % Compute the prediction
 predRefl = cameraGain.*(cameraMat'*diag(reflEst)*illuminant);
 
-dMat = tril(y2,-1);
 predFl = cameraGain.*(cameraMat'*dMat*illuminant);
 
 

@@ -5,7 +5,7 @@ clc;
 ieInit;
 
 dataset = 'McNamara-Boswell';
-flQe = 0.1;
+flQe = 1;
 height = 4;
 width = 6;
 nFluorophores = 1;

@@ -4,7 +4,7 @@ function [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, predRefl, predFl
 p = inputParser;
 p.KeepUnmatched = true;
 p.addParamValue('forceIter',false,@islogical);
-p.addParamValue('epsilon',1e-4);
+p.addParamValue('epsilon',1e-8);
 p.addParamValue('maxIter',100);
 p.parse(varargin{:});
 inputs = p.Results;
@@ -31,9 +31,7 @@ Rrefl = R*basisRefl;
 Rex = R*basisEx;
 
 % Assume some initial distribution of variables. 
-rfCoeffs = ones(nReflBasis,1);
-emCoeffs = ones(nEmBasis,1);
-exCoeffs = ones(nExBasis,1);
+exCoeffs = ones(nExBasis,1)/nExBasis;
 
 
 % Begin a biconvex problem iteration
@@ -85,12 +83,18 @@ exEst = basisEx*exCoeffs;
 
 % Now we have to re-scale the data. We follow the convention that
 % max(ex)=1, and all the scaling is incorporated in the emission.
-sf = max(exEst);
-exEst = exEst/sf;
-emEst = emEst*sf;
+
 
 
 DM = tril(emEst*exEst',-1);
+[U, S, V] = svd(DM);
+
+emEst = U(:,1)*sign(min(U(:,1)));
+exEst = S(1,1)*V(:,1)*sign(min(V(:,1)));
+
+sf = max(exEst);
+exEst = exEst/sf;
+emEst = emEst*sf;
 
 % Compute the prediction
 predRefl = cameraGain.*(cameraMat*diag(reflEst)*illuminant);

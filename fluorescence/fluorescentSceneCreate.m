@@ -12,7 +12,7 @@ p.addParamValue('peakExRange',[420 680],@isvector);
 p.addParamValue('height',1,@isscalar);
 p.addParamValue('width',1,@isscalar);
 p.addParamValue('nFluorophores',1,@isscalar);
-p.addParamValue('qe',1,@isscalar);
+p.addParamValue('qe',1,@isnumeric);
 p.addParamValue('fluorophoreIDs',1,@isnumeric);
 p.addParamValue('fluorophore',[],@isstruct);
 
