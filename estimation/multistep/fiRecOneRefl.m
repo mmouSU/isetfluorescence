@@ -3,7 +3,7 @@ function [ reflEst, reflCoeffs, E, hist ] = fiRecOneRefl( measVals, cameraMat, c
 p = inputParser;
 p.KeepUnmatched = true;
 p.addParamValue('maxIter',100);
-p.addParamValue('eps',1e-6);
+p.addParamValue('eps',1e-8);
 p.parse(varargin{:});
 
 inputs = p.Results;

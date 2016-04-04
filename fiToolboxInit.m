@@ -11,6 +11,8 @@ addpath(fullfile(fiToolboxRootPath,'data'));
 
 addpath(fullfile(fiToolboxRootPath,'estimation'));
 addpath(fullfile(fiToolboxRootPath,'estimation','multistep'));
+addpath(fullfile(fiToolboxRootPath,'estimation','nucnorm'));
+
 
 addpath(fullfile(fiToolboxRootPath,'fluorescence'));
 addpath(fullfile(fiToolboxRootPath,'io'));
@@ -19,6 +21,8 @@ addpath(fullfile(fiToolboxRootPath,'scripts'));
 addpath(fullfile(fiToolboxRootPath,'scripts','validation'));
 addpath(fullfile(fiToolboxRootPath,'scripts','simulations'));
 addpath(fullfile(fiToolboxRootPath,'scripts','experiments'));
+addpath(fullfile(fiToolboxRootPath,'scripts','plots'));
+
 
 end
 

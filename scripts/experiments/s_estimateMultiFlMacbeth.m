@@ -12,12 +12,17 @@ nReflBasis = 5;
 nExBasis = 12;
 nEmBasis = 12;
 
-alpha = 0.1;
-beta = 0.2;
-eta = 0.05;
 
-testFileName = 'Macbeth+Fl';
-backgroundFileName = 'Background';
+alpha = 2;
+beta = 5;
+eta = 0.1;
+
+% alpha = 0;
+% beta = 0;
+% eta = 0;
+
+testFileName = 'Macbeth+multiFl2';
+backgroundFileName = 'Background+multiFl';
 
 wave = 380:4:1000;
 deltaL = wave(2) - wave(1);
@@ -64,10 +69,13 @@ redTr = ieReadSpectra(fName,wave);
 fName = fullfile(fiToolboxRootPath,'data','greenFlTransmittance');
 greenTr = ieReadSpectra(fName,wave);
 
-reflRef(:,[1:4:24 2:4:24]) = diag(greenTr)*reflRef(:,[1:4:24 2:4:24]);
-reflRef(:,[3:4:24 4:4:24]) = diag(redTr)*reflRef(:,[3:4:24 4:4:24]);
+fName = fullfile(fiToolboxRootPath,'data','amberFlTransmittance');
+amberTr = ieReadSpectra(fName,wave);
 
-flQe = [0.25 0.53];
+reflRef(:,1:4:24) = diag(amberTr)*reflRef(:,1:4:24);
+reflRef(:,2:4:24) = diag(greenTr)*diag(amberTr)*reflRef(:,2:4:24);
+reflRef(:,3:4:24) = diag(greenTr)*diag(redTr)*reflRef(:,3:4:24);
+reflRef(:,4:4:24) = diag(redTr)*reflRef(:,4:4:24);
 
 % Load fluorescence data and get reference spectra
 fName = fullfile(fiToolboxRootPath,'data','redFl');
@@ -76,7 +84,36 @@ redFl = fiReadFluorophore(fName,'wave',wave);
 fName = fullfile(fiToolboxRootPath,'data','greenFl');
 greenFl = fiReadFluorophore(fName,'wave',wave);
 
-fluorophores = [greenFl; redFl];
+fName = fullfile(fiToolboxRootPath,'data','amberFl');
+amberFl = fiReadFluorophore(fName,'wave',wave);
+
+
+fluorophores(1,1,1) = amberFl;
+fluorophores(1,1,2) = amberFl;
+
+fluorophores(2,1,1) = greenFl;
+fluorophores(2,1,2) = amberFl;
+
+fluorophores(3,1,1) = greenFl;
+fluorophores(3,1,2) = redFl;
+
+fluorophores(4,1,1) = redFl;
+fluorophores(4,1,2) = redFl;
+
+
+flQe(1,1,1) = 0.25/2;
+flQe(1,1,2) = 0.25/2;
+
+flQe(2,1,1) = 0.20;
+flQe(2,1,2) = 0.14;
+
+flQe(3,1,1) = 0.20;
+flQe(3,1,2) = 0.14;
+
+flQe(4,1,1) = 0.23/2;
+flQe(4,1,2) = 0.23/2;
+
+% fluorophores = [greenFl; redFl];
 flScene = fluorescentSceneCreate('type','fromfluorophore','fluorophore',fluorophores,'wave',wave,'qe',flQe);
 
 dMatRef = fluorescentSceneGet(flScene,'donaldsonReference','sceneSize',[4 6]);
@@ -140,7 +177,7 @@ fName = fullfile(fiToolboxRootPath,'data','experiments',testFileName);
 linearVals = scaledMacbeth.*scaleMap;
 
 % Read the sensor data
-cp = [];
+cp = [51 846;1275 873;1278 81;58 61];
 measVals = zeros(nFilters,nChannels,24);
 for f=1:nFilters
     sensor = createCameraModel(f);
@@ -161,6 +198,11 @@ for f=1:nFilters
     end 
 end
 
+% measVals(1,9,:) = measVals(1,9,:) * (1.2);
+% measVals(1,10,:) = measVals(1,10,:) * (1.2);
+% measVals(1,11,:) = measVals(1,11,:) * (1.2);
+
+
 % Normalize the measured pixel intensities, so that the maxium for each 
 % patch is 1. To preserve the image formation model we need to scale camera
 % gains accordingly.
@@ -175,9 +217,17 @@ cameraGain = cameraGain./nF;
 
 [ reflEst, reflCoeffs, emEst, emCoeffs, exEst, exCoeffs, dMatEst, reflValsEst, flValsEst, hist  ] = ...
     fiRecReflAndMultiFl( measVals, camera, illuminantPhotons, cameraGain*deltaL,...
-                         cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, eta, 'maxIter',250);
+                         cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, eta, 'maxIter',200,'rescaleRho',false);
 
+dirName = fullfile(fiToolboxRootPath,'results','experiments');
+if ~exist(dirName,'dir'), mkdir(dirName); end;
 
+fName = fullfile(dirName,sprintf('multifl_%s.mat',testFileName));
+save(fName,'reflEst','reflCoeffs','emEst','emCoeffs','exEst','exCoeffs','dMatEst','reflValsEst','flValsEst','hist',...
+            'wave','alpha','beta','eta','reflRef','exRef','emRef','dMatRef','measVals');
+                     
+                     
+                     
 measValsEst = reflValsEst + flValsEst;
 
 
@@ -193,25 +243,99 @@ fprintf('Fluoresced pixel error %.3f, std %.3f\n',err,std);
 [err, std] = fiComputeError(reflEst, reflRef, '');
 fprintf('Reflectance error %.3f, std %.3f\n',err,std);
 
-[err, std] = fiComputeError(emEst, emRef, '');
-fprintf('Emission error %.3f, std %.3f\n',err,std);
+[err, std] = fiComputeError(dMatEst, dMatRef, '');
+fprintf('Donaldson matrix error %.3f, std %.3f\n',err,std);
 
-[err, std] = fiComputeError(emEst, emRef, 'normalized');
-fprintf('Emission error (normalized) %.3f, std %.3f\n',err,std);
-
-[err, std] = fiComputeError(exEst, exRef, 'normalized');
-fprintf('Excitation error %.3f, std %.3f\n',err,std);
+[err, std] = fiComputeError(dMatEst, dMatRef, 'normalized');
+fprintf('Donaldson matrix error (normalized) %.3f, std %.3f\n',err,std);
 
 
 
 %% Plot the results
 
+fName = fullfile(fiToolboxRootPath,'data','flCmap');
+load(fName);
 
 figure;
 hold all; grid on; box on;
 plot(measValsEst(:),measVals(:),'.');
 xlabel('Model predicted pixel value');
 ylabel('ISET pixel value');
+
+% Prediction for a specific filter
+fID = 1;
+tmp1 = squeeze(measValsEst(fID,:,:))';
+tmp2 = squeeze(measVals(fID,:,:))';
+maxVal = max([tmp1(:); tmp2(:)]);
+
+figure;
+for c=1:nChannels
+    subplot(4,4,c);
+    hold all; grid on; box on;
+    plot(tmp1(:,c),tmp2(:,c),'.');
+    plot(linspace(0,maxVal,10),linspace(0,maxVal,10),'r');
+    xlim([0 maxVal]);
+    ylim([0 maxVal]);
+    xlabel('Model');
+    ylabel('Measured');
+    title(sprintf('F: %i, C: %i',fID,c));
+end
+
+% Prediction for different filters
+tmp1 = reshape(measValsEst,[nFilters nChannels*nSamples])';
+tmp2 = reshape(measVals,[nFilters nChannels*nSamples])';
+maxVal = max([tmp1(:); tmp2(:)]);
+
+figure;
+for f=1:nFilters
+    subplot(3,3,f);
+    hold all; grid on; box on;
+    plot(tmp1(:,f),tmp2(:,f),'.');
+    plot(linspace(0,maxVal,10),linspace(0,maxVal,10),'r');
+    xlabel('Model');
+    ylabel('Measured');
+    title(sprintf('F: %i',f));
+    xlim([0 maxVal]);
+    ylim([0 maxVal]);
+end
+
+
+% Prediction for different chanels
+tmp1 = reshape(permute(measValsEst,[2 3 1]),[nChannels nFilters*nSamples])';
+tmp2 = reshape(permute(measVals,[2 3 1]),[nChannels nFilters*nSamples])';
+maxVal = max([tmp1(:); tmp2(:)]);
+
+figure;
+for c=1:nChannels
+    subplot(4,4,c);
+    hold all; grid on; box on;
+    plot(tmp1(:,c),tmp2(:,c),'.');
+    plot(linspace(0,maxVal,10),linspace(0,maxVal,10),'r');
+    xlabel('Model');
+    ylabel('Measured');
+    title(sprintf('C: %i',c));
+    xlim([0 maxVal]);
+    ylim([0 maxVal]);
+end
+
+% Pixel prediction per patch
+figure;
+for xx=1:6
+for yy=1:4
+
+    plotID = (yy-1)*6 + xx;
+    sampleID = (xx-1)*4 + yy;
+
+    subplot(4,6,plotID);
+    hold all; grid on; box on;
+    
+    tmp1 = measValsEst(:,:,sampleID)';
+    tmp2 = measVals(:,:,sampleID)';
+    
+    plot(tmp1,tmp2,'.');
+
+end
+end
 
 % Convergence
 figure;
@@ -269,8 +393,9 @@ for yy=1:4
 end
 end
 
-% Estimated vs. ground truth Donaldson matrics: shape
+% Estimated vs. ground truth Donaldson matrics: scale
 figure;
+set(gcf,'Colormap',flCmap);
 for xx=1:6
 for yy=1:4
 
@@ -285,7 +410,30 @@ for yy=1:4
 end
 end
 
-% Estimated vs. ground truth excitation
+
+% Estimated vs. ground truth Donaldson matrics: shape
+figure;
+set(gcf,'Colormap',flCmap);
+for xx=1:6
+for yy=1:4
+
+    plotID = (yy-1)*6 + xx;
+    sampleID = (xx-1)*4 + yy;
+
+    subplot(4,6,plotID);
+    
+    data = [dMatEst{sampleID}/max(dMatEst{sampleID}(:)) dMatRef{sampleID}/max(dMatRef{sampleID}(:))];
+    imagesc(wave,[wave wave],data);
+
+end
+end
+
+
+
+%% Donaldson matrix corss-sections (excitation);
+
+refWave = [500 512];
+
 figure;
 for xx=1:6
 for yy=1:4
@@ -294,21 +442,32 @@ for yy=1:4
     sampleID = (xx-1)*4 + yy;
 
     subplot(4,6,plotID);
-    hold all; grid on; box on;
-    plot(wave,exEst(:,sampleID),'g','LineWidth',2);
-    plot(wave,exRef(:,sampleID),'b--','LineWidth',2);
+    hold on; grid on; box on;
+    
+    tmp1 = dMatEst{sampleID}/max(dMatEst{sampleID}(:));
+    tmp2 = dMatRef{sampleID}/max(dMatRef{sampleID}(:));
+    
+    for w=1:length(refWave)
+        t1 = tmp1(wave == refWave(w),:);
+        t2 = tmp2(wave == refWave(w),:);
+    
+        % t1 = t1/max(t1);
+        % t2 = t2/max(t2);
+    
+        plot(wave,t1','g--','LineWidth',2);
+        plot(wave,t2','b--','LineWidth',2);
+    end
     xlim([min(wave) max(wave)]);
-    ylim([-0.05 1.05]);
-
-    rmse = sqrt(mean((exEst(:,sampleID) - exRef(:,sampleID)).^2));
-    title(sprintf('RMSE %.2f',rmse));
-
+    
 end
 end
 
-% Estimated vs. ground truth emission
 
-maxVal = max([emEst(:); emRef(:)]);
+%% Donaldson matrix corss-sections (emission);
+
+refWave = [448 500];
+
+
 figure;
 for xx=1:6
 for yy=1:4
@@ -317,18 +476,25 @@ for yy=1:4
     sampleID = (xx-1)*4 + yy;
 
     subplot(4,6,plotID);
-    hold all; grid on; box on;
-    plot(wave,emEst(:,sampleID),'m','LineWidth',2);
-    plot(wave,emRef(:,sampleID),'b--','LineWidth',2);
+    hold on; grid on; box on;
+    
+    tmp1 = dMatEst{sampleID}; %/max(dMatEst{sampleID}(:));
+    tmp2 = dMatRef{sampleID}; %/max(dMatRef{sampleID}(:));
+    
+    for w=1:length(refWave)
+        t1 = tmp1(:,wave == refWave(w));
+        t2 = tmp2(:,wave == refWave(w));
+    
+        % t1 = t1/max(t1);
+        % t2 = t2/max(t2);
+    
+        plot(wave,t1','g--','LineWidth',2);
+        plot(wave,t2','b--','LineWidth',2);
+    end
+
     xlim([min(wave) max(wave)]);
-    ylim([0.0 1.05*maxVal]);
-
-    rmse = sqrt(mean((emEst(:,sampleID) - emRef(:,sampleID)).^2));
-    title(sprintf('RMSE %.2f',rmse));
-
+    
 end
 end
-
-
 
 

@@ -11,8 +11,8 @@ nSamples = 24;
 nReflBasis = 5;
 nExBasis = 12;
 
-alpha = 1;
-gamma = 1;
+alpha = 0.01;
+gamma = 0.01;
 
 testFileName = 'Macbeth+Fl';
 backgroundFileName = 'Background';
