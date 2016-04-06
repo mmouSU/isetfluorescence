@@ -57,7 +57,7 @@ nFilters = size(camera,2);
 % calibRefl = ones(nWaves,1);
 
 % Load the test target reflectance
-fName = fullfile(fiToolboxRootPath,'data','experiments','macbethChart');
+fName = fullfile(fiToolboxRootPath,'data','macbethChart');
 reflRef = ieReadSpectra(fName,wave);
 
 fName = fullfile(fiToolboxRootPath,'data','redFlTransmittance');

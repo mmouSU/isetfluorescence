@@ -171,7 +171,7 @@ reflEst = basisRefl*rfCoeffs;
 % emEst = abs(basisEm*emCoeffs);
 % exEst = abs(basisEx*exCoeffs);
 
-dMat = max(tril(basisEm*y3*basisEx',-1),0);
+dMat = max(tril(basisEm*wEst*basisEx',-1),0);
 [U,S,V] = svd(dMat);
 
 emEst = U(:,1)*sqrt(S(1,1))*sign(min(U(:,1)));

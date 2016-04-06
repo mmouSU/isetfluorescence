@@ -16,9 +16,9 @@ nExBasis = 12;
 nEmBasis = 12;
 
 
-alpha = 2;
-beta = 5;
-eta = 0.1;
+alpha = 0.1;
+beta = 10;
+eta = 0.01;
 
 testFileName = 'Macbeth+multiFl2';
 backgroundFileName = 'Background+multiFl';
@@ -59,7 +59,7 @@ nFilters = size(camera,2);
 % calibRefl = ones(nWaves,1);
 
 % Load the test target reflectance
-fName = fullfile(fiToolboxRootPath,'data','experiments','macbethChart');
+fName = fullfile(fiToolboxRootPath,'data','macbethChart');
 reflRef = ieReadSpectra(fName,wave);
 
 fName = fullfile(fiToolboxRootPath,'data','redFlTransmittance');

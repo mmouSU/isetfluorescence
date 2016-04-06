@@ -13,15 +13,15 @@ nExBasis = 12;
 nEmBasis = 12;
 
 
-alpha = 2;
-beta = 5;
-eta = 0.1;
+alpha = 0.1;
+beta = 10;
+eta = 0.01;
 
 % alpha = 0;
 % beta = 0;
 % eta = 0;
 
-testFileName = 'Macbeth+multiFl2';
+testFileName = 'Macbeth+multiFl3';
 backgroundFileName = 'Background+multiFl';
 
 wave = 380:4:1000;
@@ -60,7 +60,7 @@ nFilters = size(camera,2);
 % calibRefl = ones(nWaves,1);
 
 % Load the test target reflectance
-fName = fullfile(fiToolboxRootPath,'data','experiments','macbethChart');
+fName = fullfile(fiToolboxRootPath,'data','macbethChart');
 reflRef = ieReadSpectra(fName,wave);
 
 fName = fullfile(fiToolboxRootPath,'data','redFlTransmittance');
@@ -405,7 +405,7 @@ for yy=1:4
     subplot(4,6,plotID);
     
     data = [dMatEst{sampleID} dMatRef{sampleID}];
-    imagesc(data);
+    imagesc(wave, [wave wave], data);
 
 end
 end
@@ -432,7 +432,7 @@ end
 
 %% Donaldson matrix corss-sections (excitation);
 
-refWave = [500 512];
+refWave = [512];
 
 figure;
 for xx=1:6
@@ -451,8 +451,8 @@ for yy=1:4
         t1 = tmp1(wave == refWave(w),:);
         t2 = tmp2(wave == refWave(w),:);
     
-        % t1 = t1/max(t1);
-        % t2 = t2/max(t2);
+        t1 = t1/max(t1);
+        t2 = t2/max(t2);
     
         plot(wave,t1','g--','LineWidth',2);
         plot(wave,t2','b--','LineWidth',2);
@@ -465,7 +465,7 @@ end
 
 %% Donaldson matrix corss-sections (emission);
 
-refWave = [448 500];
+refWave = [500];
 
 
 figure;
@@ -485,8 +485,8 @@ for yy=1:4
         t1 = tmp1(:,wave == refWave(w));
         t2 = tmp2(:,wave == refWave(w));
     
-        % t1 = t1/max(t1);
-        % t2 = t2/max(t2);
+        t1 = t1/max(t1);
+        t2 = t2/max(t2);
     
         plot(wave,t1','g--','LineWidth',2);
         plot(wave,t2','b--','LineWidth',2);
