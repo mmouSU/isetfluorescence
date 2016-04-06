@@ -14,12 +14,8 @@ nEmBasis = 12;
 
 
 alpha = 0.1;
-beta = 10;
+beta = 5;
 eta = 0.01;
-
-% alpha = 0;
-% beta = 0;
-% eta = 0;
 
 testFileName = 'Macbeth+multiFl3';
 backgroundFileName = 'Background+multiFl';
