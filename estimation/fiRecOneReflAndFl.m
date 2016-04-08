@@ -1,9 +1,63 @@
 function [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, predRefl, predFl, hist  ] = fiRecOneReflAndFl( measVals, cameraMat, cameraGain, illuminant, basisRefl, basisEm, basisEx, alpha, beta, gamma, varargin )
 
+% [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, predRefl, predFl, hist  ] = fiRecOneReflAndFl( measVals, cameraMat, cameraGain, illuminant, basisRefl, basisEm, basisEx, alpha, beta, gamma, ... )
+
+% This function implements the single fluorophore model and estimates the
+% reflectance, fluorescence excitation and emission spectra from pixel 
+% intensities using a bi-convex estimation algorithm. This implementation
+% contains tuning parameters to independently adjust the smoothness of the
+% excitation and emission spectra. 
+%
+% Inputs (required):
+%    measVals - a (f x c) matrix containing pixel intensities of a 
+%      surface captured with f camera channels and under c
+%      different illuminants.
+%    camera - a (w x c) matrix containing the spectral responsivity
+%      functions of the c camera channels sampled at w wavebands.
+%    cameraGain - a (f x c) matrix of linear camera model gains for each
+%      filter-channel combination.
+%    basisRefl, basisEx, basisEm - a (w x n) matrices of c linear basis
+%      functions representing reflectance, excitation and emission spectra
+%      respectively
+%    alpha - scalar tuning parameters controlling the smoothness of
+%      reflectance estimates
+%    beta - scalar tuning parameters controlling the smoothness of
+%      fluorescence excitation estimates
+%    gamma - scalar tuning parameters controlling the smoothness of
+%      fluorescence emission estimates
+%
+% Inputs (optional):
+%    'epsilon' - a scalar describing the change in the objective function
+%      value that causes the iterative algorithm to terminate (default: 1e-8)
+%    'maxIter' - maximal number of iterations of the biconvex algorithm. Two
+%      convex problems are solved for every iteration: one to estimate
+%      reflectance and emission spectrum, the other to estimate reflectance
+%      and excitation spectrum (default 100).
+%
+% Outputs:
+%    reflEst - a (w x 1) vector of the estimated surface spectral reflectance.
+%    rfCoeffs - a (s x 1) vector expressing the estimated surface spectral 
+%      reflectance in terms of the linear basis weights.
+%    emEst - a (w x 1) vector of the estimated emission spectrum.
+%    emCoeffs - a (s x 1) vector expressing the estimated surface emission 
+%      spectrum in terms of the linear basis weights.
+%    exEst - a (w x 1) vector of the estimated surface excitation spectrum.
+%    exCoeffs - a (s x 1) vector expressing the estimated surface excitation 
+%      spectrum in terms of the linear basis weights.
+%    predRefl - a (f x c) matrix of values representing the reflected
+%      light intensities for each filter-illuminant combination.
+%    predFl - a (f x c) matrix of values representing the fluoresced
+%      light intensities for each filter-illuminant combination.
+%      Specifically, for ideal, noiseless measurements the following holds
+%              predRefl + predFl = (measVals - cameraOffset)
+%    hist - structure containing the objective function values at 
+%      successive minimization steps.
+%
+% Copytight, Henryk Blasinski 2016
+
 
 p = inputParser;
 p.KeepUnmatched = true;
-p.addParamValue('forceIter',false,@islogical);
 p.addParamValue('epsilon',1e-8);
 p.addParamValue('maxIter',100);
 p.parse(varargin{:});
@@ -17,7 +71,7 @@ nWaves = size(illuminant,1);
 nFilters = size(cameraMat,2);
 nChannels = size(illuminant,2);
 
-% Create the camera linear model
+% Scale the inputs to improve numerical stability of the solution.
 cameraMat = cameraMat';
 scaleFac = max(cameraGain(:));
 cameraGain = cameraGain/scaleFac;
@@ -34,9 +88,10 @@ Rex = R*basisEx;
 exCoeffs = ones(nExBasis,1)/nExBasis;
 
 
-% Begin a biconvex problem iteration
 hist.objValsReEm = zeros(inputs.maxIter+1,1);
 hist.objValsReEx = zeros(inputs.maxIter+1,1);
+
+% Begin a biconvex problem iteration
 for i=1:inputs.maxIter
     
      
@@ -82,9 +137,11 @@ emEst = basisEm*emCoeffs;
 exEst = basisEx*exCoeffs;
 
 % Now we have to re-scale the data. We follow the convention that
-% max(ex)=1, and all the scaling is incorporated in the emission.
-
-
+% max(ex)=1, and all the scaling is incorporated in the emission. Also note
+% that we use SVD to estimate the excitation and emission spectra.
+% Technically we could return the values given directly by the weights, 
+% but since we explicitly impose lower triangularity, these results 
+% sometimes include 'bumps' that violate this condition. 
 
 DM = tril(emEst*exEst',-1);
 [U, S, V] = svd(DM);
@@ -96,7 +153,7 @@ sf = max(exEst);
 exEst = exEst/sf;
 emEst = emEst*sf;
 
-% Compute the prediction
+% Compute pixel intensities predictions
 predRefl = cameraGain.*(cameraMat*diag(reflEst)*illuminant);
 predFl = cameraGain.*(cameraMat*DM*illuminant);
 

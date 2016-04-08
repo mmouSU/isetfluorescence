@@ -61,28 +61,31 @@ switch param
         val = wave(2) - wave(1);
      
     case {'donaldsonmatrix'}
-        ex = fluorophoreGet(fl,'excitation photons');
-        em = fluorophoreGet(fl,'emission photons');
-        qe = fluorophoreGet(fl,'qe');
-        deltaL = fluorophoreGet(fl,'deltaWave');
         
-        % Apply the Stoke's constraint
-        val = qe*tril(em*ex',-1)*deltaL;
+        % If the fluorophore is defined in terms of the Donaldson matrix,
+        % then return the matrix, otherwise compute it from the excitation
+        % and emission spectra.
+        deltaL = fluorophoreGet(fl,'deltaWave');
+
+        if isfield(fl,'donaldsonMatrix')
+            val = fl.donaldsonMatrix*deltaL;
+        else
+               
+            ex = fluorophoreGet(fl,'excitation photons');
+            em = fluorophoreGet(fl,'emission photons');
+            qe = fluorophoreGet(fl,'qe');
+            
+            % Apply the Stoke's constraint
+            val = qe*tril(em*ex',-1)*deltaL;
+        end
         
     case {'photons'}
         illWave  = illuminantGet(varargin{1},'wave');
         illSpd = illuminantGet(varargin{1},'photons');
         
         fl = fluorophoreSet(fl,'wave',illWave);
-        
-        ex = fluorophoreGet(fl,'excitation photons');
-        em = fluorophoreGet(fl,'emission photons');
-        qe = fluorophoreGet(fl,'qe');
-        deltaL = fluorophoreGet(fl,'deltaWave');
-        
-        % Apply the Stoke's constraint
-        DM = qe*tril(em*ex',-1)*deltaL;
-        
+        DM = fluorophoreGet(fl,'Donaldson matrix');
+
         val = DM*illSpd;
         
     case 'nwave'

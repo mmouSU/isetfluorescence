@@ -14,6 +14,11 @@ inputs = p.Results;
 
 % Approach by Suo with our own ADMM solver 
 
+% Re-scale the numbers to improve numerical stability
+nF = max(illuminant(:));
+illuminant = illuminant/nF;
+cameraGain = cameraGain*nF;
+
 
 nFilters = size(cameraMat,2);
 nChannels = size(illuminant,2);

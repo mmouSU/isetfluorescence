@@ -13,6 +13,7 @@ p.addParamValue('solvent','',@(x)(ischar(x) || isempty(x)));
 p.addParamValue('excitation',zeros(31,1),@isnumeric);
 p.addParamValue('emission',zeros(31,1),@isnumeric);
 p.addParamValue('qe',1,@isscalar);
+p.addParamValue('DonaldsonMatrix',[],@isnumeric);
 
 p.parse(varargin{:});
 inputs = p.Results;
@@ -26,7 +27,16 @@ fl = initDefaultSpectrum(fl,'custom',inputs.wave);
 %% There is no default
 % The absence of a default could be a problem.
 
-switch ieParamFormat(inputs.type)
+type = lower(inputs.type);
+type = strrep(type,' ','');
+
+switch type
+    
+    case 'fromdonaldsonmatrix'
+        fl = fluorophoreCreate('wave',inputs.wave);
+        fl = fluorophoreSet(fl,'name',inputs.name);
+        fl = fluorophoreSet(fl,'solvent',inputs.solvent);
+        fl = fluorophoreSet(fl,'Donaldson matrix',inputs.DonaldsonMatrix);
     
     case 'custom'
     

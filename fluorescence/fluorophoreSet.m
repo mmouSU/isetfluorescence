@@ -10,7 +10,10 @@ if ~exist('param','var') || isempty(param), error('param required'); end
 if ~exist('val','var') , error('val is required'); end
 
 %%
-param = ieParamFormat(param);
+
+% Lower case and remove spaces
+param = lower(param);
+param = strrep(param,' ','');
 
 switch param
     case 'name'
@@ -28,15 +31,19 @@ switch param
         
     case {'emission photons','Emission photons','emissionphotons'}
         if length(fluorophoreGet(fl,'wave')) ~= length(val), error('Wavelength sampling mismatch'); end
+        
+        % If the fluorophore happened to be defined with a Donaldson
+        % matrix, remove the matrix from the structure;
+        if isfield(fl,'donaldsonMatrix'), 
+            fl = rmfield(fl,'donaldsonMatrix');
+        end
+        
         if sum(val<0) > 0, warning('Emission less than zero, truncating'); end
         val = max(val,0);
         
         deltaL = fluorophoreGet(fl,'deltaWave');
         qe = 1/(sum(val)*deltaL);
-        
-        if qe ~= 1, warning('Emission not normalized, adjusting qe'); end
-        % oldQe = fluorescenceGet(fl,'qe');
-        % fl = fluorophoreSet(fl,'qe',qe*oldQe);
+        if qe ~= 1, warning('Emission not normalized'); end
         
         val = val*qe;
         fl.emission = val(:);
@@ -46,6 +53,15 @@ switch param
     case {'excitationphotons','excitation photons','Excitation photons'}
         
         if length(fluorophoreGet(fl,'wave')) ~= length(val), error('Wavelength sampling mismatch'); end
+        
+        % If the fluorophore happened to be defined with a Donaldson
+        % matrix, remove the matrix from the structure;
+        if isfield(fl,'donaldsonMatrix'), 
+            fl = rmfield(fl,'donaldsonMatrix');
+        end
+        
+        
+        
         if sum(val<0) > 0, warning('Excitation less than zero, truncating'); end
         val = max(val,0);
         
@@ -53,6 +69,20 @@ switch param
         val = val/max(val);
         
         fl.excitation = val(:);
+        
+    case {'donaldsonmatrix'}
+        if length(fluorophoreGet(fl,'wave')) ~= size(val,1) || length(fluorophoreGet(fl,'wave')) ~= size(val,2)
+            error('Wavelength sampling mismatch'); 
+        end
+        
+        % Remove all fields that are relevant to one
+        if isfield(fl,'excitation'), 
+            fl = rmfield(fl,'excitation');
+            fl = rmfield(fl,'emission');
+            fl = rmfield(fl,'qe');
+        end
+        
+        fl.donaldsonMatrix = val;
         
         
     case {'wave','wavelength'}
@@ -62,12 +92,19 @@ switch param
         newW = val(:);
         fl.spectrum.wave = newW;
 
-        newExcitation = interp1(oldW,fluorophoreGet(fl,'excitation photons'),newW,'linear',0);
-        fl = fluorophoreSet(fl,'excitation photons',newExcitation);
+        % Interpolate excitation and emission spectra or the Donaldson
+        % matrix
+        if isfield(fl,'donaldsonMatrix'), 
+            newDM = interp2(oldW,oldW,fluorophoreGet(fl,'Donaldson matrix'),newW,newW,'linear',0);
+            fl = fluorophoreSet(fl,'Donaldson matrix',newDM);
+            
+        else
+            newExcitation = interp1(oldW,fluorophoreGet(fl,'excitation photons'),newW,'linear',0);
+            fl = fluorophoreSet(fl,'excitation photons',newExcitation);
         
-        newEmission = interp1(oldW,fluorophoreGet(fl,'emission photons'),newW,'linear',0);
-        fl = fluorophoreSet(fl,'emission photons',newEmission);
-        
+            newEmission = interp1(oldW,fluorophoreGet(fl,'emission photons'),newW,'linear',0);
+            fl = fluorophoreSet(fl,'emission photons',newEmission);
+        end
     
     case 'solvent'
         fl.solvent = val;
