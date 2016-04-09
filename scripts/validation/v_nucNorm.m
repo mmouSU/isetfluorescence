@@ -41,7 +41,6 @@ cvx_begin
         -3*sigma <= N-cameraOffset <= 3*sigma
 cvx_end
         
-
 %% ADMM
 
 [ Radmm, ~, ~, Fadmm, ~, ~, hist  ] = ...
@@ -62,7 +61,9 @@ xlim([0 mVal]);
 ylim([0 mVal]);
 xlabel('cvx estimate');
 ylabel('ADMM estimate');
-title('Reflectance');
+
+
+%% Nuclear norm minimization
 
 figure;
 hold on; grid on; box on;
@@ -80,4 +81,3 @@ hold all; grid on; box on;
 plot([hist.prRes hist.dualRes]);
 set(gca,'yscale','log');
 title('Convergence');
-

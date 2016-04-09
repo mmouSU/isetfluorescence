@@ -14,6 +14,7 @@ nWaves = length(wave);
 alpha = 0.01;
 sigma = 0.001;
 
+
 % Create basis function sets
 nReflBasis = 5;
 nExBasis = 12;
@@ -41,7 +42,6 @@ nFilters = size(camera,2);
 
 % Re-scale the measured values so that the maximum for each measurement is
 % 1
-       
 nSamples = size(measVals,3);
 cameraGain = repmat(cameraGain,[1 1 nSamples]);
 cameraOffset = repmat(cameraOffset,[1 1 nSamples]);
