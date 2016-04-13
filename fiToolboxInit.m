@@ -23,6 +23,7 @@ addpath(fullfile(fiToolboxRootPath,'scripts','simulations'));
 addpath(fullfile(fiToolboxRootPath,'scripts','experiments'));
 addpath(fullfile(fiToolboxRootPath,'scripts','plots'));
 
+addpath(fullfile(fiToolboxRootPath,'utilities'));
 
 end
 

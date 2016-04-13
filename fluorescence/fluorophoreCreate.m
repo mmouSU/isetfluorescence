@@ -37,6 +37,7 @@ switch type
         fl = fluorophoreSet(fl,'name',inputs.name);
         fl = fluorophoreSet(fl,'solvent',inputs.solvent);
         fl = fluorophoreSet(fl,'Donaldson matrix',inputs.DonaldsonMatrix);
+        fl = fluorophoreSet(fl,'qe',1);
     
     case 'custom'
     

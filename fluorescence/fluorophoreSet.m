@@ -27,7 +27,10 @@ switch param
         if (val > 1), warning('Qe greater than one, truncating to 1'); end
         val = min(max(val,0),1);
         
-        fl.qe = val;
+        % We only set qe for the excitation-emission representation
+        if ~isfield(fl,'donaldsonMatrix')
+            fl.qe = val;
+        end
         
     case {'emission photons','Emission photons','emissionphotons'}
         if length(fluorophoreGet(fl,'wave')) ~= length(val), error('Wavelength sampling mismatch'); end
@@ -94,8 +97,11 @@ switch param
 
         % Interpolate excitation and emission spectra or the Donaldson
         % matrix
-        if isfield(fl,'donaldsonMatrix'), 
-            newDM = interp2(oldW,oldW,fluorophoreGet(fl,'Donaldson matrix'),newW,newW,'linear',0);
+        if isfield(fl,'donaldsonMatrix'),
+            [oldWem, oldWex] = meshgrid(oldW,oldW);
+            [newWem, newWex] = meshgrid(newW,newW);
+            
+            newDM = interp2(oldWem,oldWex,fluorophoreGet(fl,'Donaldson matrix'),newWem,newWex,'linear',0);
             fl = fluorophoreSet(fl,'Donaldson matrix',newDM);
             
         else

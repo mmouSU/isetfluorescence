@@ -96,7 +96,9 @@ switch param
         val = fl.comment;
     
     case 'qe'
-        val = fl.qe;
+        if isfield(fl,'qe')
+            val = fl.qe;
+        end
         
     case 'solvent'
         val = fl.solvent;
