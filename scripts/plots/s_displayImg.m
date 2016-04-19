@@ -18,8 +18,6 @@ tmp = illuminantCreate('blackbody',wave,2000);
 illSubset = [illSubset illuminantGet(tmp,'energy')];
 
 
-
-
 dataDir = fullfile(fiToolboxRootPath,'results','experiments');
 c = 128;
 r = 103; 
@@ -62,9 +60,9 @@ for i=1:1 %size(illSubset,2)
     sceneReFl = sceneSet(sceneReFl,'name',sprintf('refl+fl - ill%i',i));
 
     vcAddObject(sceneReFl);
-    
     sceneWindow;
     
+    figure; imshow(sceneGet(sceneFl,'RGB'),'Border','tight');
     
     oi = oiCreate;
     oiRe = oiCompute(oi,sceneRe);
@@ -87,6 +85,8 @@ for i=1:1 %size(illSubset,2)
     ipReFl = ipCompute(ip,sensorReFl);
     ipReFl = ipSet(ipReFl,'name',sprintf('refl+fl - ill%i',i));
 
+    
+    figure; imshow(ipGet(ipReFl,'sensor channels').^(1/2.2));
     
     vcAddObject(ipRe);
     vcAddObject(ipFl);

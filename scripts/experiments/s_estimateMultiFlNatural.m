@@ -106,7 +106,7 @@ catch
 end
 
 
-for cc=1:nCols
+parfor cc=1:nCols
 
     
     measVals = squeeze(dsLinearVals(:,cc,:,:));
