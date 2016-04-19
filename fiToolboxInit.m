@@ -4,6 +4,8 @@ close all;
 clear all;
 clc;
 
+warning off;
+
 addpath(fullfile(fiToolboxRootPath));
 
 addpath(fullfile(fiToolboxRootPath,'camera'));
