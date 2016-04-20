@@ -101,7 +101,7 @@ cameraGain = repmat(gains,[nFilters, 1, nRows]);
 cameraOffset = zeros([nFilters, nChannels, nRows]);
 
 try
-    matlabpool open;
+    matlabpool open 30;
 catch
 end
 
@@ -115,17 +115,17 @@ parfor cc=1:nCols
     % Normalize the measured pixel intensities, so that the maxium for each 
     % patch is 1. To preserve the image formation model we need to scale camera
     % gains accordingly.
-    nF = max(max(measVals,[],1),[],2);
-    nF = repmat(nF,[nFilters nChannels 1]);
+    nF = max(measVals,[],2);
+    nF = repmat(nF,[1 nChannels 1]);
     measVals = measVals./nF;
     cameraGainCol = cameraGain./nF;
 
 
     [ reflEst, ~, emEst, ~, exEst, ~, dMatEst, reflValsEst, flValsEst, hist  ] = ...
         fiRecReflAndMultiFl( measVals, camera, illuminantPhotons, cameraGainCol*deltaL,...
-                             cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, eta, 'maxIter',250,'rescaleRho',false);
+                             cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, eta, 'maxIter',2500,'rescaleRho',false);
                          
-    fName = fullfile(dirName,sprintf('multifl_%s_col_%i.mat',testFileName,cc));
+    fName = fullfile(dirName,sprintf('multifl2_%s_col_%i.mat',testFileName,cc));
     parforSave(fName,'reflEst','emEst','exEst','dMatEst','reflValsEst','flValsEst','hist',...
                 'wave','alpha','beta','eta','measVals');
                                           

@@ -41,7 +41,7 @@ u3 = zeros(nEmBasis,nExBasis);
 sol = [];
 
 % Pre-compute useful matrices
-[~, ~, AtA1, Atb1] = generateLSMatrices(measVals,cameraMat,illuminant,cameraGain,basisRefl,basisEx,basisEm, alpha, beta, gamma);
+% [~, ~, AtA1, Atb1] = generateLSMatrices(measVals,cameraMat,illuminant,cameraGain,basisRefl,basisEx,basisEm, alpha, beta, gamma);
 lowerTr = logical(tril(ones(nWaves),-1));
 
 hist.rho = ones(inputs.maxIter+1,1);
@@ -55,23 +55,23 @@ for i=1:inputs.maxIter
     
     % Solve for reflectance and fluorescence
     
-    t1 = tic;
-    [~, ~, AtA2, Atb2] = generatePenaltyMatrices(y1-u1,y2-u2,y3-u3,basisRefl,basisEx,basisEm);
+    % t1 = tic;
+    % [~, ~, AtA2, Atb2] = generatePenaltyMatrices(y1-u1,y2-u2,y3-u3,basisRefl,basisEx,basisEm);
     
     % The iterative pcg method is 10 times faster than using function
     % handles
-    [sol, ~, hist.pcgAcc(i), hist.pcgIter(i)] = pcg(AtA1 + (hist.rho(i)/2)*AtA2,Atb1 + (hist.rho(i)/2)*Atb2,[],10000,[],[],sol);
-    tElapsed = tElapsed + toc(t1);
+    % [sol, ~, hist.pcgAcc(i), hist.pcgIter(i)] = pcg(AtA1 + (hist.rho(i)/2)*AtA2,Atb1 + (hist.rho(i)/2)*Atb2,[],10000,[],[],sol);
+    % tElapsed = tElapsed + toc(t1);
     
     
-    %{
+    
     t1 = tic;
     b = applyAtb(measVals, cameraMat, illuminant, cameraGain, basisRefl, basisEx, basisEm, y1-u1, y2-u2, y3-u3, hist.rho(i)/2);
     AtAhndl = @(x) applyAtA(x, cameraMat, illuminant, cameraGain, basisRefl, basisEx, basisEm, hist.rho(i)/2, alpha, beta, gamma);
     
     [sol, ~, hist.pcgAcc(i), hist.pcgIter(i)] = pcg(AtAhndl,b,[],10000,[],[],sol);
     tElapsed = tElapsed + toc(t1);
-    %}
+    
     
     reWEst = sol(1:nReflBasis);
     wEst = reshape(sol(nReflBasis+1:end),nEmBasis,nExBasis);

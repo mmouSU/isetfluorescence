@@ -31,8 +31,10 @@ for cc=1:c
     
     for rr=1:r
         deltaL = data.wave(2) - data.wave(1);
+        dm = data.dMatEst{rr}/deltaL;
+        dm(wave >= 650,wave >= 650) = 0;
         flArray(rr,cc) = fluorophoreCreate('type','fromdonaldsonmatrix',...
-                                         'DonaldsonMatrix',data.dMatEst{rr}/deltaL,...
+                                         'DonaldsonMatrix',dm,...
                                          'wave',data.wave);
     end
     
