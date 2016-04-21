@@ -127,7 +127,7 @@ parfor cc=1:nCols
         fiRecReflAndMultiFl( measVals, camera, illuminantPhotons, cameraGainCol*deltaL,...
                              cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, eta, 'maxIter',500,'rescaleRho',false);
                          
-    fName = fullfile(dirName,sprintf('multifl2_%s_col_%i.mat',testFileName,cc));
+    fName = fullfile(dirName,sprintf('multiFl2_%s_col_%i.mat',testFileName,cc));
     
     parforSave(fName,reflEst,emEst,exEst,dMatEst,reflValsEst,flValsEst,hist,...
                 wave,alpha,beta,eta,measVals);
