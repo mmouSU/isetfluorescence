@@ -53,9 +53,9 @@ flScene = fluorescentSceneCreate('height',height,'width',width,'wave',wave,'nFlu
 for q=1:length(flQe);
     
     fName = fullfile(fiToolboxRootPath,'data','simulations',sprintf('%s_%ix%ix%i_qe_%0.3f.mat',dataset,height,width,nFluorophores,flQe(q)));
-    if exist(fName,'file'),
-        continue;
-    end
+    % if exist(fName,'file'),
+    %     continue;
+    % end
     
     flScene = fluorescentSceneSet(flScene,'qe',flQe(q));
     
@@ -145,7 +145,7 @@ for q=1:length(flQe);
     fName = fullfile(fiToolboxRootPath,'data','simulations',sprintf('%s_%ix%ix%i_qe_%0.3f.mat',dataset,height,width,nFluorophores,flQe(q)));
     
     save(fName,'cameraGain','cameraOffset','measVals','reflRef','dMatRef','exRef','emRef','reflValsRef','flValsRef',...
-        'wave');
+        'wave','illuminant','camera','illuminantPhotons','nFilters','nChannels');
     
     %% Remove unnecessary objects
     objs = vcGetObjects('scene');

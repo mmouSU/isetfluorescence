@@ -55,7 +55,7 @@ sceneFlTemplate = fluorescentSceneCreate('type','fromfluorophore','fluorophore',
 
 %%
 
-for i=1:1 %size(illSubset,2)      
+for i=1:3      
         
     sceneRe = sceneAdjustIlluminant(sceneReTemplate,illSubset(:,i),0);
     sceneRe = sceneSet(sceneRe,'name',sprintf('refl - ill%i',i));
@@ -96,7 +96,8 @@ for i=1:1 %size(illSubset,2)
     ipReFl = ipSet(ipReFl,'name',sprintf('refl+fl - ill%i',i));
 
     
-    figure; imshow(ipGet(ipReFl,'sensor channels'));
+    figure; imshow(ipGet(ipReFl,'sensor channels').^(1/2.2));
+    imwrite(ipGet(ipReFl,'sensor channels').^(1/2.2),'testGamma.png');
     
     vcAddObject(ipRe);
     vcAddObject(ipFl);

@@ -390,6 +390,8 @@ for s=1:nSel
         plot(x,y,'Color',[0.2 0.2 0.2],'LineStyle',':','LineWidth',0.5);
     end
     
+    line([min(wave) max(wave)],ones(2,1)*exRefWave(s),'color','red','lineWidth',lw);
+    line(ones(2,1)*emRefWave(s),[min(wave) max(wave)],'color','red','lineWidth',lw);
     
     ylabel('Emission, nm','fontsize',fs);
     xlabel('Excitation, nm','fontsize',fs);
@@ -412,7 +414,7 @@ for s=1:nSel
     
     cb = colorbar([0.1 0.1  0.5  0.8]);
     set(gca,'CLim',[0 mVal]);
-    set(gca,'TickLabelFormat','%.2f');
+    % set(gca,'TickLabelFormat','%.2f');
     set(gca,'fontsize',fs-2);
     set(gcf,'OuterPosition',pos);
     set(gcf,'Units','centimeters');
