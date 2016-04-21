@@ -25,8 +25,16 @@ r = 103;
 % Load scene reflectance
 reflArray = zeros(r,c,156);
 for cc=1:c
-    fName = fullfile(dataDir,sprintf('multiFl_Natural_col_%i.mat',cc));
-    data = load(fName);
+    
+    
+    
+    fName = fullfile(dataDir,sprintf('multifl2_Natural_col_%i.mat',cc));
+    try
+        data = load(fName);
+    catch
+        fName = fullfile(dataDir,sprintf('multiFl_Natural_col_%i.mat',cc));
+        data = load(fName);
+    end
     reflArray(:,cc,:) = data.reflEst';
     
     for rr=1:r
@@ -88,7 +96,7 @@ for i=1:1 %size(illSubset,2)
     ipReFl = ipSet(ipReFl,'name',sprintf('refl+fl - ill%i',i));
 
     
-    figure; imshow(ipGet(ipReFl,'sensor channels').^(1/2.2));
+    figure; imshow(ipGet(ipReFl,'sensor channels'));
     
     vcAddObject(ipRe);
     vcAddObject(ipFl);

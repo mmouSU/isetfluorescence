@@ -20,6 +20,10 @@ lw2 = 0.5;
 sz = [1 1 5 1.5];
 sz2 = [1 1 3.5 3.5];
 
+markers = {'o','x','^'};
+colors = {'r','g','b'};
+selWaves = 1:3:length(wave);
+
 figure;
 hold on; grid off; box on;
 
@@ -67,6 +71,7 @@ print('-depsc',fName);
 
 
 %% Emission spectra
+
 spd = zeros(length(wave));
 for i=1:length(wave)
     
@@ -82,8 +87,12 @@ spd = spd*diag(1./max(spd));
 selWaveIDs = [10 40 60];
 
 figure; 
-hold on; grid off; box on;
-plot(wave,spd(:,selWaveIDs),'LineWidth',lw);
+hold all; grid off; box on;
+
+for i=1:length(selWaveIDs)
+    lg(i) = plot(wave,spd(:,selWaveIDs(i)),colors{i},'LineWidth',lw);
+    plot(wave(selWaves),spd(selWaves,selWaveIDs(i)),[markers{i} colors{i}],'LineWidth',lw,'markersize',ms/2);
+end
 xlim([min(wave) 800]);
 ylim([-0.05 1.05]);
 
@@ -100,8 +109,12 @@ for i=1:3
     legLabels{i} = sprintf('%inm',wave(selWaveIDs(i)));
 end
 
-legend(legLabels,'FontSize',fs,'location','northeast');
+lh = legend(lg,legLabels,'FontSize',fs,'location','northeast');
 
+ch = get(lh,'Children');
+set(ch(1),'Marker',markers{3},'MarkerSize',ms/2);
+set(ch(4),'Marker',markers{2},'MarkerSize',ms/2);
+set(ch(7),'Marker',markers{1},'MarkerSize',ms/2);
 
 
 
