@@ -101,7 +101,9 @@ cameraGain = repmat(gains,[nFilters, 1, nRows]);
 cameraOffset = zeros([nFilters, nChannels, nRows]);
 
 try
-    matlabpool open 30;
+    cluster = parcluster('local');
+    cluster.NumWorkers = 35;
+    pool = parpool(cluster,cluster.NumWorkers);
 catch
 end
 
@@ -113,7 +115,7 @@ parfor cc=1:nCols
     measVals = permute(measVals,[2 3 1]);
     
     % Normalize the measured pixel intensities, so that the maxium for each 
-    % patch is 1. To preserve the image formation model we need to scale camera
+    % filter is 1. To preserve the image formation model we need to scale camera
     % gains accordingly.
     nF = max(measVals,[],2);
     nF = repmat(nF,[1 nChannels 1]);
@@ -123,16 +125,17 @@ parfor cc=1:nCols
 
     [ reflEst, ~, emEst, ~, exEst, ~, dMatEst, reflValsEst, flValsEst, hist  ] = ...
         fiRecReflAndMultiFl( measVals, camera, illuminantPhotons, cameraGainCol*deltaL,...
-                             cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, eta, 'maxIter',2500,'rescaleRho',false);
+                             cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, eta, 'maxIter',500,'rescaleRho',false);
                          
-    fName = fullfile(dirName,sprintf('multifl2_%s_col_%i.mat',testFileName,cc));
-    parforSave(fName,'reflEst','emEst','exEst','dMatEst','reflValsEst','flValsEst','hist',...
-                'wave','alpha','beta','eta','measVals');
+    fName = fullfile(dirName,sprintf('multiFl2_%s_col_%i.mat',testFileName,cc));
+    
+    parforSave(fName,reflEst,emEst,exEst,dMatEst,reflValsEst,flValsEst,hist,...
+                wave,alpha,beta,eta,measVals);
                                           
 end
 
 try 
-    matlabpool close;
+    delete(pool);
 catch
 end
 

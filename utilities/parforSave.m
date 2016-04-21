@@ -6,7 +6,7 @@ function parforSave( fName, varargin )
     
     save('-mat',fName,inputname(2));
     for i=2:numel(varargin)
-        save('-mat',fName,inputname(i+1),'append');
+        save('-mat',fName,inputname(i+1),'-append');
     end
 
 end
