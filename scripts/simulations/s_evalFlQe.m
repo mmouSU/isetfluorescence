@@ -2,10 +2,6 @@ close all;
 clear all;
 clc;
 
-close all;
-clear all;
-clc;
-
 % Evaluate the accuracy on the entire dataset
 
 dataset = 'McNamara-Boswell';
@@ -54,8 +50,10 @@ emNormStd = zeros(nQe,1);
 %% The main cross-validation loop
 
 try
-    matlabpool open local
-catch 
+    cluster = parcluster('local');
+    cluster.NumWorkers = min(nQe,35);
+    pool = parpool(cluster,cluster.NumWorkers);
+catch
 end
 
 parfor i=1:nQe
@@ -70,16 +68,16 @@ parfor i=1:nQe
     
     [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, reflValsEst, flValsEst, hist  ] = ...
         fiRecReflAndFl( data.measVals, data.camera, cameraGain*deltaL, cameraOffset, data.illuminantPhotons,...
-        reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter',25 );
+        reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter',250 );
 
     
     %% Evaluation
     
     measValsEst = reflValsEst + flValsEst + cameraOffset;
     
-    [totalPixelErr(i), totalPixelStd(i)] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(data.measVals,[nChannels*nFilters,nSamples]), '');
-    [reflPixelErr(i), reflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(data.reflValsRef,[nChannels*nFilters,nSamples]), '');
-    [flPixelErr(i), flPixelStd(i)] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(data.flValsRef,[nChannels*nFilters,nSamples]), '');
+    [totalPixelErr(i), totalPixelStd(i)] = fiComputeError(reshape(measValsEst,[data.nChannels*data.nFilters,nSamples]), reshape(data.measVals,[data.nChannels*data.nFilters,nSamples]), '');
+    [reflPixelErr(i), reflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[data.nChannels*data.nFilters,nSamples]), reshape(data.reflValsRef,[data.nChannels*data.nFilters,nSamples]), '');
+    [flPixelErr(i), flPixelStd(i)] = fiComputeError(reshape(flValsEst,[data.nChannels*data.nFilters,nSamples]), reshape(data.flValsRef,[data.nChannels*data.nFilters,nSamples]), '');
     
     [reflErr(i), reflStd(i)] = fiComputeError(reflEst, data.reflRef, '');
     
@@ -93,7 +91,7 @@ parfor i=1:nQe
 end
 
 try
-    matlabpool close
+    delete(pool);
 catch
 end
 
