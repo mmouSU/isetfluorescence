@@ -3,13 +3,16 @@ clear all;
 clc;
 
 ieInit;
-
 wave = 380:4:1000;
+
+saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures','Canon G7x');
 
 fName = fullfile(fiToolboxRootPath,'camera','illuminants');
 illuminant = ieReadSpectra(fName,wave);
 
-illSubset = illuminant(:,[1 3]);
+illSubset = illuminant(:,[1 2 3]);
+
+
 tmp = illuminantCreate('blackbody',wave,10000);
 illSubset = [illSubset illuminantGet(tmp,'energy')];
 tmp = illuminantCreate('blackbody',wave,6500);
@@ -19,25 +22,19 @@ illSubset = [illSubset illuminantGet(tmp,'energy')];
 
 
 dataDir = fullfile(fiToolboxRootPath,'results','experiments');
-c = 128;
-r = 103; 
+nCols = 128;
+nRows = 103; 
 
 % Load scene reflectance
-reflArray = zeros(r,c,156);
-for cc=1:c
-    
-    
+reflArray = zeros(nRows,nCols,156);
+for cc=1:nCols
     
     fName = fullfile(dataDir,sprintf('multifl2_Natural_col_%i.mat',cc));
-    try
-        data = load(fName);
-    catch
-        fName = fullfile(dataDir,sprintf('multiFl_Natural_col_%i.mat',cc));
-        data = load(fName);
-    end
+    data = load(fName);
+    
     reflArray(:,cc,:) = data.reflEst';
     
-    for rr=1:r
+    for rr=1:nRows
         deltaL = data.wave(2) - data.wave(1);
         dm = data.dMatEst{rr}/deltaL;
         dm(wave >= 650,wave >= 650) = 0;
@@ -55,7 +52,7 @@ sceneFlTemplate = fluorescentSceneCreate('type','fromfluorophore','fluorophore',
 
 %%
 
-for i=1:3      
+for i=4:size(illSubset,2)      
         
     sceneRe = sceneAdjustIlluminant(sceneReTemplate,illSubset(:,i),0);
     sceneRe = sceneSet(sceneRe,'name',sprintf('refl - ill%i',i));
@@ -68,23 +65,30 @@ for i=1:3
     % Add fluorescence
     sceneReFl = fiSceneAddFluorescence(sceneRe,sceneFlTemplate);
     sceneReFl = sceneSet(sceneReFl,'name',sprintf('refl+fl - ill%i',i));
-
     vcAddObject(sceneReFl);
+    
+    
     sceneWindow;
     
-    figure; imshow(sceneGet(sceneFl,'RGB'),'Border','tight');
-    
+    % Simulate the entire camera pipeline
     oi = oiCreate;
     oiRe = oiCompute(oi,sceneRe);
     oiFl = oiCompute(oi,sceneFl);
     oiReFl = oiCompute(oi,sceneReFl);
     
     sensor = sensorCreate;
-    sensor = sensorSetSizeToFOV(sensor,9,sceneRe,oiRe);
+    sensor = sensorSetSizeToFOV(sensor,[sceneGet(sceneRe,'fov horizontal') sceneGet(sceneRe,'fov vertical')],sceneRe,oi);
+    
+    sensorReFl = sensorCompute(sensor,oiReFl);
+    expTime = sensorGet(sensorReFl,'exposure time');
+    
+    % We want all the images to be exposed the same way. The
+    % reflectance+fluorescence image will always have the strongest signal.
+    sensor = sensorSet(sensor,'exposure time',expTime);
+    sensor = sensorSet(sensor,'auto exposure',0);
     
     sensorRe = sensorCompute(sensor,oiRe);
     sensorFl = sensorCompute(sensor,oiFl);
-    sensorReFl = sensorCompute(sensor,oiReFl);
     
     ip = ipCreate;
     ipRe = ipCompute(ip,sensorRe);
@@ -95,9 +99,20 @@ for i=1:3
     ipReFl = ipCompute(ip,sensorReFl);
     ipReFl = ipSet(ipReFl,'name',sprintf('refl+fl - ill%i',i));
 
+    lRGBRe = ipGet(ipRe,'sensor channels');
+    lRGBFl = ipGet(ipFl,'sensor channels');
+    lRGBReFl = ipGet(ipReFl,'sensor channels');
+
     
-    figure; imshow(ipGet(ipReFl,'sensor channels').^(1/2.2));
-    imwrite(ipGet(ipReFl,'sensor channels').^(1/2.2),'testGamma.png');
+    
+    fName = fullfile(saveDir,sprintf('Light_%i_re.png',i));
+    imwrite(lRGBRe,fName);
+    fName = fullfile(saveDir,sprintf('Light_%i_fl.png',i));
+    imwrite(lRGBFl,fName);
+    fName = fullfile(saveDir,sprintf('Light_%i_reFl.png',i));
+    imwrite(lRGBReFl,fName);
+    
+    figure; imshow([lRGBRe lRGBFl lRGBReFl]);
     
     vcAddObject(ipRe);
     vcAddObject(ipFl);
