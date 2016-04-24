@@ -79,7 +79,9 @@ pixelStd = zeros(maxEmBasis,maxExBasis);
 
 
 try
-    matlabpool open
+    cluster = parcluster('local');
+    cluster.NumWorkers = min(numel(emBasisGrid),35);
+    pool = parpool(cluster,cluster.NumWorkers);
 catch
 end
 
@@ -112,7 +114,7 @@ save(fName,'pixelErr','pixelStd','dMatErr','dMatStd','reflErr','reflStd',...
 
 
 try
-    matlabpool close
+    delete(pool);
 catch
 end
 
