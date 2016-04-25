@@ -8,7 +8,7 @@ deltaL = wave(2) - wave(1);
 
 alpha = 0.001;
 beta = 0.001;
-nu = 0.001;
+
 flQe = 0.5;
 nFluorophores = 1;
 dataset = 'McNamara-Boswell';
@@ -45,9 +45,10 @@ flScene = fluorescentSceneCreate('height',height,'width',width,'wave',wave,'qe',
                                  'peakEmRange',[wave(5) wave(end-5)],...
                                  'peakExRange',[wave(5) wave(end-5)],...
                                  'dataSet',dataset);
-         
-dMatRef = fluorescentSceneGet(flScene,'Donaldson reference');        
-
+                             
+dMatRef = fluorescentSceneGet(flScene,'Donaldson reference');         
+exRef = fluorescentSceneGet(flScene,'excitation reference');
+emRef = fluorescentSceneGet(flScene,'emission reference');
 
 [reflValsRef, flValsRef] = fiComputeReflFlContrib(camera,illuminant,cameraGain*deltaL,reflRef,dMatRef);
 measVals = reflValsRef + flValsRef;
@@ -71,8 +72,11 @@ maxEmBasis = 25;
 reflErr = zeros(maxEmBasis,maxExBasis);
 reflStd = zeros(maxEmBasis,maxExBasis);
 
-dMatErr = zeros(maxEmBasis,maxExBasis);
-dMatStd = zeros(maxEmBasis,maxExBasis);
+exNormErr = zeros(maxEmBasis,maxExBasis);
+exNormStd = zeros(maxEmBasis,maxExBasis);
+
+emNormErr = zeros(maxEmBasis,maxExBasis);
+emNormStd = zeros(maxEmBasis,maxExBasis);
 
 pixelErr = zeros(maxEmBasis,maxExBasis);
 pixelStd = zeros(maxEmBasis,maxExBasis);
@@ -91,10 +95,10 @@ parfor i=1:numel(emBasisGrid);
     exBasis = createBasisSet('excitation','wave',wave','n',exBasisGrid(i));
     emBasis = createBasisSet('emission','wave',wave','n',emBasisGrid(i));
     
-    [ reflEst, ~, emEst, ~, exEst, ~, dMatEst, reflValsEst, flValsEst, hist  ] = ...
-    fiRecReflAndMultiFl( measVals, camera, illuminant, cameraGain*deltaL,...
-                         cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, nu, 'maxIter',2500,'rescaleRho',false);
-
+    
+    [ reflEst, ~, emEst, ~, exEst, ~, reflValsEst, flValsEst, hist  ] = ...
+        fiRecReflAndFl( measVals, camera, cameraGain*deltaL, cameraOffset, illuminant,...
+        reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter', 250 );
 
     measValsEst = reflValsEst + flValsEst + cameraOffset;
 
@@ -102,14 +106,15 @@ parfor i=1:numel(emBasisGrid);
 
     [reflErr(i), reflStd(i)] = fiComputeError(reflEst, reflRef, '');
 
-    [dMatErr(i), dMatStd(i)] = fiComputeError(dMatEst, dMatRef, 'normalized');
-                  
+    [exNormErr(i), exNormStd(i)] = fiComputeError(exEst, exRef, 'normalized');
+    [emNormErr(i), emNormStd(i)] = fiComputeError(emEst, emRef, 'normalized');
+            
 
 end
 
-fName = fullfile(fiToolboxRootPath,'results','evaluation','multiFl_nBasis.mat');
-save(fName,'pixelErr','pixelStd','dMatErr','dMatStd','reflErr','reflStd',...
-           'exBasisGrid','emBasisGrid','alpha','beta','nu','dMatRef','reflRef',...
+fName = fullfile(fiToolboxRootPath,'results','evaluation','fl_nBasis.mat');
+save(fName,'pixelErr','pixelStd','exNormErr','exNormStd','emNormErr','exNormStd','reflErr','reflStd',...
+           'exBasisGrid','emBasisGrid','alpha','beta','exRef','emRef','reflRef',...
            'nReflBasis');
 
 
