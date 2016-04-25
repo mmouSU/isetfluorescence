@@ -10,16 +10,14 @@ saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figure
 fName = fullfile(fiToolboxRootPath,'camera','illuminants');
 illuminant = ieReadSpectra(fName,wave);
 
-illSubset = illuminant(:,[1 2 3]);
+illSubset = illuminant(:,[2 6]);
 
-
-tmp = illuminantCreate('blackbody',wave,10000);
-illSubset = [illSubset illuminantGet(tmp,'energy')];
-tmp = illuminantCreate('blackbody',wave,6500);
-illSubset = [illSubset illuminantGet(tmp,'energy')];
-tmp = illuminantCreate('blackbody',wave,2000);
-illSubset = [illSubset illuminantGet(tmp,'energy')];
-
+fName = fullfile(fiToolboxRootPath,'data','Broadband9800K');
+illSubset = [illSubset, ieReadSpectra(fName,wave)]; 
+fName = fullfile(fiToolboxRootPath,'data','Broadband6500K');
+illSubset = [illSubset, ieReadSpectra(fName,wave)];
+fName = fullfile(fiToolboxRootPath,'data','Broadband2000K');
+illSubset = [illSubset, ieReadSpectra(fName,wave)];
 
 dataDir = fullfile(fiToolboxRootPath,'results','experiments');
 nCols = 128;
@@ -50,9 +48,14 @@ end
 sceneReTemplate = sceneReflectanceArray(reflArray,1,wave);
 sceneFlTemplate = fluorescentSceneCreate('type','fromfluorophore','fluorophore',flArray);
 
+% Camera filter transmissivities
+fName = fullfile(isetRootPath,'data','sensor','colorfilters','NikonD70');
+cfa = ieReadSpectra(fName,wave);
+
+
 %%
 
-for i=4:size(illSubset,2)      
+for i=1:size(illSubset,2)      
         
     sceneRe = sceneAdjustIlluminant(sceneReTemplate,illSubset(:,i),0);
     sceneRe = sceneSet(sceneRe,'name',sprintf('refl - ill%i',i));
@@ -77,6 +80,8 @@ for i=4:size(illSubset,2)
     oiReFl = oiCompute(oi,sceneReFl);
     
     sensor = sensorCreate;
+    sensor = sensorSet(sensor,'wave',wave);
+    sensor = sensorSet(sensor,'filter transmissivities',cfa);
     sensor = sensorSetSizeToFOV(sensor,[sceneGet(sceneRe,'fov horizontal') sceneGet(sceneRe,'fov vertical')],sceneRe,oi);
     
     sensorReFl = sensorCompute(sensor,oiReFl);
@@ -105,11 +110,11 @@ for i=4:size(illSubset,2)
 
     
     
-    fName = fullfile(saveDir,sprintf('Light_%i_re.png',i));
+    fName = fullfile(saveDir,sprintf('RenderedLight_%i_re.png',i));
     imwrite(lRGBRe,fName);
-    fName = fullfile(saveDir,sprintf('Light_%i_fl.png',i));
+    fName = fullfile(saveDir,sprintf('RenderedLight_%i_fl.png',i));
     imwrite(lRGBFl,fName);
-    fName = fullfile(saveDir,sprintf('Light_%i_reFl.png',i));
+    fName = fullfile(saveDir,sprintf('RenderedLight_%i_reFl.png',i));
     imwrite(lRGBReFl,fName);
     
     figure; imshow([lRGBRe lRGBFl lRGBReFl]);
@@ -119,5 +124,5 @@ for i=4:size(illSubset,2)
     vcAddObject(ipReFl);
 
     ipWindow;
-    
+    drawnow;
 end
