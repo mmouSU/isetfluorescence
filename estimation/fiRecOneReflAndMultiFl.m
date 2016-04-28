@@ -9,6 +9,8 @@ p.addParamValue('rescaleRho',true);
 p.addParamValue('mu',10,@isscalar);
 p.addParamValue('epsilon',1e-6);
 p.addParamValue('nFluorophores',0);
+p.addParamValue('dMatRef',[]);
+p.addParamValue('reflRef',[]);
 p.parse(varargin{:});
 inputs = p.Results;
 
@@ -49,6 +51,17 @@ hist.prRes = zeros(inputs.maxIter+1,1);
 hist.dualRes = zeros(inputs.maxIter+1,1);
 hist.pcgIter = zeros(inputs.maxIter,1);
 hist.pcgAcc = zeros(inputs.maxIter,1);
+
+hist.pixelErr = zeros(inputs.maxIter,1);
+
+if ~isempty(inputs.dMatRef);
+    hist.dMatErr = zeros(inputs.maxIter,1);
+end
+
+if ~isempty(inputs.reflRef);
+    hist.reflErr = zeros(inputs.maxIter,1);
+end
+
 
 tElapsed = 0; t2 = tic;
 for i=1:inputs.maxIter
@@ -152,6 +165,31 @@ for i=1:inputs.maxIter
     y1minus = y1;
     y2minus = y2;
     y3minus = y3;
+    
+    
+    %% Compute approximation error
+    % The opitmization is done, let's compute the estimates
+    rfCoeffs = reWEst;
+    reflEst = basisRefl*rfCoeffs;
+        
+    dMat = max(tril(basisEm*wEst*basisEx',-1),0);
+
+    % Compute the prediction
+    predRefl = cameraGain.*(cameraMat'*diag(reflEst)*illuminant);
+    predFl = cameraGain.*(cameraMat'*dMat*illuminant);
+    
+    
+    if ~isempty(inputs.dMatRef)
+        hist.dMatErr(i) = fiComputeError(dMat(:),inputs.dMatRef(:),'normalized');
+    end
+    
+    if ~isempty(inputs.reflRef)
+        hist.reflErr(i) = fiComputeError(reflEst,inputs.reflRef,'');
+    end
+    
+    
+    hist.pixelErr(i) = fiComputeError(predRefl(:) + predFl(:),measVals(:),'');
+    
     
 end
 

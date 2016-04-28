@@ -60,6 +60,9 @@ p = inputParser;
 p.KeepUnmatched = true;
 p.addParamValue('epsilon',1e-8);
 p.addParamValue('maxIter',100);
+p.addParamValue('reflRef',[]);
+p.addParamValue('exRef',[]);
+p.addParamValue('emRef',[]);
 p.parse(varargin{:});
 inputs = p.Results;
 
@@ -90,6 +93,18 @@ exCoeffs = ones(nExBasis,1)/nExBasis;
 
 hist.objValsReEm = zeros(inputs.maxIter+1,1);
 hist.objValsReEx = zeros(inputs.maxIter+1,1);
+
+hist.pixelErr = zeros(inputs.maxIter+1,1);
+if ~isempty(inputs.reflRef)
+    hist.reflErr = zeros(inputs.maxIter+1,1);
+end
+if ~isempty(inputs.exRef)
+    hist.exErr = zeros(inputs.maxIter+1,1);
+end
+if ~isempty(inputs.emRef)
+    hist.emErr = zeros(inputs.maxIter+1,1);
+end
+
 
 % Begin a biconvex problem iteration
 for i=1:inputs.maxIter
@@ -123,6 +138,35 @@ for i=1:inputs.maxIter
     if abs(hist.objValsReEm(i) - hist.objValsReEx(i)) <= inputs.epsilon
         break;
     end
+    
+    %% Copute errors (if the reference is provided)
+    
+    % Estimate Reflectnace
+    reflEst = basisRefl*(rfCoeffs);
+    if ~isempty(inputs.reflRef)
+        hist.reflErr(i) = fiComputeError(reflEst,inputs.reflRef,'');
+    end
+
+    % Estimate Fluorescence shape
+    emEst = basisEm*emCoeffs;
+    exEst = basisEx*exCoeffs;
+    
+    if ~isempty(inputs.exRef)
+        hist.exErr(i) = fiComputeError(exEst,inputs.exRef,'normalized');
+    end
+    if ~isempty(inputs.emRef)
+        hist.emErr(i) = fiComputeError(emEst,inputs.emRef,'normalized');
+    end
+
+
+    DM = tril(emEst*exEst',-1);
+    % Compute pixel intensities predictions
+    predRefl = cameraGain.*(cameraMat*diag(reflEst)*illuminant);
+    predFl = cameraGain.*(cameraMat*DM*illuminant);
+    
+    hist.pixelErr(i) = fiComputeError(predRefl(:) + predFl(:),measVals(:),'');
+    
+    
    
 end
 

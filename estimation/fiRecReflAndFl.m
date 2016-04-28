@@ -54,6 +54,14 @@ function [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, predRefl, predFl
 % Copyright, Henryk Blasinski 2016.
 
 
+p = inputParser;
+p.KeepUnmatched = true;
+p.addParamValue('reflRef',[]);
+p.addParamValue('exRef',[]);
+p.addParamValue('emRef',[]);
+p.parse(varargin{:});
+inputs = p.Results;
+
 nSamples = size(measVals,3);
 nFilters = size(camera,2);
 nChannels = size(illuminant,2);
@@ -81,8 +89,26 @@ for i=1:nSamples
 
     input = measVals(:,:,i) - cameraOffset(:,:,i);
     
+    if ~isempty(inputs.exRef)
+        exRef = inputs.exRef(:,i);
+    else
+        exRef = [];
+    end
+    if ~isempty(inputs.emRef)
+        emRef = inputs.emRef(:,i);
+    else
+        emRef = [];
+    end
+    
+    if ~isempty(inputs.reflRef);
+        reflRef = inputs.reflRef(:,i);
+    else
+        reflRef = [];
+    end
+    
     [reflEst(:,i), rfCoeffs(:,i), emEst(:,i), emCoeffs(:,i), exEst(:,i), exCoeffs(:,i), predRefl(:,:,i), predFl(:,:,i), hist{i}] = ...
-        fiRecOneReflAndFl(input,camera,cameraGain(:,:,i),illuminant,basisRefl,basisEm,basisEx,alpha,beta,gamma,varargin{:});
+        fiRecOneReflAndFl(input,camera,cameraGain(:,:,i),illuminant,basisRefl,basisEm,basisEx,alpha,beta,gamma,varargin{:},'reflRef',reflRef,...
+        'exRef',exRef,'emRef',emRef);
 
     nIter = length(hist{i}.objValsReEm);
 

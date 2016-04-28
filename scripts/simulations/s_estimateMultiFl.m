@@ -1,5 +1,5 @@
 close all;
-clear all;
+clear variables;
 clc;
 
 inFName = 'McNamara-Boswell_4x6x1_qe_0.10';
@@ -47,7 +47,8 @@ cameraOffset = repmat(cameraOffset,[1 1 nSamples]);
 
 [ reflEst, reflCoeffs, emEst, emCoeffs, exEst, exCoeffs, dMatEst, reflValsEst, flValsEst, hist  ] = ...
     fiRecReflAndMultiFl( measVals, camera, illuminant, cameraGain*deltaL,...
-                         cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, nu, 'maxIter',250);
+                         cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, nu, 'maxIter',250,...
+                         'dMatRef',dMatRef,'reflRef',reflRef);
 
 
 
@@ -101,6 +102,25 @@ for yy=1:4
     set(gca,'yscale','log');
 end
 end
+
+% Errors
+
+pixelErr = zeros(250,1);
+dMatErr = zeros(250,1);
+reflErr = zeros(250,1);
+
+for i=1:24
+    pixelErr = pixelErr + hist{i}.pixelErr;
+    dMatErr = dMatErr + hist{i}.dMatErr;
+    reflErr = reflErr + hist{i}.reflErr;
+end
+
+figure; 
+hold on; grid on; box on;
+plot([pixelErr, dMatErr, reflErr]);
+set(gca,'yscale','log');
+set(gca,'xscale','log');
+
 
 % Estimated vs. ground truth reflectance
 figure;

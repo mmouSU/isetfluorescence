@@ -4,8 +4,12 @@ clc;
 
 ieInit;
 wave = 380:4:1000;
+nWaves = length(wave);
 
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures','Canon G7x');
+saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures','Canon G7x V2');
+if ~exist(saveDir,'dir')
+    mkdir(saveDir);
+end
 
 fName = fullfile(fiToolboxRootPath,'camera','illuminants');
 illuminant = ieReadSpectra(fName,wave);
@@ -48,8 +52,13 @@ end
 sceneReTemplate = sceneReflectanceArray(reflArray,1,wave);
 sceneFlTemplate = fluorescentSceneCreate('type','fromfluorophore','fluorophore',flArray);
 
+
+fName = fullfile(fiToolboxRootPath,'data','macbethChart');
+refl = ieReadSpectra(fName,wave);
+sceneMacbeth = sceneReflectanceArray(reshape(refl',[4 6 nWaves]),10,wave);
+
 % Camera filter transmissivities
-fName = fullfile(isetRootPath,'data','sensor','colorfilters','NikonD70');
+fName = fullfile(isetRootPath,'data','sensor','colorfilters','Canon600D');
 cfa = ieReadSpectra(fName,wave);
 
 
@@ -57,6 +66,9 @@ cfa = ieReadSpectra(fName,wave);
 
 for i=1:size(illSubset,2)      
         
+    sceneMacbeth = sceneAdjustIlluminant(sceneMacbeth,illSubset(:,i),0);
+    vcAddObject(sceneMacbeth);
+    
     sceneRe = sceneAdjustIlluminant(sceneReTemplate,illSubset(:,i),0);
     sceneRe = sceneSet(sceneRe,'name',sprintf('refl - ill%i',i));
     vcAddObject(sceneRe);
@@ -78,11 +90,15 @@ for i=1:size(illSubset,2)
     oiRe = oiCompute(oi,sceneRe);
     oiFl = oiCompute(oi,sceneFl);
     oiReFl = oiCompute(oi,sceneReFl);
+    oiMacbeth = oiCompute(oi,sceneMacbeth);
     
     sensor = sensorCreate;
     sensor = sensorSet(sensor,'wave',wave);
     sensor = sensorSet(sensor,'filter transmissivities',cfa);
     sensor = sensorSetSizeToFOV(sensor,[sceneGet(sceneRe,'fov horizontal') sceneGet(sceneRe,'fov vertical')],sceneRe,oi);
+    
+    sensorMacbeth = sensorCompute(sensor,oiMacbeth);
+
     
     sensorReFl = sensorCompute(sensor,oiReFl);
     expTime = sensorGet(sensorReFl,'exposure time');
@@ -104,10 +120,12 @@ for i=1:size(illSubset,2)
     ipReFl = ipCompute(ip,sensorReFl);
     ipReFl = ipSet(ipReFl,'name',sprintf('refl+fl - ill%i',i));
 
+    ipMacbeth = ipCompute(ip,sensorMacbeth);
+    
     lRGBRe = ipGet(ipRe,'sensor channels');
     lRGBFl = ipGet(ipFl,'sensor channels');
     lRGBReFl = ipGet(ipReFl,'sensor channels');
-
+    lRGBMacbeth = ipGet(ipMacbeth,'sensor channels');
     
     
     fName = fullfile(saveDir,sprintf('RenderedLight_%i_re.png',i));
@@ -116,8 +134,22 @@ for i=1:size(illSubset,2)
     imwrite(lRGBFl,fName);
     fName = fullfile(saveDir,sprintf('RenderedLight_%i_reFl.png',i));
     imwrite(lRGBReFl,fName);
+    fName = fullfile(saveDir,sprintf('RenderedLight_%i_Macbeth.png',i));
+    imwrite(lRGBMacbeth,fName);
     
-    figure; imshow([lRGBRe lRGBFl lRGBReFl]);
+    fName = fullfile(saveDir,sprintf('RenderedLight_%i_re_XYZ.mat',i));
+    XYZre = imresize(ieXYZFromPhotons(sceneGet(sceneRe,'photons'),wave),[size(lRGBRe,1) size(lRGBRe,2)]);
+    save(fName,'XYZre');
+    fName = fullfile(saveDir,sprintf('RenderedLight_%i_fl_XYZ.mat',i));
+    XYZfl = imresize(ieXYZFromPhotons(sceneGet(sceneFl,'photons'),wave),[size(lRGBFl,1) size(lRGBFl,2)]);
+    save(fName,'XYZfl');
+    fName = fullfile(saveDir,sprintf('RenderedLight_%i_reFl_XYZ.mat',i));
+    XYZreFl = imresize(ieXYZFromPhotons(sceneGet(sceneReFl,'photons'),wave),[size(lRGBReFl,1) size(lRGBReFl,2)]);
+    save(fName,'XYZreFl');
+
+    
+    
+    figure; imshow([lRGBRe lRGBFl lRGBReFl lRGBMacbeth]);
     
     vcAddObject(ipRe);
     vcAddObject(ipFl);

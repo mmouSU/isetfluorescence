@@ -23,7 +23,7 @@ hold all; grid on; box on;
 colormap(colors);
 barwitherr([totalPixelStd(:), reflStd(:),exNormStd(:), emNormStd(:)]/sqrt(24),[totalPixelErr(:), reflErr(:), exNormErr(:), emNormErr(:)]);
 xlabel('Stokes shift interval, nm','fontsize',fs);
-ylabel('Scaled RMSE','fontsize',fs);
+ylabel('RMSE','fontsize',fs);
 set(gca,'XTick',1:4);
 set(gca,'XTickLabel',{'0-25','25-50','50-75','75-100'});
 set(gca,'fontsize',fs-2);

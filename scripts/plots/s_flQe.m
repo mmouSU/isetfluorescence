@@ -25,7 +25,7 @@ set(gca,'fontsize',fs-2);
 set(gcf,'PaperUnits','centimeters');
 set(gcf,'PaperPosition',sz);
 xlabel('Practical efficiency','fontsize',fs);
-ylabel('Scaled RMSE','fontsize',fs);
+ylabel('RMSE','fontsize',fs);
 lg = legend('Pixel','Reflectance','Excitation','Emission','location','northeast','fontsize',fs-2);
 set(lg,'location','northeast');
 grid minor;
