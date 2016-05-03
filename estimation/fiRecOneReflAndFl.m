@@ -63,6 +63,7 @@ p.addParamValue('maxIter',100);
 p.addParamValue('reflRef',[]);
 p.addParamValue('exRef',[]);
 p.addParamValue('emRef',[]);
+p.addParamValue('pixelRef',false);
 p.parse(varargin{:});
 inputs = p.Results;
 
@@ -94,7 +95,9 @@ exCoeffs = ones(nExBasis,1)/nExBasis;
 hist.objValsReEm = zeros(inputs.maxIter+1,1);
 hist.objValsReEx = zeros(inputs.maxIter+1,1);
 
-hist.pixelErr = zeros(inputs.maxIter+1,1);
+if inputs.pixelRef
+    hist.pixelErr = zeros(inputs.maxIter+1,1);
+end
 if ~isempty(inputs.reflRef)
     hist.reflErr = zeros(inputs.maxIter+1,1);
 end
@@ -142,30 +145,35 @@ for i=1:inputs.maxIter
     %% Copute errors (if the reference is provided)
     
     % Estimate Reflectnace
-    reflEst = basisRefl*(rfCoeffs);
     if ~isempty(inputs.reflRef)
+        reflEst = basisRefl*(rfCoeffs);
         hist.reflErr(i) = fiComputeError(reflEst,inputs.reflRef,'');
     end
 
     % Estimate Fluorescence shape
-    emEst = basisEm*emCoeffs;
-    exEst = basisEx*exCoeffs;
     
     if ~isempty(inputs.exRef)
+        exEst = basisEx*exCoeffs;
         hist.exErr(i) = fiComputeError(exEst,inputs.exRef,'normalized');
     end
     if ~isempty(inputs.emRef)
+        emEst = basisEm*emCoeffs;
         hist.emErr(i) = fiComputeError(emEst,inputs.emRef,'normalized');
     end
 
+    if inputs.pixelRef
+        emEst = basisEm*emCoeffs;
+        exEst = basisEx*exCoeffs;
 
-    DM = tril(emEst*exEst',-1);
-    % Compute pixel intensities predictions
-    predRefl = cameraGain.*(cameraMat*diag(reflEst)*illuminant);
-    predFl = cameraGain.*(cameraMat*DM*illuminant);
-    
-    hist.pixelErr(i) = fiComputeError(predRefl(:) + predFl(:),measVals(:),'');
-    
+        reflEst = basisRefl*(rfCoeffs);
+        
+        DM = tril(emEst*exEst',-1);
+        % Compute pixel intensities predictions
+        predRefl = cameraGain.*(cameraMat*diag(reflEst)*illuminant);
+        predFl = cameraGain.*(cameraMat*DM*illuminant);
+        
+        hist.pixelErr(i) = fiComputeError(predRefl(:) + predFl(:),measVals(:),'');
+    end
     
    
 end

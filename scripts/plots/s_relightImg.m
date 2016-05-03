@@ -22,6 +22,8 @@ fName = fullfile(fiToolboxRootPath,'data','Broadband6500K');
 illSubset = [illSubset, ieReadSpectra(fName,wave)];
 fName = fullfile(fiToolboxRootPath,'data','Broadband2000K');
 illSubset = [illSubset, ieReadSpectra(fName,wave)];
+fName = fullfile(fiToolboxRootPath,'data','NarrowbandBlue');
+illSubset = [illSubset, ieReadSpectra(fName,wave)];
 
 dataDir = fullfile(fiToolboxRootPath,'results','experiments');
 nCols = 128;
@@ -127,6 +129,11 @@ for i=1:size(illSubset,2)
     lRGBReFl = ipGet(ipReFl,'sensor channels');
     lRGBMacbeth = ipGet(ipMacbeth,'sensor channels');
     
+    sRGBRe = ipGet(ipRe,'data srgb');
+    sRGBFl = ipGet(ipFl,'data srgb');
+    sRGBReFl = ipGet(ipReFl,'data srgb');
+    sRGBMacbeth = ipGet(ipMacbeth,'data srgb');
+    
     
     fName = fullfile(saveDir,sprintf('RenderedLight_%i_re.png',i));
     imwrite(lRGBRe,fName);
@@ -150,6 +157,8 @@ for i=1:size(illSubset,2)
     
     
     figure; imshow([lRGBRe lRGBFl lRGBReFl lRGBMacbeth]);
+    figure; imshow([sRGBRe sRGBFl sRGBReFl sRGBMacbeth]);
+
     
     vcAddObject(ipRe);
     vcAddObject(ipFl);

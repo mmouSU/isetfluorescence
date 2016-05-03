@@ -9,9 +9,9 @@ load(fName);
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
-alpha = 0.1;
-beta = 0.1;
-nu = 0.1;
+alpha = 0.01;
+beta = 0.01;
+nu = 0.01;
 
 nNoiseLevels = 20;
 nInstances = 10;
@@ -52,7 +52,7 @@ reflEst = cell(nNoiseLevels,nInstances);
 dMatEst = cell(nNoiseLevels,nInstances);
 reflValsEst = cell(nNoiseLevels,nInstances);
 flValsEst = cell(nNoiseLevels,nInstances);
-measValsNoise = cell(noiseLevels,nInstances);
+measValsNoise = cell(nNoiseLevels,nInstances);
 
 SNR = cell(nNoiseLevels,1);
 
@@ -61,7 +61,7 @@ try
 catch
 end
 
-for nl=1:nNoiseLevels
+ parfor nl=1:nNoiseLevels
     
     SNR{nl} = measVals./noiseLevels(nl);
     
@@ -72,9 +72,9 @@ for nl=1:nNoiseLevels
         localCameraGain = repmat(cameraGain,[1 1 nSamples]);
         localCameraOffset = repmat(cameraOffset,[1 1 nSamples]);
         
-        nF = max(max(measValsNoise,[],1),[],2);
+        nF = max(max(measValsNoise{nl,i},[],1),[],2);
         localCameraGain = localCameraGain./repmat(nF,[nFilters nChannels 1]);
-        measValsNoise = measValsNoise./repmat(nF,[nFilters nChannels 1]);
+        measValsNoise{nl,i} = measValsNoise{nl,i}./repmat(nF,[nFilters nChannels 1]);
         
         [ reflEst{nl,i}, ~, ~, ~, ~, ~, dMatEst{nl,i}, reflValsEst{nl,i}, flValsEst{nl,i}, hist  ] = ...
             fiRecReflAndMultiFl( measValsNoise{nl,i}, camera, illuminant, localCameraGain*deltaL,...
@@ -82,11 +82,13 @@ for nl=1:nNoiseLevels
         
     end
     
-end
+ end
+ 
 
-fName = fullfile(fiToolboxRootPath,'results','evaluation','multiFl_SNR.mat');
+fName = fullfile(fiToolboxRootPath,'results','evaluation','SNR_multiFl.mat');
 save(fName,'reflEst','dMatEst','reflValsEst','flValsEst','SNR',...
-           'alpha','beta','nu','dMatRef','reflRef','inFName','measValsNoise');
+           'alpha','beta','nu','dMatRef','reflRef','inFName','measValsNoise',...
+           'nNoiseLevels','nInstances','noiseLevels','nSamples','nFilters','nChannels');
 
 try 
     matlabpool close

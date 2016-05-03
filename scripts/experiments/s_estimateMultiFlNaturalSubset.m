@@ -131,8 +131,8 @@ measVals = measVals./nF;
 cameraGainCol = cameraGain./nF;
 
 [ reflEst, ~, emEst, ~, exEst, ~, dMatEst, reflValsEst, flValsEst, hist  ] = ...
-    fiRecReflAndMultiFl( measVals, camera, illuminantPhotons, cameraGainCol*deltaL,...
-    cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, eta, 'maxIter',5000,'rescaleRho',false);
+    fiRecReflAndMultiFl( measVals(:,2:end,:), camera, illuminantPhotons(:,2:end), cameraGainCol(:,2:end,:)*deltaL,...
+    cameraOffset(:,2:end,:), reflBasis, emBasis, exBasis, alpha, beta, beta, eta, 'maxIter',5000,'rescaleRho',false);
 
 %% Results
     
