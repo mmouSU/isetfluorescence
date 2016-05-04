@@ -2,7 +2,7 @@ close all;
 clear all;
 clc;
 
-fName = fullfile(fiToolboxRootPath,'results','evaluation','SNR_multiFl.mat');
+fName = fullfile(fiToolboxRootPath,'results','evaluation','SNR_Fl.mat');
 load(fName);
 
 %% Average SNR across the patches for a given condition
@@ -54,23 +54,41 @@ avgReflErr = mean(avgReflErr,1);
 stdReflErr = std(reflErr,[],3);
 stdReflErr = mean(stdReflErr,1)/sqrt(nInstances);
 
-%% Donaldson matrix error
+%% Excitation error
 
-dMatErr = zeros(nSamples,nNoiseLevels,nInstances);
+exErr = zeros(nSamples,nNoiseLevels,nInstances);
 for n=1:nNoiseLevels
     for i=1:nInstances
-        est = dMatEst{n,i};
+        est = exEst{n,i};
         for s=1:nSamples
-            dMatErr(s,n,i) = fiComputeError(est(s),dMatRef(s),'normalized');
+            exErr(s,n,i) = fiComputeError(est(:,s),exRef(:,s),'normalized');
         end
     end
 end
 
-avgDMatErr = nanmean(dMatErr,3);
-avgDMatErr = nanmean(avgDMatErr,1);
+avgExErr = nanmean(exErr,3);
+avgExErr = nanmean(avgExErr,1);
 
-stdDMatErr = nanstd(dMatErr,[],3);
-stdDMatErr = nanmean(stdDMatErr,1)/sqrt(nInstances);
+stdExErr = nanstd(exErr,[],3);
+stdExErr = nanmean(stdExErr,1)/sqrt(nInstances);
+
+%% Emission error
+
+emErr = zeros(nSamples,nNoiseLevels,nInstances);
+for n=1:nNoiseLevels
+    for i=1:nInstances
+        est = emEst{n,i};
+        for s=1:nSamples
+            emErr(s,n,i) = fiComputeError(est(:,s),emRef(:,s),'normalized');
+        end
+    end
+end
+
+avgEmErr = nanmean(emErr,3);
+avgEmErr = nanmean(avgEmErr,1);
+
+stdEmErr = nanstd(emErr,[],3);
+stdEmErr = nanmean(stdEmErr,1)/sqrt(nInstances);
 
 
 %% Prepare a plot
@@ -86,7 +104,8 @@ figure;
 hold on; grid on; box on;
 errorbar(SNRdB,avgPixelErr,stdPixelErr,'-rs','lineWidth',lw,'markerSize',ms);
 errorbar(SNRdB,avgReflErr,stdReflErr,'-gd','lineWidth',lw,'markerSize',ms);
-errorbar(SNRdB,avgDMatErr,stdDMatErr,'-bo','lineWidth',lw,'markerSize',ms);
+errorbar(SNRdB,avgExErr,stdExErr,'-bo','lineWidth',lw,'markerSize',ms);
+errorbar(SNRdB,avgEmErr,stdEmErr,'-c^','lineWidth',lw,'markerSize',ms);
 % set(gca,'yscale','log');
 set(gca,'fontsize',fs-2);
 set(gcf,'PaperUnits','centimeters');
@@ -96,9 +115,9 @@ set(gca,'YMinorGrid','off');
 xlim([min(SNRdB) max(SNRdB)]);
 xlabel('SNR, dB','fontsize',fs);
 ylabel('RMSE','fontsize',fs);
-legend('Pixel','Reflectance','Donaldson matrix','location','northeast');
+legend('Pixel','Reflectance','Excitation','Emission','location','northeast');
 
-fName = fullfile(saveDir,'multiFlSNR.eps');
+fName = fullfile(saveDir,'FlSNR.eps');
 print('-depsc',fName);
 
 
