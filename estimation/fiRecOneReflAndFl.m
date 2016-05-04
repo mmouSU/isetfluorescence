@@ -33,6 +33,21 @@ function [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, predRefl, predFl
 %      convex problems are solved for every iteration: one to estimate
 %      reflectance and emission spectrum, the other to estimate reflectance
 %      and excitation spectrum (default 100).
+%    'reflRef' - a (w x 1) vector of reference surface reflectance. If
+%      provided the algorithm compute the error between the estimate at
+%      iteration i, and the reference. This error is stored in the hist
+%      structure. 
+%    'exRef' - a (w x 1) vector of reference fluorophore excitation spectrum. If
+%      provided the algorithm compute the error between the estimate at
+%      iteration i, and the reference. This error is stored in the hist
+%      structure. 
+%    'exRef' - a (w x 1) matrix of reference fluorophore emission spectrum. If
+%      provided the algorithm compute the error between the estimate at
+%      iteration i, and the reference. This error is stored in the hist
+%      structure.
+%    'pixelRef' - a boolean value indicating if the error between predicted
+%      and mesured pixel intensities is to be computed at every iteration.
+%      (default = false).
 %
 % Outputs:
 %    reflEst - a (w x 1) vector of the estimated surface spectral reflectance.
@@ -142,7 +157,8 @@ for i=1:inputs.maxIter
         break;
     end
     
-    %% Copute errors (if the reference is provided)
+    %% Copute errors (if the reference is provided), 
+    % This computation this slows the algorithm a bit.
     
     % Estimate Reflectnace
     if ~isempty(inputs.reflRef)
@@ -150,8 +166,7 @@ for i=1:inputs.maxIter
         hist.reflErr(i) = fiComputeError(reflEst,inputs.reflRef,'');
     end
 
-    % Estimate Fluorescence shape
-    
+    % Estimate Fluorescence 
     if ~isempty(inputs.exRef)
         exEst = basisEx*exCoeffs;
         hist.exErr(i) = fiComputeError(exEst,inputs.exRef,'normalized');
@@ -161,6 +176,7 @@ for i=1:inputs.maxIter
         hist.emErr(i) = fiComputeError(emEst,inputs.emRef,'normalized');
     end
 
+    % Estimate pixels
     if inputs.pixelRef
         emEst = basisEm*emCoeffs;
         exEst = basisEx*exCoeffs;
