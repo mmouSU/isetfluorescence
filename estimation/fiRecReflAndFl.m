@@ -21,15 +21,30 @@ function [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, predRefl, predFl
 %    basisRefl, basisEx, basisEm - a (w x n) matrices of c linear basis
 %      functions representing reflectance, excitation and emission spectra
 %      respectively
-%    alpha - scalar tuning parameters controlling the smoothness of
+%    alpha - scalar tuning parameter controlling the smoothness of
 %      reflectance estimates
-%    beta - scalar tuning parameters controlling the smoothness of
+%    beta - scalar tuning parameter controlling the smoothness of
 %      fluorescence excitation estimates
-%    gamma - scalar tuning parameters controlling the smoothness of
+%    gamma - scalar tuning parameter controlling the smoothness of
 %      fluorescence emission estimates
 %
 % Inputs (optional):
-%    These inputs control the bi-convex optimizer are transferred directly
+%    'reflRef' - a (w x s) matrix of reference surface reflectances. If
+%      provided the algorithm compute the error between the estimate at
+%      iteration i, and the reference. This error is stored in the hist
+%      structure. 
+%    'exRef' - a (w x s) matrix of reference fluorophore excitation spectra. If
+%      provided the algorithm compute the error between the estimate at
+%      iteration i, and the reference. This error is stored in the hist
+%      structure. 
+%    'exRef' - a (w x s) matrix of reference fluorophore emission spectra. If
+%      provided the algorithm compute the error between the estimate at
+%      iteration i, and the reference. This error is stored in the hist
+%      structure.
+%    'pixelRef' - a boolean value indicating if the error between predicted
+%      and mesured pixel intensities is to be computed at every iteration.
+%      (default = false).
+%    Additioanl inputs control the bi-convex optimizer are transferred directly
 %    to the estimation function directly. See fiRecOneReflAndFl for details.
 %
 % Outputs:

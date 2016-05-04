@@ -5,7 +5,7 @@ clc;
 saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
 
 
-fName = fullfile(fiToolboxRootPath,'results','evaluation','McNamara-Boswell_multiFl_nBasis');
+fName = fullfile(fiToolboxRootPath,'results','evaluation','McNamara-Boswell_simNBasis_fl');
 load(fName);
 
 fs = 8;
