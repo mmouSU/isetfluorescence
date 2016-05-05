@@ -15,7 +15,6 @@ nWaves = length(wave);
 
 alpha = 0.01;
 beta = 0.01;
-eta = 0.01;
 
 nNoiseLevels = 20;
 nInstances = 10;
@@ -53,7 +52,8 @@ nFilters = size(camera,2);
 nSamples = size(measVals,3);
 
 reflEst = cell(nNoiseLevels,nInstances);
-dMatEst = cell(nNoiseLevels,nInstances);
+exEst = cell(nNoiseLevels,nInstances);
+emEst = cell(nNoiseLevels,nInstances);
 reflValsEst = cell(nNoiseLevels,nInstances);
 flValsEst = cell(nNoiseLevels,nInstances);
 measValsNoise = cell(nNoiseLevels,nInstances);
@@ -65,7 +65,7 @@ try
 catch
 end
 
- parfor nl=1:nNoiseLevels
+parfor nl=1:nNoiseLevels
     
     SNR{nl} = measVals./noiseLevels(nl);
     
@@ -80,20 +80,18 @@ end
         localCameraGain = localCameraGain./repmat(nF,[nFilters nChannels 1]);
         measValsNoise{nl,i} = measValsNoise{nl,i}./repmat(nF,[nFilters nChannels 1]);
         
-        [ reflEst{nl,i}, ~, ~, ~, ~, ~, dMatEst{nl,i}, reflValsEst{nl,i}, flValsEst{nl,i}, hist  ] = ...
-            fiRecReflAndMultiFl( measValsNoise{nl,i}, camera, illuminant, localCameraGain*deltaL,...
-            localCameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, eta, 'maxIter',250);
+        [ reflEst{nl,i}, ~, emEst{nl,i}, ~, exEst{nl,i}, ~, reflValsEst{nl,i}, flValsEst{nl,i}, hist  ] = ...
+            fiRecReflAndFl( measValsNoise{nl,i}, camera, localCameraGain*deltaL, localCameraOffset, illuminant, reflBasis, emBasis, exBasis, alpha, beta, beta,...
+            'maxIter',25);
         
     end
     
- end
- 
+end
  
 try 
     matlabpool close
 catch
 end
-
  
  
  %% Average SNR across the patches for a given condition
@@ -145,29 +143,51 @@ avgReflErr = mean(avgReflErr,1);
 stdReflErr = std(reflErr,[],3);
 stdReflErr = mean(stdReflErr,1)/sqrt(nInstances);
 
-%% Donaldson matrix error
+%% Excitation error
 
-dMatErr = zeros(nSamples,nNoiseLevels,nInstances);
+exErr = zeros(nSamples,nNoiseLevels,nInstances);
 for n=1:nNoiseLevels
     for i=1:nInstances
-        est = dMatEst{n,i};
+        est = exEst{n,i};
         for s=1:nSamples
-            dMatErr(s,n,i) = fiComputeError(est(s),dMatRef(s),'normalized');
+            exErr(s,n,i) = fiComputeError(est(:,s),exRef(:,s),'normalized');
         end
     end
 end
 
-avgDMatErr = nanmean(dMatErr,3);
-avgDMatErr = nanmean(avgDMatErr,1);
+avgExErr = nanmean(exErr,3);
+avgExErr = nanmean(avgExErr,1);
 
-stdDMatErr = nanstd(dMatErr,[],3);
-stdDMatErr = nanmean(stdDMatErr,1)/sqrt(nInstances);
+stdExErr = nanstd(exErr,[],3);
+stdExErr = nanmean(stdExErr,1)/sqrt(nInstances);
+
+%% Emission error
+
+emErr = zeros(nSamples,nNoiseLevels,nInstances);
+for n=1:nNoiseLevels
+    for i=1:nInstances
+        est = emEst{n,i};
+        for s=1:nSamples
+            emErr(s,n,i) = fiComputeError(est(:,s),emRef(:,s),'normalized');
+        end
+    end
+end
+
+avgEmErr = nanmean(emErr,3);
+avgEmErr = nanmean(avgEmErr,1);
+
+stdEmErr = nanstd(emErr,[],3);
+stdEmErr = nanmean(stdEmErr,1)/sqrt(nInstances);
+
+ 
  
 
-fName = fullfile(fiToolboxRootPath,'results','evaluation',sprintf('%s_simSNR_multiFl.mat',dataset));
-save(fName,'SNRdB','avgPixelErr','stdPixelErr','avgDMatErr','stdDMatErr',...
-           'avgReflErr','stdReflErr','alpha','beta','eta',...
+fName = fullfile(fiToolboxRootPath,'results','evaluation',sprintf('%s_simSNR_Fl.mat',dataset));
+save(fName,'SNRdB','avgPixelErr','stdPixelErr','avgEmErr','stdEmErr','avgExErr','stdExErr',...
+           'avgReflErr','stdReflErr','alpha','beta','inFName',...
            'nNoiseLevels','nInstances','noiseLevels','nSamples','nFilters','nChannels');
+
+
 
 
 

@@ -98,23 +98,30 @@ parfor i=1:numel(emBasisGrid);
     
     [ reflEst, ~, emEst, ~, exEst, ~, reflValsEst, flValsEst, hist  ] = ...
         fiRecReflAndFl( measVals, camera, cameraGain*deltaL, cameraOffset, illuminant,...
-        reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter', 250 );
+        reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter', 25 );
 
     measValsEst = reflValsEst + flValsEst + cameraOffset;
 
-    [pixelErr(i), pixelStd(i)] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals,[nChannels*nFilters,nSamples]), 'default');
+    [pixelErr(i), pixelStd(i)] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals,[nChannels*nFilters,nSamples]), 'absolute');
 
-    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, reflRef, '');
+    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, reflRef, 'absolute');
 
     [exNormErr(i), exNormStd(i)] = fiComputeError(exEst, exRef, 'normalized');
     [emNormErr(i), emNormStd(i)] = fiComputeError(emEst, emRef, 'normalized');
             
+    dMatEst = cell(nSamples,1);
+    for j=1:nSamples
+        dMatEst{j} = tril(emEst(:,j)*(exEst(:,j)'),-1);
+    end
+    
+    [dMatErr(i), dMatStd(i)] = fiComputeError(dMatEst,dMat,'normalized');
+    
 
 end
 
-fName = fullfile(fiToolboxRootPath,'results','evaluation','fl_nBasis.mat');
+fName = fullfile(fiToolboxRootPath,'results','evaluation',sprintf('%s_simNBasis_fl.mat',dataset));
 save(fName,'pixelErr','pixelStd','exNormErr','exNormStd','emNormErr','exNormStd','reflErr','reflStd',...
-           'exBasisGrid','emBasisGrid','alpha','beta','exRef','emRef','reflRef',...
+           'exBasisGrid','emBasisGrid','alpha','beta','exRef','emRef','reflRef','dMatErr','dMatStd','dMatRef',...
            'nReflBasis');
 
 
