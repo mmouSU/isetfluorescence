@@ -108,21 +108,21 @@ parfor i=1:numel(channelGrid);
     
     [ reflEst, ~, emEst, ~, exEst, ~, dMatEst, reflValsEst, flValsEst, hist  ] = ...
     fiRecReflAndMultiFl( measVals, camera, illuminant, cameraGain*deltaL,...
-                         cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, nu, 'maxIter',2500,'rescaleRho',false);
+                         cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, nu, 'maxIter',250,'rescaleRho',false);
 
 
     measValsEst = reflValsEst + flValsEst + cameraOffset;
 
-    [pixelErr(i), pixelStd(i)] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals,[nChannels*nFilters,nSamples]), 'default');
+    [pixelErr(i), pixelStd(i)] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals,[nChannels*nFilters,nSamples]), 'absolute');
 
-    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, reflRef, '');
+    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, reflRef, 'absolute');
 
     [dMatErr(i), dMatStd(i)] = fiComputeError(dMatEst, dMatRef, 'normalized');
                   
 
 end
 
-fName = fullfile(fiToolboxRootPath,'results','evaluation',sprintf('%s_multiFl_nBands.mat',dataset));
+fName = fullfile(fiToolboxRootPath,'results','evaluation',sprintf('%s_simNBands_multiFl.mat',dataset));
 save(fName,'pixelErr','pixelStd','dMatErr','dMatStd','reflErr','reflStd',...
            'filterGrid','channelGrid','alpha','beta','nu','dMatRef','reflRef',...
            'nReflBasis','nExBasis','nEmBasis');

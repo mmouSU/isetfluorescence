@@ -73,7 +73,7 @@ try
 catch
 end
 
-for i=1:numel(channelGrid);
+parfor i=1:numel(channelGrid);
 
     nFilters = filterGrid(i);
     nChannels = channelGrid(i);

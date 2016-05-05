@@ -114,7 +114,7 @@ parfor i=1:numel(emBasisGrid);
         dMatEst{j} = tril(emEst(:,j)*(exEst(:,j)'),-1);
     end
     
-    [dMatErr(i), dMatStd(i)] = fiComputeError(dMatEst,dMat,'normalized');
+    [dMatErr(i), dMatStd(i)] = fiComputeError(dMatEst,dMatRef,'normalized');
     
 
 end
