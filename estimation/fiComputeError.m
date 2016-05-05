@@ -14,7 +14,7 @@ function [ avgRmse, stdRmse ] = fiComputeError( est, ref, type )
 %    ref - reference quantity. A 2D (m x s) array or a cell array.
 %    type - a string indicating if the quantities are normalized (i.e.
 %      divided by their maximal values) before RMSE is computed. Allowed
-%      values are {'','default','normalized'}.
+%      values are {'absolute','normalized'}.
 %
 % Outputs:
 %    avgRMSE - the average RMSE across the s samples.
@@ -25,7 +25,7 @@ function [ avgRmse, stdRmse ] = fiComputeError( est, ref, type )
 p = inputParser;
 p.addRequired('est',@(x) (isnumeric(x) || iscell(x)));
 p.addRequired('ref',@(x) (isnumeric(x) || iscell(x)));
-p.addOptional('type','default',@(x) validatestring(x,{'','default','normalized'});
+p.addOptional('type','absolute',@(x) (strcmp(x,validatestring(x,{'','absolute','normalized'}))));;
 
 p.parse(est,ref,type);
 inputs = p.Results;
