@@ -24,7 +24,7 @@ function [ basis, score ] = createBasisSet( type, varargin )
 
 
 p = inputParser;
-p.addRequired('type',@(x) validatestring(x,{'reflectance','excitation','emission'});
+p.addRequired('type',@(x)(strcmp(x,validatestring(x,{'reflectance','excitation','emission'}))));
 p.addParamValue('wave',400:10:700,@isnumeric);
 p.addParamValue('n',5,@isscalar);
 
