@@ -81,6 +81,8 @@ emNormStd = zeros(maxEmBasis,maxExBasis);
 pixelErr = zeros(maxEmBasis,maxExBasis);
 pixelStd = zeros(maxEmBasis,maxExBasis);
 
+dMatErr = zeros(maxEmBasis,maxExBasis);
+dMatStd = zeros(maxEmBasis,maxExBasis);
 
 try
     cluster = parcluster('local');
