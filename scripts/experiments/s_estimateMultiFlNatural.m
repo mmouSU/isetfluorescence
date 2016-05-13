@@ -1,3 +1,12 @@
+% This script uses the multi-fluorophore (fiReflAndMultiFl) reflectance and
+% fluorescence emission estimation algorithm to estimate the surface 
+% properties of the whole image of a natural looking test target (paper
+% with symbols colored with fluorescent dyes). The original 1MP image is
+% downsampled by a factor of dsFac to speed up the computation, but even
+% then the computation is VERY long.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear variables;
 clc;
@@ -10,7 +19,7 @@ nReflBasis = 5;
 nExBasis = 12;
 nEmBasis = 12;
 
-dsFac = 10;
+dsFac = 10; % Image downscale factor.
 
 alpha = 0.1;
 beta = 5;

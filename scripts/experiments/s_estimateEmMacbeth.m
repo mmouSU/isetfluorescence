@@ -1,3 +1,10 @@
+% This script uses the CIM (fiReflAndEm) reflectance and fluorescence
+% emission estimation algorithm to estimate the surface properties of a
+% real test target: Macbeth test chart with overlaid with fluorescence
+% slides. 
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear variables;
 clc;
@@ -21,10 +28,6 @@ wave = 380:4:1000;
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
-% Create basis function sets
-reflBasis = createBasisSet('reflectance','wave',wave','n',nReflBasis);
-emBasis = createBasisSet('emission','wave',wave','n',nEmBasis);
-
 % Load the light spectra (in photons). We scale by the maximum for
 % numerical stability. This does not matter in the long run as we are
 % calibrating for an unknown gain paramter.
@@ -46,11 +49,6 @@ camera = diag(qe)*filters;
 nFilters = size(camera,2);
 
 
-% Load the calibration target reflectance
-% fName = fullfile(fiToolboxRootPath,'data','experiments','chalk');
-% calibRefl = ieReadSpectra(fName,wave);
-% calibRefl = ones(nWaves,1);
-
 % Load the test target reflectance
 fName = fullfile(fiToolboxRootPath,'data','macbethChart');
 reflRef = ieReadSpectra(fName,wave);
@@ -61,9 +59,22 @@ redTr = ieReadSpectra(fName,wave);
 fName = fullfile(fiToolboxRootPath,'data','greenFlTransmittance');
 greenTr = ieReadSpectra(fName,wave);
 
-reflRef(:,[1:4:24 2:4:24]) = diag(greenTr)*reflRef(:,[1:4:24 2:4:24]);
-reflRef(:,[3:4:24 4:4:24]) = diag(redTr)*reflRef(:,[3:4:24 4:4:24]);
+reflRef(:,[1:4:nSamples 2:4:nSamples]) = diag(greenTr)*reflRef(:,[1:4:nSamples 2:4:nSamples]);
+reflRef(:,[3:4:nSamples 4:4:nSamples]) = diag(redTr)*reflRef(:,[3:4:nSamples 4:4:nSamples]);
 
+% Generate basis function sets
+
+% Use the reflectance corrected for transmittance to derive basis
+% functions.
+reflBasis = pca(reflRef','centered',false);
+reflBasis = reflBasis(:,1:nReflBasis);
+% Or use generic basis functions, the difference is minimal
+% reflBasis = createBasisSet('reflectance','wave',wave','n',nReflBasis);
+
+emBasis = createBasisSet('emission','wave',wave','n',nEmBasis);
+
+
+% These values are the measured ground truth data.
 flQe = [0.25 0.53];
 
 % Load fluorescence data and get reference spectra
@@ -93,19 +104,9 @@ prediction = deltaL*((camera')*illuminantPhotons);
 
 % Generate the gain map for every pixel
 fName = fullfile(fiToolboxRootPath,'data','experiments',backgroundFileName);
-[RAW, ~, scaledRAW, shutterBackground] = fiReadImageStack(fName);
+[~, ~, scaledRAW, shutterBackground] = fiReadImageStack(fName);
 hh = size(scaledRAW,1);
 ww = size(scaledRAW,2);
-
-%{
-for f=1:nFilters
-    figure;
-    for c=1:nChannels
-        subplot(4,4,c);
-        imagesc(RAW(:,:,f,c));
-    end
-end
-%}
 
 % For every illuminant channel and the monochromatic filter pick a
 % reference point (say in the middle). Compute how would you need to scale
@@ -133,19 +134,18 @@ cameraOffset = zeros([nFilters, nChannels, nSamples]);
 
 %% Extract data from a Macbeth image
 fName = fullfile(fiToolboxRootPath,'data','experiments',testFileName);
-[RAW, ~, scaledMacbeth, shutterMacbeth] = fiReadImageStack(fName);
+[~, ~, scaledMacbeth, shutterMacbeth] = fiReadImageStack(fName);
 linearVals = scaledMacbeth.*scaleMap;
 
 % Read the sensor data
 cp = [28 873;1262 919;1271 138;58 74];
-measVals = zeros(nFilters,nChannels,24);
+measVals = zeros(nFilters,nChannels,nSamples);
 for f=1:nFilters
     sensor = createCameraModel(f);
 
     for i=1:nChannels
        
         sensor = sensorSet(sensor,'volts',linearVals(:,:,f,i));
-        % sensor = sensorSet(sensor,'volts',RAW(:,:,f,i));
         ieAddObject(sensor);
 
         if isempty(cp)
@@ -184,19 +184,19 @@ save(fName,'reflEst','reflCoeffs','emEst','emCoeffs','emWghts','reflValsEst','fl
 measValsEst = reflValsEst + flValsEst;
 
 
-[err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals - cameraOffset,[nChannels*nFilters,nSamples]), 'default');
+[err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals - cameraOffset,[nChannels*nFilters,nSamples]), 'absolute');
 fprintf('Total pixel error %.3f, std %.3f\n',err,std);
 
-[err, std] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(reflValsRef,[nChannels*nFilters,nSamples]), 'default');
+[err, std] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(reflValsRef,[nChannels*nFilters,nSamples]), 'absolute');
 fprintf('Reflected pixel error %.3f, std %.3f\n',err,std);
 
-[err, std] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(flValsRef,[nChannels*nFilters,nSamples]), 'default');
+[err, std] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(flValsRef,[nChannels*nFilters,nSamples]), 'absolute');
 fprintf('Fluoresced pixel error %.3f, std %.3f\n',err,std);
 
-[err, std] = fiComputeError(reflEst, reflRef, '');
+[err, std] = fiComputeError(reflEst, reflRef, 'absolute');
 fprintf('Reflectance error %.3f, std %.3f\n',err,std);
 
-[err, std] = fiComputeError(emEst, emRef, '');
+[err, std] = fiComputeError(emEst, emRef, 'absolute');
 fprintf('Emission error %.3f, std %.3f\n',err,std);
 
 [err, std] = fiComputeError(emEst, emRef, 'normalized');
@@ -204,7 +204,6 @@ fprintf('Emission error (normalized) %.3f, std %.3f\n',err,std);
 
 
 %% Plot the results
-
 
 figure;
 hold all; grid on; box on;

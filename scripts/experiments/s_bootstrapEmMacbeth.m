@@ -1,3 +1,11 @@
+% This script uses the CIM (fiReflAndEm) reflectance and fluorescence
+% emission estimation algorithm to estimate the properties of an
+% experimental Macbeth test chart. To analyze statistical properties of the
+% estimator it is run 100 times on different samples from each of the 24
+% Macbeth chart test patches.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear variables;
 clc;
@@ -24,10 +32,6 @@ wave = 380:4:1000;
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
-% Create basis function sets
-% reflBasis = createBasisSet('reflectance','wave',wave','n',nReflBasis);
-exBasis = createBasisSet('excitation','wave',wave','n',nExBasis);
-emBasis = createBasisSet('emission','wave',wave','n',nEmBasis);
 
 % Load the light spectra (in photons). We scale by the maximum for
 % numerical stability. This does not matter in the long run as we are
@@ -49,12 +53,6 @@ qe = ieReadSpectra(fName,wave);
 camera = diag(qe)*filters;
 nFilters = size(camera,2);
 
-
-% Load the calibration target reflectance
-% fName = fullfile(fiToolboxRootPath,'data','experiments','chalk');
-% calibRefl = ieReadSpectra(fName,wave);
-% calibRefl = ones(nWaves,1);
-
 % Load the test target reflectance
 fName = fullfile(fiToolboxRootPath,'data','macbethChart');
 reflRef = ieReadSpectra(fName,wave);
@@ -65,15 +63,22 @@ redTr = ieReadSpectra(fName,wave);
 fName = fullfile(fiToolboxRootPath,'data','greenFlTransmittance');
 greenTr = ieReadSpectra(fName,wave);
 
-reflRef(:,[1:4:24 2:4:24]) = diag(greenTr)*reflRef(:,[1:4:24 2:4:24]);
-reflRef(:,[3:4:24 4:4:24]) = diag(redTr)*reflRef(:,[3:4:24 4:4:24]);
+reflRef(:,[1:4:nSamples 2:4:nSamples]) = diag(greenTr)*reflRef(:,[1:4:nSamples 2:4:nSamples]);
+reflRef(:,[3:4:nSamples 4:4:nSamples]) = diag(redTr)*reflRef(:,[3:4:nSamples 4:4:nSamples]);
 
+% These values are the measured ground truth data.
 flQe = [0.25 0.53];
+
+% Generate basis function sets
 
 % Use the reflectance corrected for transmittance to derive basis
 % functions.
 reflBasis = pca(reflRef','centered',false);
 reflBasis = reflBasis(:,1:nReflBasis);
+% Or use generic basis functions, the difference is minimal
+% reflBasis = createBasisSet('reflectance','wave',wave','n',nReflBasis);
+
+emBasis = createBasisSet('emission','wave',wave','n',nEmBasis);
 
 % Load fluorescence data and get reference spectra
 fName = fullfile(fiToolboxRootPath,'data','redFl');
@@ -102,19 +107,10 @@ prediction = deltaL*((camera')*illuminantPhotons);
 
 % Generate the gain map for every pixel
 fName = fullfile(fiToolboxRootPath,'data','experiments',backgroundFileName);
-[RAW, ~, scaledRAW, shutterBackground] = fiReadImageStack(fName);
+[~, ~, scaledRAW, shutterBackground] = fiReadImageStack(fName);
 hh = size(scaledRAW,1);
 ww = size(scaledRAW,2);
 
-%{
-for f=1:nFilters
-    figure;
-    for c=1:nChannels
-        subplot(4,4,c);
-        imagesc(RAW(:,:,f,c));
-    end
-end
-%}
 
 % For every illuminant channel and the monochromatic filter pick a
 % reference point (say in the middle). Compute how would you need to scale
@@ -142,7 +138,7 @@ cameraOffset = zeros([nFilters, nChannels, nSamples]);
 
 %% Extract data from a Macbeth image
 fName = fullfile(fiToolboxRootPath,'data','experiments',testFileName);
-[RAW, ~, scaledMacbeth, shutterMacbeth] = fiReadImageStack(fName);
+[~, ~, scaledMacbeth, shutterMacbeth] = fiReadImageStack(fName);
 linearVals = scaledMacbeth.*scaleMap;
 
 % Read the sensor data
@@ -158,7 +154,7 @@ for f=1:nFilters
         [tmp, ~, ~, cp] = macbethSelect(sensor,0,1,cp);
         if f==1 && i==1
             nPixels = length(tmp{1});
-            measVals = zeros(nFilters,nChannels,24,nPixels);
+            measVals = zeros(nFilters,nChannels,nSamples,nPixels);
         end
        
         measVals(f,i,:,:) = cell2mat(tmp)';

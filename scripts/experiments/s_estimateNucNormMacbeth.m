@@ -1,18 +1,26 @@
+% This script uses our implementation of the nuclear norm reflectance and 
+% fluorescence emission estimation algorithm of Suo et al. 'Bispectral
+% coding: compressive and high-quality acquisition of fluorescence and 
+% reflectance,' Optics Express 2014.
+% The algorithm is used to estimate surface spectral properties of a real 
+% test target: Macbeth test chart with overlaid with fluorescence slides. 
+%
+% Copyright, Henryk Blasinski 2016
+
+
 close all;
 clear variables;
 clc;
 
 ieInit;
 
-%%
-
 nSamples = 24;
 
 
 alpha = 0.01;
-sigma = 0.009;
+sigma = 0.009; % This parameter is adjusted so that the pixel error matches the error predicted by our methods
 
-testFileName = 'Macbeth+multiFl3';
+testFileName = 'Macbeth+multiFl2';
 backgroundFileName = 'Background+multiFl';
 
 wave = 380:4:1000;
@@ -39,12 +47,6 @@ qe = ieReadSpectra(fName,wave);
 camera = diag(qe)*filters;
 nFilters = size(camera,2);
 
-
-% Load the calibration target reflectance
-% fName = fullfile(fiToolboxRootPath,'data','experiments','chalk');
-% calibRefl = ieReadSpectra(fName,wave);
-% calibRefl = ones(nWaves,1);
-
 % Load the test target reflectance
 fName = fullfile(fiToolboxRootPath,'data','macbethChart');
 reflRef = ieReadSpectra(fName,wave);
@@ -58,10 +60,10 @@ greenTr = ieReadSpectra(fName,wave);
 fName = fullfile(fiToolboxRootPath,'data','amberFlTransmittance');
 amberTr = ieReadSpectra(fName,wave);
 
-reflRef(:,1:4:24) = diag(amberTr)*reflRef(:,1:4:24);
-reflRef(:,2:4:24) = diag(greenTr)*diag(amberTr)*reflRef(:,2:4:24);
-reflRef(:,3:4:24) = diag(greenTr)*diag(redTr)*reflRef(:,3:4:24);
-reflRef(:,4:4:24) = diag(redTr)*reflRef(:,4:4:24);
+reflRef(:,1:4:nSamples) = diag(amberTr)*reflRef(:,1:4:nSamples);
+reflRef(:,2:4:nSamples) = diag(greenTr)*diag(amberTr)*reflRef(:,2:4:nSamples);
+reflRef(:,3:4:nSamples) = diag(greenTr)*diag(redTr)*reflRef(:,3:4:nSamples);
+reflRef(:,4:4:nSamples) = diag(redTr)*reflRef(:,4:4:nSamples);
 
 % Load fluorescence data and get reference spectra
 fName = fullfile(fiToolboxRootPath,'data','redFl');
@@ -86,7 +88,7 @@ fluorophores(3,1,2) = redFl;
 fluorophores(4,1,1) = redFl;
 fluorophores(4,1,2) = redFl;
 
-
+% Data obtained through calibration
 flQe(1,1,1) = 0.25/2;
 flQe(1,1,2) = 0.25/2;
 
@@ -99,7 +101,6 @@ flQe(3,1,2) = 0.14;
 flQe(4,1,1) = 0.23/2;
 flQe(4,1,2) = 0.23/2;
 
-% fluorophores = [greenFl; redFl];
 flScene = fluorescentSceneCreate('type','fromfluorophore','fluorophore',fluorophores,'wave',wave,'qe',flQe);
 
 dMatRef = fluorescentSceneGet(flScene,'donaldsonReference','sceneSize',[4 6]);
@@ -119,19 +120,9 @@ prediction = deltaL*((camera')*illuminantPhotons);
 
 % Generate the gain map for every pixel
 fName = fullfile(fiToolboxRootPath,'data','experiments',backgroundFileName);
-[RAW, ~, scaledRAW, shutterBackground] = fiReadImageStack(fName);
+[~, ~, scaledRAW, shutterBackground] = fiReadImageStack(fName);
 hh = size(scaledRAW,1);
 ww = size(scaledRAW,2);
-
-%{
-for f=1:nFilters
-    figure;
-    for c=1:nChannels
-        subplot(4,4,c);
-        imagesc(RAW(:,:,f,c));
-    end
-end
-%}
 
 % For every illuminant channel and the monochromatic filter pick a
 % reference point (say in the middle). Compute how would you need to scale
@@ -159,19 +150,18 @@ cameraOffset = zeros([nFilters, nChannels, nSamples]);
 
 %% Extract data from a Macbeth image
 fName = fullfile(fiToolboxRootPath,'data','experiments',testFileName);
-[RAW, ~, scaledMacbeth, shutterMacbeth] = fiReadImageStack(fName);
+[~, ~, scaledMacbeth, shutterMacbeth] = fiReadImageStack(fName);
 linearVals = scaledMacbeth.*scaleMap;
 
 % Read the sensor data
 cp = [51 846;1275 873;1278 81;58 61];
-measVals = zeros(nFilters,nChannels,24);
+measVals = zeros(nFilters,nChannels,nSamples);
 for f=1:nFilters
     sensor = createCameraModel(f);
 
     for i=1:nChannels
        
         sensor = sensorSet(sensor,'volts',linearVals(:,:,f,i));
-        % sensor = sensorSet(sensor,'volts',RAW(:,:,f,i));
         ieAddObject(sensor);
 
         if isempty(cp)
@@ -198,31 +188,38 @@ cameraGain = cameraGain./nF;
 [ reflEst, emEst, exEst, dMatEst, reflValsEst, flValsEst, hist ] = fiRecReflAndFlNucNorm( measVals,...
     camera, cameraGain*deltaL, cameraOffset, illuminantPhotons, alpha, sigma, 'maxIter',500 );
 
+%% Save results
 dirName = fullfile(fiToolboxRootPath,'results','experiments');
 if ~exist(dirName,'dir'), mkdir(dirName); end;
 
-fName = fullfile(dirName,sprintf('nucNorm_%s.mat',testFileName));
-save(fName,'reflEst','emEst','exEst','dMatEst','reflValsEst','flValsEst','hist',...
-            'wave','alpha','sigma','reflRef','exRef','emRef','dMatRef','measVals');
+% fName = fullfile(dirName,sprintf('nucNorm_%s.mat',testFileName));
+% save(fName,'reflEst','emEst','exEst','dMatEst','reflValsEst','flValsEst','hist',...
+%             'wave','alpha','sigma','reflRef','exRef','emRef','dMatRef','measVals');
                      
-                     
+%% Analyze results                     
                      
 measValsEst = reflValsEst + flValsEst;
 
 
-[err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals - cameraOffset,[nChannels*nFilters,nSamples]), 'default');
+[err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals - cameraOffset,[nChannels*nFilters,nSamples]), 'absolute');
 fprintf('Total pixel error %.3f, std %.3f\n',err,std);
 
-[err, std] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(reflValsRef,[nChannels*nFilters,nSamples]), 'default');
+[err, std] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(reflValsRef,[nChannels*nFilters,nSamples]), 'absolute');
 fprintf('Reflected pixel error %.3f, std %.3f\n',err,std);
 
-[err, std] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(flValsRef,[nChannels*nFilters,nSamples]), 'default');
+[err, std] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(flValsRef,[nChannels*nFilters,nSamples]), 'absolute');
 fprintf('Fluoresced pixel error %.3f, std %.3f\n',err,std);
 
-[err, std] = fiComputeError(reflEst, reflRef, '');
+% The algorithm returns reflEst in a form of a cell array. 
+reflEstMat = zeros(nWaves,nSamples);
+for s=1:nSamples
+    reflEstMat(:,s) = diag(reflEst{s});
+end
+
+[err, std] = fiComputeError(reflEstMat, reflRef, 'absolute');
 fprintf('Reflectance error %.3f, std %.3f\n',err,std);
 
-[err, std] = fiComputeError(dMatEst, dMatRef, '');
+[err, std] = fiComputeError(dMatEst, dMatRef, 'absolute');
 fprintf('Donaldson matrix error %.3f, std %.3f\n',err,std);
 
 [err, std] = fiComputeError(dMatEst, dMatRef, 'normalized');

@@ -1,10 +1,16 @@
+% This script uses a reflectance estimation algorithm (fiRecRefl) to
+% estimate surface spectral reflectance (no fluorescence) of a Macbeth test
+% chart.  
+%
+% Copyright, Henryk Blasinski 2016
+
+
 close all;
 clear all;
 clc;
 
 ieInit;
 
-%%
 
 nSamples = 24;
 
@@ -40,12 +46,6 @@ qe = ieReadSpectra(fName,wave);
 camera = diag(qe)*filters;
 nFilters = size(camera,2);
 
-
-% Load the calibration target reflectance
-% fName = fullfile(fiToolboxRootPath,'data','experiments','chalk');
-% calibRefl = ieReadSpectra(fName,wave);
-% calibRefl = ones(nWaves,1);
-
 % Load the test target reflectance
 fName = fullfile(fiToolboxRootPath,'data','macbethChart');
 reflRef = ieReadSpectra(fName,wave);
@@ -62,19 +62,9 @@ prediction = deltaL*((camera')*illuminantPhotons);
 
 % Generate the gain map for every pixel
 fName = fullfile(fiToolboxRootPath,'data','experiments',backgroundFileName);
-[RAW, ~, scaledRAW, shutterBackground] = fiReadImageStack(fName);
+[~, ~, scaledRAW, shutterBackground] = fiReadImageStack(fName);
 hh = size(scaledRAW,1);
 ww = size(scaledRAW,2);
-
-%{
-for f=1:nFilters
-    figure;
-    for c=1:nChannels
-        subplot(4,4,c);
-        imagesc(RAW(:,:,f,c));
-    end
-end
-%}
 
 % For every illuminant channel and the monochromatic filter pick a
 % reference point (say in the middle). Compute how would you need to scale
@@ -101,13 +91,13 @@ cameraOffset = zeros([nFilters, nChannels, nSamples]);
 
 %% Extract data from a Macbeth image
 fName = fullfile(fiToolboxRootPath,'data','experiments',testFileName);
-[RAW, ~, scaledMacbeth] = fiReadImageStack(fName);
+[~, ~, scaledMacbeth] = fiReadImageStack(fName);
 linearVals = scaledMacbeth.*scaleMap;
 
 
 % Read the sensor data
 cp = [35 875;1246 926;1278 134;67 68];
-measVals = zeros(nFilters,nChannels,24);
+measVals = zeros(nFilters,nChannels,nSamples);
 for f=1:nFilters
     sensor = createCameraModel(f);
 
@@ -130,6 +120,7 @@ measVals = measVals./nF;
 cameraGain = cameraGain./nF;
 
 %% Estimate the reflectance
+% and cross-validate for the most optimal smoothness parameter setting.
 
 alphaSet = logspace(-2,0,100);
 
@@ -146,13 +137,13 @@ figure;
 plot(alphaSet,rmsError);
 xlabel('\alpha');
 ylabel('RMS error');
-title(sprintf('Optimal \alpha=%f',optAlpha));
+title(sprintf('Optimal \alpha = %f',optAlpha));
 
 
 % Measured vs. predicted pixel intensities
 figure;
 hold on; grid on; box on;
-plot(measVals(:),predVals(:),'.');
+plot(measVals(:) - cameraOffset(:),predVals(:),'.');
 xlabel('Measured pixel intensity');
 ylabel('Model prediction');
 
