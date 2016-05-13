@@ -1,5 +1,31 @@
 function [sensor, optics] = createCameraModel(filterID,varargin)
 
+% [sensor, optics] = createCameraModel(filterID,...)
+%
+% Create an ISET model of a specific imaging sensor and optics. In
+% particular this function models a ptGrey Flea3 FL3-U3-13Y3M-C monochrome
+% camera coupled to a Schneider Optics Tele-Xenar 2.2/70mm lens and acquiring
+% broadband images (visible to NIR) or capturing images through seven 
+% different, 25nm bandpass, transmissive filters.
+%
+% Inputs:
+%   filterID - a scalar defining cameras spectral responsivity properties.
+%     Select 1 - monochrome acquisition, or 2 through 8 for narrowband filter
+%     centered at: 2 - 450nm, 3 - 500nm, 4 - 550nm, 6 - 600nm, 7 - 650nm
+%     8 - 700nm, 8 - 800nm.
+%
+% Inputs (optional):
+%   'wave' - a vector defining the wavelength sampling of spectral
+%      quantities (default = 400:10:1000).
+%   
+% Outputs:
+%   sensor - an ISET sensor strucutre
+%   optics - an ISET optics structure
+%
+% Copytight, Henryk Blasinski 2016.
+
+
+
 p = inputParser;
 p.addParamValue('wave',(400:10:1000)',@isvector);
 p.addRequired('filterID',@isnumeric);
@@ -26,7 +52,7 @@ analogGain   = 1;                           % Used to adjust ISO speed
 analogOffset = 0;                           % Used to account for sensor black level
 noiseFlag = 2;                              % Simulate noise
 
-% Some parameters of the lens used
+% Some parameters of the Schneider Optics Tele-Xenar 2.2/70mm lens used
 focalLength = 0.07;
 fNumber = 4;
 

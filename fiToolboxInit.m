@@ -1,5 +1,12 @@
 function fiToolboxInit()
 
+% fiToolboxInit()
+%
+% Initializes the Fluorescence Imaging Toolbox (fiToolbox). Adds sub
+% directories to MATLAB path.
+%
+% Copytight, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;

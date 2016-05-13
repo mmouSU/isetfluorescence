@@ -15,8 +15,10 @@ function [ reflEst, reflCoeffs, emEst, emCoeffs, exEst, exCoeffs, dMat, predRefl
 %    measVals - a (f x c x s) matrix containing pixel intensities of s 
 %      different surfaces captured with f camera channels captured under c
 %      different illuminants.
-%    camera - a (w x c) matrix containing the spectral responsivity
+%    cameraMat - a (w x c) matrix containing the spectral responsivity
 %      functions of the c camera channels sampled at w wavebands.
+%    illuminant - a (w x s) matrix containing the spectral power
+%      distributions of s illuminant energies 
 %    cameraGain - a (f x c x s) matrix of linear camera model gains for each
 %      filter-channel-surface combination.
 %    cameraOffset - a (f x c x s) matrix of linear camera model offsets for
