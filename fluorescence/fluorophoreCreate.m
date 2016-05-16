@@ -1,12 +1,50 @@
 function fl = fluorophoreCreate(varargin)
 
-% Creates a fluorophore structure.
+% fl = fluorophoreCreate(...)
 %
-% Copyright Henryk Blasinski 2014
+% Creates a fluorophore structure, which is a basic unit summarizing
+% fluorescence properties of a particular point in space. A fluorophore is
+% defined in terms of its excitation and emission spectra OR its Donaldson
+% matrix. The two representations are mutually exclusive, i.e. settgin
+% excitation and/or emission spectra deletes the Donaldson matrix field and
+% vice versa.
+%
+% Inputs (optional)
+%   'type' - describes the type of fluorophore that is created. Currently
+%      supported options are
+%      'default' - no other input parameters are expected. Creates generic
+%         excitation and emission spectrum as gaussian curves.
+%      'custom' - create a fluorophore from fluorescence excitation and
+%         emission spectra. When 'custom' type is specified the user should
+%         also provide parameters: 'wave','name','solvent','excitation
+%         photons','emission photons','qe'.
+%      'fromdonaldsonmatrix' - create a fluorophore given its Donaldson
+%         matrix properties. When 'fromdonaldsonmatrix' is specified, the
+%         user should also provide parameters: 'wave','name','solvent',
+%         'DonaldsonMatrix'
+%   'wave' - a (w x 1) vector of wavelength sampling interval 
+%      (default = 400:10:700)
+%   'name' - the name of the fluorophore.
+%   'solvent' - the name of the solvent in which the fluorophore is
+%      diluted. Same fluorophore with different solvents can produce 
+%      different fluorescence properties.
+%   'excitation' - a (w x 1) vector representing the fluorescence
+%      excitation properties (default = [0 0 ... 0]).
+%   'emission' - a (w x 1) vector representing the fluorescence emission
+%      properties (default = [0 0 ... 0]).
+%   'qe' - fluorophore quantum efficiency, defined as the ratio between
+%      total number of incident and emitted photons (default = 1).
+%   'DonaldsonMatrix' - a (w x w) array representing the Donaldson matrix
+%      of a particualr fluorophore (default = []).
+%
+% Outputs
+%    fl - a fluorophore structure
+%
+% Copyright Henryk Blasinski 2016
 
 p = inputParser;
 
-p.addParamValue('type','Default',@ischar);
+p.addParamValue('type','default',@ischar);
 p.addParamValue('wave',400:10:700,@isvector);
 p.addParamValue('name','',@(x)(ischar(x) || isempty(x)));
 p.addParamValue('solvent','',@(x)(ischar(x) || isempty(x)));
@@ -48,7 +86,7 @@ switch type
         fl = fluorophoreSet(fl,'emission photons',inputs.emission);
         fl = fluorophoreSet(fl,'qe',inputs.qe);
     
-    otherwise
+    case 'default'
         
         % Create a default, idealized fluorophore with gaussian excitation
         % and emission spectra

@@ -1,8 +1,41 @@
 function fl = fluorophoreSet(fl,param,val,varargin)
 
-% Fluorophore structure setter 
+% fl = fluorophoreSet(fl,param,val,...)
+% 
+% The setter method of the fluorophore object. This function is used to
+% set a property of the fluorophore object defined by param to a new value 
+% given in val.
 %
-% Copyright Henryk Blasinski, 2014
+% Examples:
+%   fl = fluorophoreSet(fl,'name','Alexa Fluor');
+%   fl = fluorophoreSet(fl,'wave',400:2:1000);
+%
+% Inputs:
+%   fl - a fluorophore structure
+%   param - a string describing the parameter of the fluorophore to be
+%      returned. Param can have the following values
+%
+%      'name'                     - fluorophore name
+%      'solvent'                  - fluorophore solvent
+%      'type'                     - always 'fluorophore'
+%
+%      'emission photons'         - fluorophore's emission spectrum. Will
+%                                   be normalized if integral over wavebands 
+%                                   is different from 1
+%
+%      'excitation photons'       - fluorophore's excitation spectrum. Will
+%                                   be normalized if maximum is different 
+%                                   from 1
+%      'qe'                       - fluorophore's quantum efficiency
+%
+%      'Donaldson matrix'         - fluorophore's Donaldson matrix
+%
+%      'wave'                     - spectral sampling vector
+%
+% Outputs:
+%    fl - the fluorophore structure with the updated property.
+%
+% Copyright Henryk Blasinski, 2016
 
 %%
 if ~exist('fl','var') || isempty(fl), error('Fluorophore structure required'); end

@@ -1,7 +1,59 @@
 function val = fluorophoreGet(fl,param,varargin)
-% Getter for the fluorophore structure
+
+% val = fluorophoreGet(fl,param,...)
 % 
-% Copyright Henryk Blasinski, 2014
+% The getter method of the fluorophore object. This function is used to
+% extract different properties of the fluorophore object.
+%
+% Examples:
+%   em = fluorophoreGet(fl,'emission');
+%   name = fluorophoreGet(fl,'name');
+% 
+%   ill = illuminantCreate('d65');
+%   ph = fluorophoreGet(fl,'photons',ill);
+%
+% Inputs:
+%   fl - a fluorophore structure
+%   param - a string describing the parameter of the fluorophore to be
+%      returned. Param can have the following values
+%
+%      'name'                     - fluorophore name
+%      'solvent'                  - fluorophore solvent
+%      'comment'                  - comment string
+%      'type'                     - always 'fluorophore'
+%
+%      'emission'                 - fluorophore's emission spectrum
+%      'normalized emission'      - fluorophore's emission normalized to
+%                                   unit amplitude
+%      'peak emission'            - peak emission wavelenght in nm
+%
+%      'excitation'               - fluorophore's excitation spectrum
+%      'peak excitation'          - peak excitation wavelength in nm
+%      'normalized excitation'    - fluorophore's excitation spectrum
+%                                   normalized to unit amplitude
+%
+%      'Donaldson matrix'         - fluorophore's Donaldson matrix
+%
+%
+%      'Stokes shift'             - wavelength shift between excitation and
+%                                   emission peaks
+%      'qe'                       - fluorophore's quantum efficiency
+%
+%      'wave'                     - spectral sampling vector
+%      'delta wave'               - interval between concescutive spectral
+%                                   samples in nm
+%      'nwave'                    - number of spectral samples
+%
+%      'photons'                  - photons emitted by the fluorophore
+%                                   under a particular illuminant. The 
+%                                   illuminant is an ISET structure and
+%                                   needs to be passed as a parameter (see
+%                                   example).
+%
+% Outputs:
+%    val - the value of the requested property.
+%
+% Copyright Henryk Blasinski, 2016
 
 %% Parameter checking
 if ~exist('fl','var') || isempty(fl), error('Fluorophore structure required'); end
