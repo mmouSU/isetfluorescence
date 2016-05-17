@@ -13,7 +13,7 @@ function fl = fluorophoreSet(fl,param,val,varargin)
 % Inputs:
 %   fl - a fluorophore structure
 %   param - a string describing the parameter of the fluorophore to be
-%      returned. Param can have the following values
+%      set. Param can have the following values
 %
 %      'name'                     - fluorophore name
 %      'solvent'                  - fluorophore solvent

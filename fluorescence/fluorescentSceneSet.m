@@ -1,11 +1,32 @@
 function [ flScene ] = fluorescentSceneSet( flScene, param, val, varargin)
-%%
+
+% [ flScene ] = fluorescentSceneSet( flScene, param, val, ...)
+%
+% Set different parameters of a fluorescent scene.
+%
+% Inputs:
+%   flScene - the scene whose parameter will be set
+%   param - a string describing the parameter of the scene to be set. 
+%      Param can have the following values
+%         'name'            - a string describing the name
+%         'type'            - always 'fluorescent scene'
+%         'qe'              - quantum efficiency of all spatial locations
+%         'fluorophores'    - a (h x w x n) array of fluorophore structures
+% 
+%   val - the value of the parameter
+%
+% Output:
+%   flScene - a fluorescent scene with the parameter set to new value.
+%
+% Copyright, Henryk Blasinski 2016
+
 
 if ~exist('flScene','var') || isempty(flScene), error('Fluorophore structure required'); end
 if ~exist('param','var') || isempty(param), error('param required'); end
 if ~exist('val','var') , error('val is required'); end
 
-%%
+
+
 param = lower(param);
 param = strrep(param,' ','');
 
@@ -17,16 +38,12 @@ switch param
         if ~strcmpi(val,'fluorescent scene'), error('Type must be ''fluorescent scene'''); end
         flScene.type = val;
 
-    case 'scenesize'
-        flScene.height = val(1);
-        flScene.width = val(2);
-
-    case 'size'
-        flScene.rows = val(1);
-        flScene.cols = val(2);
+    % case 'size'
+    %     flScene.rows = val(1);
+    %     flScene.cols = val(2);
         
     case 'qe'
-        % We 'split' the quantum efficiency evenly across all teh fluorophores at a particular spatial location. 
+        % We 'split' the quantum efficiency evenly across all the fluorophores at a particular spatial location. 
         if (val > 1), warning('Qe greater than one, truncating to 1'); end
         val = min(max(val,0),1);
         
