@@ -52,6 +52,7 @@ cvx_end
 %% Compare results. 
 % When the results match, the figures should display identity lines.
 
+% Reflectance estimate
 figure;
 hold on; grid on; box on;
 mVal = max([Rcvx(:); Radmm(:)]);
@@ -63,8 +64,7 @@ xlabel('cvx estimate');
 ylabel('ADMM estimate');
 
 
-%% Nuclear norm minimization
-
+% Fluorescence estimate
 figure;
 hold on; grid on; box on;
 mVal = max([Fcvx(:); Fadmm(:)]);
@@ -76,6 +76,7 @@ xlabel('cvx estimate');
 ylabel('ADMM estimate');
 title('Donaldson matrix');
 
+% ADMM convergence
 figure;
 hold all; grid on; box on;
 plot([hist.prRes hist.dualRes]);
