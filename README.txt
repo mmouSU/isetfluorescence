@@ -11,8 +11,17 @@ needed to run these algorithms.
 If you use this code in your work, please cite
 
 Henryk Blasinski, Joyce Farrell and Brian Wandell - "Simultaneous reflectance
-and fluorescence spectra estimation" 2016
+and fluorescence spectra estimation" 2016 
+(https://arxiv.org/abs/1605.04243)
 
+
+0. License
+----------
+
+The code is provided as is. You are free to use and modify the code in 
+non-commercial and research applications. 
+If you are interested in commercial applications, please contact us as the 
+method and apparatus is a subject of a US Patent 20,160,116,410.
 
 
 1. Installation

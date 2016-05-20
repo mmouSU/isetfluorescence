@@ -1,6 +1,6 @@
-function [ basis, score ] = createBasisSet( type, varargin )
+function [ basis, score ] = fiCreateBasisSet( type, varargin )
 
-% [ basis, score ] = createBasisSet( type, varargin )
+% [ basis, score ] = fiCreateBasisSet( type, varargin )
 %
 % Creates a set of basis functions for spectral quantities.
 %

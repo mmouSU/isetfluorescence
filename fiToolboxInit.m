@@ -17,6 +17,7 @@ addpath(fullfile(fiToolboxRootPath));
 
 addpath(fullfile(fiToolboxRootPath,'camera'));
 addpath(fullfile(fiToolboxRootPath,'data'));
+addpath(fullfile(fiToolboxRootPath,'results'));
 
 addpath(fullfile(fiToolboxRootPath,'estimation'));
 addpath(fullfile(fiToolboxRootPath,'estimation','multistep'));

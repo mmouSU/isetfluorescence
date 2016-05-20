@@ -1,18 +1,79 @@
 function [ R, emissionEst, excitationEst, F, predRefl, predFl, hist  ] = fiRecOneReflAndFlNucNorm( measVals, cameraMat, cameraGain, illuminant, alpha, sigma, varargin )
 
+% [ R, emissionEst, excitationEst, F, predRefl, predFl, hist  ] = fiRecOneReflAndFlNucNorm( measVals, cameraMat, cameraGain, illuminant, alpha, sigma, ... )
+%
+% Estimate the reflectance and fluorescence of a single surface using an
+% adaptation of the algorithm from Suo et al. 'Bispectral coding:
+% compressive and high0quality acquisition of fluorescence and
+% reflectance,' Optics Express 2014. In this implementation we solve for
+% spectral properties (F and R) of a single pixel, i.e. we solve the
+% optimization problem (5) using our own ADMM solver. Our attemnt was to
+% follow this paper to the letter. Specifically we do not impose any
+% additional constratins that could follow from the physics of the problem.
+% For example the matrix R is not restricted to being diagonal nor
+% non-negative.
+%
+% Inputs:
+%   measVals - a (f x c) array of pixel measurements
+%   cameraMat - a (w x f) array of spectral responsivity
+%      functions of the f camera filters.
+%   cameraGain - a (f x c) array of camera gains applied to
+%      every channel-filter combination.
+%   illuminant - a (w x c) array of the illuminant spectral
+%      power distributions of the c illuminants.
+%   alpha - a scalar controling the l1 norm applied to the reflectance
+%      matrix R.
+%   sigma - a scalar controlling the admissible error in the predicted
+%      pixel values.
+%
+% Inputs (optional):
+%   'maxIter' - the maximal number of ADMM interations (default = 500).
+%   'rescaleRho' - implement a heuristic algorithm improving ADMM
+%      convergence from Boyd 2011 (default = true).
+%   'tauIncr' - heuristic algorithm parameter (see Boyd, 2011) 
+%      (default = 2).
+%   'tauDecr' - heuristic algorithm parameter (see Boyd, 2011) 
+%      (default = 2).
+%   'rhoInit' - heuristic algorithm parameter (see Boyd, 2011) 
+%      (default = 1).
+%   'mu' - heuristic algorithm parameter (see Boyd, 2011) 
+%      (default = 10).
+%   'verbose' - display residual values every 10th iteration 
+%      (default = true).
+%   'epsilon' - the convergence threshold for the ADMM algorithm 
+%      (default = 1e-6).
+%
+% Outputs:
+%   R - an (w x w) square array representing the surface spectral
+%      reflectance. Note the algorithm does not impose any constraints on
+%      this array, it does not have to be diagonal or non-negative.
+%   emissionEst - an (w x 1) emission spectrum estimation.
+%   excitationEst - an (w x 1) excitation spectrum estimation.
+%   F - a (w x w) Donaldson matrix estimate.
+%   predRefl - a (f x c) array of predicted pixel
+%      intensities due to reflected light component.
+%   predFl - a (f x c) array of predicted pixel
+%      intensities due to fluoresced light component.
+%   hist - a structure containing primal and dual residuals of the ADMM
+%      solver, as well as number of iterations and errors of the PCG
+%      algorithm used to solve least-squares minimization at every ADMM
+%      iteration.
+% 
+% Copyright, Henryk Blasinski 2016.
+
+
 p = inputParser;
 p.addParamValue('maxIter',500);
 p.addParamValue('tauIncr',2,@isscalar);
 p.addParamValue('tauDecr',2,@isscalar);
 p.addParamValue('rhoInit',1,@isscalar);
-p.addParamValue('rescaleRho',true');
+p.addParamValue('rescaleRho',true);
 p.addParamValue('mu',10,@isscalar);
 p.addParamValue('verbose',true);
 p.addParamValue('epsilon',1e-6);
 p.parse(varargin{:});
 inputs = p.Results;
 
-% Approach by Suo with our own ADMM solver 
 
 % Re-scale the numbers to improve numerical stability
 nF = max(illuminant(:));
@@ -141,6 +202,9 @@ function res = softThresholding(in,thr)
     res = sign(in).*max(abs(in) - thr,0);
 
 end
+
+% Functions used by the PCG algorithm to iteratively solve a least-squares problem
+% without formulating large matrices.
 
 function res = applyAtA(x,cameraMat,illuminant,cameraGain,nWaves,nFilters,nChannels)
 
