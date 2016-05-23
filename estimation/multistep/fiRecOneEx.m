@@ -1,5 +1,38 @@
 function [exEst, exCoeffs] = fiRecOneEx(measVals, reflCoeffs, chrCoeffs, cameraMat, cameraGain, illuminant, basisRefl, basisEx, gamma)
 
+% [exEst, exCoeffs] = fiRecOneEx(measVals, reflCoeffs, chrCoeffs, cameraMat, cameraGain, illuminant, basisRefl, basisEx, gamma)
+% 
+% Estimate the excitation spectrum. This function implements the algorithm
+% of Fu et al. CVPR 2014 paper, section 3.3.
+%
+% Inputs:
+%    measVals - a (f x c x s) matrix containing pixel intensities of s 
+%      different surfaces captured with f camera channels captured under c
+%      different illuminants.
+%    reflCoeffs - a (n x s) array containing the estimated reflectance
+%      basis function weights for the s surfaces.
+%    chrCoeffs - a (f x s) array of estimated fluorescence emission
+%      chromaticities of the s surfaces.
+%    cameraMat - a (w x c) matrix containing the spectral responsivity
+%      functions of the c camera channels sampled at w wavebands.
+%    cameraGain - a (f x c x s) matrix of linear camera model gains for each
+%      filter-channel-surface combination.
+%    illuminant - a (w x c) matrix containing the spectral power
+%      distributions of the c illuminants. 
+%    basisRefl, basisEx - (w x n) matrices of n linear basis
+%      functions representing reflectance, and excitation spectra
+%      respectively.
+%    gamma - scalar tuning parameter controlling the smoothness of
+%      fluorescence excitation estimates.
+%
+% Outputs:
+%    exEst - a (w x s) matrix of the estimated surface excitation spectra.
+%    exCoeffs - a (n x s) matrix expressing the estimated surface excitation 
+%      spectra in terms of the linear basis weights.
+%
+% Copyright, Henryk Blasinski 2016
+
+
 nExBasis = size(basisEx,2);
 nReflBasis = size(basisRefl,2);
 nWaves = size(illuminant,1);

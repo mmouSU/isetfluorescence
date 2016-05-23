@@ -18,7 +18,9 @@ function [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, predRefl, predFl
 %      filter-channel-surface combination.
 %    cameraOffset - a (f x c x s) matrix of linear camera model offsets for
 %      each filter-channel-surface combination
-%    basisRefl, basisEx, basisEm - a (w x n) matrices of c linear basis
+%    illuminant - a (w x c) matrix containing the spectral power
+%      distributions of the c illuminants. 
+%    basisRefl, basisEx, basisEm - (w x n) matrices of n linear basis
 %      functions representing reflectance, excitation and emission spectra
 %      respectively
 %    alpha - scalar tuning parameter controlling the smoothness of
@@ -63,7 +65,7 @@ function [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, predRefl, predFl
 %      light intensities for each filter-illuminant-surface combination.
 %      Specifically, for ideal, noiseless measurements the following holds
 %              predRefl + predFl = (measVals - cameraOffset)
-%    hist - a c-dimensional cell array containing the objective function
+%    hist - a s-dimensional cell array containing the objective function
 %      values at successive minimization steps.
 %
 % Copyright, Henryk Blasinski 2016.
