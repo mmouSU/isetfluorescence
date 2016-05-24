@@ -3,11 +3,11 @@ function [ optLambda, error, reflEstimate, reflCoeffs, predResp ] = fiXValRefl( 
 % [ optLambda, convMat, reflEstimate, reflCoeffs, predResp ] = fiXValRefl( measVals, cameraResp, cameraGain, cameraOffset, illuminant, basisFcns, lambdaSet, reflReference )
 %
 % This function is used to perform the cross-validation search for the
-% optimal smoothness parameter lambda in the linearFindReflectanceV2
+% optimal smoothness parameter lambda in the fiRecRefl
 % function.
 %
 % Inputs:
-%   see help for linearFindReflectanceV2
+%   see help for fiRecRefl
 %   lambdaSet - a vector containing the values of lambda used in the cross
 %   validation process
 %   reflReference - a nWaves x nSamples matrix of reflectance reference

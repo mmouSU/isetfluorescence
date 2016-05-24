@@ -1,7 +1,92 @@
 function [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, dMat, predRefl, predFl, hist  ] = fiRecOneReflAndMultiFl( measVals, cameraMat, illuminant, cameraGain, basisRefl, basisEm, basisEx, alpha, beta, gamma, eta, varargin )
 
+% function [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, dMat, predRefl, predFl, hist  ] = fiRecOneReflAndMultiFl( measVals, cameraMat, illuminant, cameraGain, basisRefl, basisEm, basisEx, alpha, beta, gamma, eta, varargin )
+
+% This function implements the multi fluorophore model and 
+% estimates the reflectance and the Donaldson matrix 
+% from pixel intensities using an ADMM estimation algorithm. This 
+% implementation contains tuning parameters to independently adjust the 
+% smoothness of the excitation and emission spectra. 
+%
+% Inputs (required):
+%    measVals - a (f x c) matrix containing pixel intensities of a 
+%      surface captured with f camera channels and under c
+%      different illuminants.
+%    camera - a (w x c) matrix containing the spectral responsivity
+%      functions of the c camera channels sampled at w wavebands.
+%    cameraGain - a (f x c) matrix of linear camera model gains for each
+%      filter-channel combination.
+%    basisRefl, basisEm, basisEx - a (w x n) matrices of c linear basis
+%      functions representing reflectance, excitation and emission spectra
+%      respectively
+%    alpha - scalar tuning parameters controlling the smoothness of
+%      reflectance estimates
+%    beta - scalar tuning parameters controlling the smoothness of
+%      fluorescence excitation estimates
+%    gamma - scalar tuning parameters controlling the smoothness of
+%      fluorescence emission estimates
+%    eta - scalar tuning parameters controlling the nuclear norm of the
+%      Donaldson matrix estimate
+%
+% Inputs (optional):
+%    'reflRef' - a (w x s) matrix of reference surface reflectances. If
+%      provided the algorithm compute the error between the estimate at
+%      iteration i, and the reference. This error is stored in the hist
+%      structure. 
+%    'dMatRef' - a (s x 1) cell array of reference Donaldson matrices. If
+%      provided the algorithm compute the error between the estimate at
+%      iteration i, and the reference. This error is stored in the hist
+%      structure. 
+%    'pixelRef' - a boolean value indicating if the error between predicted
+%      and mesured pixel intensities is to be computed at every iteration.
+%      (default = false).
+%   'maxIter' - the maximal number of ADMM interations (default = 500).
+%   'rescaleRho' - implement a heuristic algorithm improving ADMM
+%      convergence from Boyd 2011 (default = true).
+%   'tauIncr' - heuristic algorithm parameter (see Boyd, 2011) 
+%      (default = 5).
+%   'tauDecr' - heuristic algorithm parameter (see Boyd, 2011) 
+%      (default = 5).
+%   'rhoInit' - heuristic algorithm parameter (see Boyd, 2011) 
+%      (default = 0.1).
+%   'mu' - heuristic algorithm parameter (see Boyd, 2011) 
+%      (default = 10).
+%   'nFluorophores' - specify the number of principal components to
+%      preserve in the Donaldson matrix estimates. If different than zero,
+%      instead of soft-thresholding the singular values, onlty nFluorophore
+%      largest singular values are preserved. Setting this parameter
+%      makes the problem non convex (default = 0).
+%   'epsilon' - the convergence threshold for the ADMM algorithm 
+%      (default = 1e-6).
+%
+% Outputs:
+%    reflEst - a (w x 1) vector of the estimated surface spectral reflectance.
+%    rfCoeffs - a (s x 1) vector expressing the estimated surface spectral 
+%      reflectance in terms of the linear basis weights.
+%    emEst - a (w x 1) vector of the estimated emission spectrum (the first
+%      principal component of the Donaldson matrix estimate).
+%    emCoeffs - a (s x 1) vector expressing the estimated surface emission 
+%      spectrum in terms of the linear basis weights.
+%    exEst - a (w x 1) vector of the estimated surface excitation spectrum.
+%      (the first principal component of the Donaldson matrix estimate).
+%    exCoeffs - a (s x 1) vector expressing the estimated surface excitation 
+%      spectrum in terms of the linear basis weights.
+%    dMat - a (w x w) array representing the Donaldson matrix estimate.
+%    predRefl - a (f x c) matrix of values representing the reflected
+%      light intensities for each filter-illuminant combination.
+%    predFl - a (f x c) matrix of values representing the fluoresced
+%      light intensities for each filter-illuminant combination.
+%      Specifically, for ideal, noiseless measurements the following holds
+%              predRefl + predFl = (measVals - cameraOffset)
+%    hist - structure containing the objective function values at 
+%      successive minimization steps.
+%
+% Copytight, Henryk Blasinski 2016
+
+
+
 p = inputParser;
-p.addParamValue('maxIter',200);
+p.addParamValue('maxIter',500);
 p.addParamValue('tauIncr',5,@isscalar);
 p.addParamValue('tauDecr',5,@isscalar);
 p.addParamValue('rhoInit',0.1,@isscalar);
@@ -20,7 +105,6 @@ nExBasis = size(basisEx,2);
 nReflBasis = size(basisRefl,2);
 nWaves = size(illuminant,1);
 
-%
 scaleFac = max(cameraGain(:));
 cameraGain = cameraGain/scaleFac;
 illuminant = illuminant*scaleFac;
@@ -43,8 +127,12 @@ u3 = zeros(nEmBasis,nExBasis);
 % Estimate
 sol = [];
 
-% Pre-compute useful matrices
+% In general we use PCG algorithm to solve least-squares problem. Sometimes
+% this algorithm is faster if it operates on matrices, other times function
+% handles perform better. The commented line below allows to generate some
+% of the matrices used in the matrix approach.
 % [~, ~, AtA1, Atb1] = generateLSMatrices(measVals,cameraMat,illuminant,cameraGain,basisRefl,basisEx,basisEm, alpha, beta, gamma);
+
 lowerTr = logical(tril(ones(nWaves),-1));
 
 hist.rho = ones(inputs.maxIter+1,1);
@@ -71,20 +159,16 @@ for i=1:inputs.maxIter
     
     % Solve for reflectance and fluorescence
     
-    % t1 = tic;
-    % [~, ~, AtA2, Atb2] = generatePenaltyMatrices(y1-u1,y2-u2,y3-u3,basisRefl,basisEx,basisEm);
-    
-    % The iterative pcg method is 10 times faster than using function
-    % handles
-    % [sol, ~, hist.pcgAcc(i), hist.pcgIter(i)] = pcg(AtA1 + (hist.rho(i)/2)*AtA2,Atb1 + (hist.rho(i)/2)*Atb2,[],10000,[],[],sol);
-    % tElapsed = tElapsed + toc(t1);
-    
-    
-    
     t1 = tic;
+    
+    % Uncomment these lines to use matrix version of PCG
+    % [~, ~, AtA2, Atb2] = generatePenaltyMatrices(y1-u1,y2-u2,y3-u3,basisRefl,basisEx,basisEm);
+    % [sol, ~, hist.pcgAcc(i), hist.pcgIter(i)] = pcg(AtA1 + (hist.rho(i)/2)*AtA2,Atb1 + (hist.rho(i)/2)*Atb2,[],10000,[],[],sol);
+    
+    
+    % Uncomment these lines to use matrix handle version of PCG
     b = applyAtb(measVals, cameraMat, illuminant, cameraGain, basisRefl, basisEx, basisEm, y1-u1, y2-u2, y3-u3, hist.rho(i)/2);
     AtAhndl = @(x) applyAtA(x, cameraMat, illuminant, cameraGain, basisRefl, basisEx, basisEm, hist.rho(i)/2, alpha, beta, gamma);
-    
     [sol, ~, hist.pcgAcc(i), hist.pcgIter(i)] = pcg(AtAhndl,b,[],10000,[],[],sol);
     tElapsed = tElapsed + toc(t1);
     
@@ -99,15 +183,11 @@ for i=1:inputs.maxIter
     y1(y1 > 1) = 1;
     
     % Nonnegative penalty on fluorescence (i.e on the lower triangular part
-    % only, we dont care about the upper part since we nuke it anyway)
+    % only, we dont care about the upper part since we zero it anyway)
     y2 = basisEm*wEst*basisEx' + u2;
-    %y2 = tril(y2,-1);
     y2(lowerTr & y2 < 0) = 0;
-    % y2 = sign(y2).*max(abs(y2)-(0.0002)/hist.rho(i),0);
 
-    % If we want to strictly enforce lower triangularity:
-    % (This may be too severe a limitation)
-    
+     
     % Rank penalty on fluorescence weights
     tmp = wEst+u3;
     [U,S,V] = svd(tmp);
@@ -121,6 +201,7 @@ for i=1:inputs.maxIter
     else
         s(inputs.nFluorophores+1:end) = 0;
     end
+    
     % If the number of excitation end emission bases is different, then we
     % need to pad the S matrix accordingly
     y3 = U*padarray(diag(s),max([nEmBasis nExBasis] - length(s),0),0,'post')*V';
@@ -171,10 +252,10 @@ for i=1:inputs.maxIter
     
     
     %% Compute approximation error
-    % The opitmization is done, let's compute the estimates
+    % The opitmization is done, let's compute the estimates. All this is in
+    % 'if-else' statements to speed up computation if convergence analysis
+    % is not needed.
 
-    
-    
     if ~isempty(inputs.dMatRef)
         dMat = max(tril(basisEm*wEst*basisEx',-1),0);
 
@@ -207,18 +288,6 @@ end
 rfCoeffs = reWEst;
 reflEst = basisRefl*rfCoeffs;
 
-% Fluorescence
-% W = y3;
-%[U,S,V] = svd(W);
-
-% We are returning the coefficients of the largest component
-% emCoeffs = U(:,1)*sqrt(S(1,1));
-%exCoeffs = V(:,1)*sqrt(S(1,1));
-
-% Fluorescence emission and excitation shapes
-% emEst = abs(basisEm*emCoeffs);
-% exEst = abs(basisEx*exCoeffs);
-
 dMat = max(tril(basisEm*wEst*basisEx',-1),0);
 [U,S,V] = svd(dMat);
 
@@ -234,11 +303,12 @@ exCoeffs = basisEx'*exEst;
 
 % Compute the prediction
 predRefl = cameraGain.*(cameraMat'*diag(reflEst)*illuminant);
-
 predFl = cameraGain.*(cameraMat'*dMat*illuminant);
 
 
 end
+
+%% Helper functions used to generate matrices or compute linear operations
 
 function [A, b, AtA, Atb] = generateLSMatrices(measVals, camera, illuminant, cameraGain, basisRefl, basisEx, basisEm, alpha, beta, gamma)
 
@@ -267,7 +337,6 @@ flSubMat = diag(cameraGain(:))*flSubMat;
 
 % Now include smoothness penalties
 R = [eye(nWaves-1) zeros(nWaves-1,1)] - [zeros(nWaves-1,1) eye(nWaves-1)];
-% R = -[eye(nWaves - 2) zeros(nWaves-2,2)] + [zeros(nWaves-2,1) 2*eye(nWaves-2) zeros(nWaves-2,1)] -[eye(nWaves - 2) zeros(nWaves-2,2)];
 rPen = R*basisRefl;
 
 emPen = kron(basisEx,(R*basisEm));
@@ -298,21 +367,6 @@ nEmBasis = size(basisEm,2);
 % Excitation-emission matrix
 tmp = kron(basisEx,basisEm);
 
-%{
-% Reflectance
-b = reflPen(:);
-A = [basisRefl zeros(nWaves,nExBasis*nEmBasis)];
-
-b = [b; flMatPen(:)];
-A = [A; zeros(nWaves^2,nReflBasis) tmp];
-
-% Excitation-emission matrix weights
-b = [b; flWghtsPen(:)];
-A = [A; zeros(nExBasis*nEmBasis,nReflBasis) eye(nExBasis*nEmBasis)];
-%}
-
-
-
 AtA = [basisRefl'*basisRefl zeros(nReflBasis,nExBasis*nEmBasis);
        zeros(nExBasis*nEmBasis,nReflBasis) tmp'*tmp + eye(nExBasis*nEmBasis)];
 Atb = [basisRefl'*reflPen(:);
@@ -342,16 +396,11 @@ function res = applyAtA(x, cameraMat, illuminant, cameraGain, reflBasis, exBasis
     tmp2 = reflBasis'*diag(cameraMat*(cameraGain2.*(cameraMat'*tril(emBasis*W*exBasis',-1)*illuminant)*illuminant'));
     
     % OLD line read: res1 = 2*tmp1 + ...
-    % Empirically checked it was wrong, should go through the derivation...
+    % I think the new one below is correct...
     res1 = tmp1 + alpha*reflBasis'*(nabla'*nabla)*reflBasis*wr + rho*(reflBasis'*reflBasis)*wr + tmp2;
     
     tmp3 = emBasis'*tril(cameraMat*(cameraGain2.*(cameraMat'*diag(reflBasis*wr)*illuminant)*illuminant'),-1)*exBasis;
     tmp4 = emBasis'*tril(cameraMat*(cameraGain2.*(cameraMat'*tril(emBasis*W*exBasis',-1)*illuminant)*illuminant'),-1)*exBasis;
-    
-    %res2 = tmp3 + tmp4 + beta*emBasis'*(nabla'*nabla)*emBasis*W*(exBasis'*exBasis) + ...
-    %                   + gamma*(emBasis'*emBasis)*W*exBasis'*(nabla'*nabla)*exBasis + ...
-    %                   + rho*(emBasis'*emBasis)*W*(exBasis'*exBasis) + ...
-    %                   + rho*W;
                    
     res2 = tmp3 + tmp4 + beta*emBasis'*tril((nabla'*nabla)*tril(emBasis*W*exBasis',-1),-1)*exBasis + ...
                        + gamma*emBasis'*tril(tril(emBasis*W*exBasis',-1)*(nabla'*nabla),-1)*exBasis + ...

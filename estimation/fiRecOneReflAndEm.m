@@ -1,5 +1,60 @@
 function [ reflEst, rfCoeffs, emEst, emCoeffs, emWghts, predRefl, predFl, hist  ] = fiRecOneReflAndEm( measVals, cameraMat, cameraGain, illuminant, basisRefl, basisEm, alpha, beta, varargin )
 
+% [ reflEst, rfCoeffs, emEst, emCoeffs, emWghts, predRefl, predFl, hist  ] = fiRecOneReflAndEm( measVals, cameraMat, cameraGain, illuminant, basisRefl, basisEm, alpha, beta, ... )
+
+% This function implements the color invariant (CIM) fluorophore model and 
+% estimates the reflectance and fluorescence emission spectra 
+% from pixel intensities using a bi-convex estimation algorithm. This 
+% implementation contains tuning parameters to independently adjust the 
+% smoothness of the excitation and emission spectra. 
+%
+% Inputs (required):
+%    measVals - a (f x c) matrix containing pixel intensities of a 
+%      surface captured with f camera channels and under c
+%      different illuminants.
+%    camera - a (w x c) matrix containing the spectral responsivity
+%      functions of the c camera channels sampled at w wavebands.
+%    cameraGain - a (f x c) matrix of linear camera model gains for each
+%      filter-channel combination.
+%    basisRefl, basisEm - a (w x n) matrices of c linear basis
+%      functions representing reflectance and emission spectra
+%      respectively
+%    alpha - scalar tuning parameters controlling the smoothness of
+%      reflectance estimates
+%    beta - scalar tuning parameters controlling the smoothness of
+%      fluorescence excitation estimates
+%
+% Inputs (optional):
+%    'tol' - a scalar describing the change in the objective function
+%      value that causes the iterative algorithm to terminate (default: 1e-8)
+%    'maxIter' - maximal number of iterations of the biconvex algorithm. Two
+%      convex problems are solved for every iteration: one to estimate
+%      reflectance and emission spectrum, the other to estimate reflectance
+%      and emission scale (default 100).
+%
+% Outputs:
+%    reflEst - a (w x 1) vector of the estimated surface spectral reflectance.
+%    rfCoeffs - a (s x 1) vector expressing the estimated surface spectral 
+%      reflectance in terms of the linear basis weights.
+%    emEst - a (w x 1) vector of the estimated emission spectrum.
+%    emCoeffs - a (s x 1) vector expressing the estimated surface emission 
+%      spectrum in terms of the linear basis weights.
+%    emWghts - a (c x 1) vector of scale factors representing the intensity
+%      of fluorescence emission under each illuminant.
+%    predRefl - a (f x c) matrix of values representing the reflected
+%      light intensities for each filter-illuminant combination.
+%    predFl - a (f x c) matrix of values representing the fluoresced
+%      light intensities for each filter-illuminant combination.
+%      Specifically, for ideal, noiseless measurements the following holds
+%              predRefl + predFl = (measVals - cameraOffset)
+%    hist - structure containing the objective function values at 
+%      successive minimization steps.
+%
+% Copytight, Henryk Blasinski 2016
+
+
+
+
 p = inputParser;
 p.KeepUnmatched = true;
 p.addParamValue('tol',1e-6);
