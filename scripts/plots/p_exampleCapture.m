@@ -1,8 +1,17 @@
+% Display images for all pairs of camera filter and illuminant captured for 
+% a particular scene. This script generates images in Fig. 11 in the paper.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;
 
-%%
+% Define the directory where figures will be saved. If saveDir = [], then
+% figures are not saved.
+% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+saveDir = [];
+
 
 testFileName = 'Macbeth+Fl';
 backgroundFileName = 'Background';
@@ -66,9 +75,6 @@ fName = fullfile(fiToolboxRootPath,'data','experiments',testFileName);
 [~, ~, scaledMacbeth, shutterMacbeth] = fiReadImageStack(fName);
 linearVals = scaledMacbeth.*scaleMap;
 
-% Show and save images
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
-
 for f=1:nFilters
     
     nF = linearVals(:,:,f,:);
@@ -76,11 +82,15 @@ for f=1:nFilters
     
     for c=1:nChannels
         fi = figure;
-        tmp = imresize(linearVals(:,:,f,c),0.2);
+        tmp = max(imresize(linearVals(:,:,f,c),0.2),0);
         imshow((tmp/nF).^(1/2.2),'InitialMagnification',100,'Border','tight');
-        fName = fullfile(saveDir,sprintf('image_f%i_c%i.eps',f,c));
-        print('-depsc',fName);
-        close(fi);
+        
+        if ~isempty(saveDir)
+            fName = fullfile(saveDir,sprintf('image_f%i_c%i.eps',f,c));
+            print('-depsc',fName);
+            close(fi);
+        end
+        
     end
 end
 

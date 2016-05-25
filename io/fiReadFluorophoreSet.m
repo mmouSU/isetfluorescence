@@ -56,7 +56,7 @@ indx = [];
 for i=1:nFiles
     
     fName = fullfile(dirName,files(i).name);
-    fl = fiReadFluorophore(fName);
+    fl = fiReadFluorophore(fName,'wave',inputs.wave);
     
     % Remove the fluorphores outside the Stokes shift range
     if fluorophoreGet(fl,'Stokes shift') < min(inputs.stokesShiftRange) ||  fluorophoreGet(fl,'Stokes shift') > max(inputs.stokesShiftRange)

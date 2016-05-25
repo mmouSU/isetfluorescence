@@ -1,38 +1,52 @@
+% Generate plots showing the tuning parameter cross validation results of the
+% multi fluorophore algorithm. This script generates Fig. 1 from the 
+% Supplemental Material.
+%
+% Copyright, Henryk Blasinski 2016.
+
 close all;
 clear all;
 clc;
 
-%% Save results
-inFName = 'McNamara-Boswell_4x6x1_qe_0.10';
-fName = fullfile(fiToolboxRootPath,'results','xVal',[inFName '_xVal_multiFl.mat']);
-load(fName);
+% Define the directory where figures will be saved. If saveDir = [], then
+% figures are not saved.
+% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+saveDir = [];
 
-nBeta = length(betaRange);
-nAlpha = length(alphaRange);
-nNu = length(nuRange);
-
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+% Figure style parameters
 lineStyle = {'rs-','gd-','bo-'};
 lw = 2;
 mkSz = 8;
 fs = 8;
 figSize = [0 0 4.5 2.75];
 
+
+% Load data
+inFName = 'McNamara-Boswell_4x6x1_qe_0.10';
+fName = fullfile(fiToolboxRootPath,'results','xVal',sprintf('%s_xVal_multiFl.mat',inFName));
+load(fName);
+
+nBeta = length(betaRange);
+nAlpha = length(alphaRange);
+nEta = length(nuRange);
+
+
+
 % Alpha
 
-[pixelErrPlot, minLoc] = min(reshape(permute(totalPixelErr,[2 3 1]),[nBeta*nNu, nAlpha]));
-tmp = reshape(permute(totalPixelStd,[2 3 1]),[nBeta*nNu, nAlpha]);
-inds = sub2ind([nBeta*nNu, nAlpha],minLoc,1:nAlpha);
+[pixelErrPlot, minLoc] = min(reshape(permute(totalPixelErr,[2 3 1]),[nBeta*nEta, nAlpha]));
+tmp = reshape(permute(totalPixelStd,[2 3 1]),[nBeta*nEta, nAlpha]);
+inds = sub2ind([nBeta*nEta, nAlpha],minLoc,1:nAlpha);
 pixelErrPlotStd = tmp(inds)/sqrt(24);
 
-[reflErrPlot, minLoc] = min(reshape(permute(reflErr,[2 3 1]),[nBeta*nNu, nAlpha]));
-tmp = reshape(permute(reflStd,[2 3 1]),[nBeta*nNu, nAlpha]);
-inds = sub2ind([nBeta*nNu, nAlpha],minLoc,1:nAlpha);
+[reflErrPlot, minLoc] = min(reshape(permute(reflErr,[2 3 1]),[nBeta*nEta, nAlpha]));
+tmp = reshape(permute(reflStd,[2 3 1]),[nBeta*nEta, nAlpha]);
+inds = sub2ind([nBeta*nEta, nAlpha],minLoc,1:nAlpha);
 reflErrPlotStd = tmp(inds)/sqrt(24);
 
-[dMatNormErrPlot, minLoc] = min(reshape(permute(dMatNormErr,[2 3 1]),[nBeta*nNu, nAlpha]));
-tmp = reshape(permute(dMatNormStd,[2 3 1]),[nBeta*nNu, nAlpha]);
-inds = sub2ind([nBeta*nNu, nAlpha],minLoc,1:nAlpha);
+[dMatNormErrPlot, minLoc] = min(reshape(permute(dMatNormErr,[2 3 1]),[nBeta*nEta, nAlpha]));
+tmp = reshape(permute(dMatNormStd,[2 3 1]),[nBeta*nEta, nAlpha]);
+inds = sub2ind([nBeta*nEta, nAlpha],minLoc,1:nAlpha);
 dMatNormPlotStd = tmp(inds)/sqrt(24);
 
 figure;
@@ -50,24 +64,25 @@ ylabel('min_{\beta,\eta}(RMSE)');
 set(gca,'fontSize',fs);
 set(gca,'xscale','log');
 legend({'Pixel','Reflectance','Donaldson matrix'},'location','northwest');
-print('-depsc',fullfile(saveDir,'multiFl_xVal_alpha.eps'));
-
+if ~isempty(saveDir)
+    print('-depsc',fullfile(saveDir,'multiFl_xVal_alpha.eps'));
+end
 
 % Beta
 
-[pixelErrPlot, minLoc] = min(reshape(permute(totalPixelErr,[1 3 2]),[nAlpha*nNu, nBeta]));
-tmp = reshape(permute(totalPixelStd,[1 3 2]),[nAlpha*nNu, nBeta]);
-inds = sub2ind([nAlpha*nNu, nBeta],minLoc,1:nBeta);
+[pixelErrPlot, minLoc] = min(reshape(permute(totalPixelErr,[1 3 2]),[nAlpha*nEta, nBeta]));
+tmp = reshape(permute(totalPixelStd,[1 3 2]),[nAlpha*nEta, nBeta]);
+inds = sub2ind([nAlpha*nEta, nBeta],minLoc,1:nBeta);
 pixelErrPlotStd = tmp(inds)/sqrt(24);
 
-[reflErrPlot, minLoc] = min(reshape(permute(reflErr,[1 3 2]),[nAlpha*nNu, nBeta]));
-tmp = reshape(permute(reflStd,[1 3 2]),[nAlpha*nNu, nBeta]);
-inds = sub2ind([nAlpha*nNu, nBeta],minLoc,1:nBeta);
+[reflErrPlot, minLoc] = min(reshape(permute(reflErr,[1 3 2]),[nAlpha*nEta, nBeta]));
+tmp = reshape(permute(reflStd,[1 3 2]),[nAlpha*nEta, nBeta]);
+inds = sub2ind([nAlpha*nEta, nBeta],minLoc,1:nBeta);
 reflErrPlotStd = tmp(inds)/sqrt(24);
 
-[dMatNormErrPlot, minLoc] = min(reshape(permute(dMatNormErr,[1 3 2]),[nAlpha*nNu, nBeta]));
-tmp = reshape(permute(dMatNormStd,[1 3 2]),[nAlpha*nNu, nBeta]);
-inds = sub2ind([nAlpha*nNu, nBeta],minLoc,1:nBeta);
+[dMatNormErrPlot, minLoc] = min(reshape(permute(dMatNormErr,[1 3 2]),[nAlpha*nEta, nBeta]));
+tmp = reshape(permute(dMatNormStd,[1 3 2]),[nAlpha*nEta, nBeta]);
+inds = sub2ind([nAlpha*nEta, nBeta],minLoc,1:nBeta);
 dMatNormPlotStd = tmp(inds)/sqrt(24);
 
 
@@ -87,24 +102,26 @@ ylabel('min_{\alpha,\eta}(RMSE)');
 set(gca,'fontSize',fs);
 set(gca,'xscale','log');
 legend({'Pixel','Reflectance','Donaldson matrix'},'location','northwest');
-print('-depsc',fullfile(saveDir,'multiFl_xVal_beta.eps'));
 
+if ~isempty(saveDir)
+    print('-depsc',fullfile(saveDir,'multiFl_xVal_beta.eps'));
+end
 
-% Nu
+% Eta
 
-[pixelErrPlot, minLoc] = min(reshape(permute(totalPixelErr,[1 2 3]),[nAlpha*nBeta, nNu]));
-tmp = reshape(permute(totalPixelStd,[1 2 3]),[nAlpha*nBeta, nNu]);
-inds = sub2ind([nAlpha*nBeta, nNu],minLoc,1:nNu);
+[pixelErrPlot, minLoc] = min(reshape(permute(totalPixelErr,[1 2 3]),[nAlpha*nBeta, nEta]));
+tmp = reshape(permute(totalPixelStd,[1 2 3]),[nAlpha*nBeta, nEta]);
+inds = sub2ind([nAlpha*nBeta, nEta],minLoc,1:nEta);
 pixelErrPlotStd = tmp(inds)/sqrt(24);
 
-[reflErrPlot, minLoc] = min(reshape(permute(reflErr,[1 2 3]),[nAlpha*nBeta, nNu]));
-tmp = reshape(permute(reflStd,[1 2 3]),[nAlpha*nBeta, nNu]);
-inds = sub2ind([nAlpha*nBeta, nNu],minLoc,1:nNu);
+[reflErrPlot, minLoc] = min(reshape(permute(reflErr,[1 2 3]),[nAlpha*nBeta, nEta]));
+tmp = reshape(permute(reflStd,[1 2 3]),[nAlpha*nBeta, nEta]);
+inds = sub2ind([nAlpha*nBeta, nEta],minLoc,1:nEta);
 reflErrPlotStd = tmp(inds)/sqrt(24);
 
-[dMatNormErrPlot, minLoc] = min(reshape(permute(dMatNormErr,[1 2 3]),[nAlpha*nBeta, nNu]));
-tmp = reshape(permute(dMatNormStd,[1 2 3]),[nAlpha*nBeta, nNu]);
-inds = sub2ind([nAlpha*nBeta, nNu],minLoc,1:nNu);
+[dMatNormErrPlot, minLoc] = min(reshape(permute(dMatNormErr,[1 2 3]),[nAlpha*nBeta, nEta]));
+tmp = reshape(permute(dMatNormStd,[1 2 3]),[nAlpha*nBeta, nEta]);
+inds = sub2ind([nAlpha*nBeta, nEta],minLoc,1:nEta);
 dMatNormPlotStd = tmp(inds)/sqrt(24);
 
 
@@ -124,4 +141,7 @@ ylabel('min_{\alpha,\beta}(RMSE)');
 set(gca,'fontSize',fs);
 set(gca,'xscale','log');
 legend({'Pixel','Reflectance','Donaldson matrix'},'location','northwest');
-print('-depsc',fullfile(saveDir,'multiFl_xVal_eta.eps'));
+
+if ~isempty(saveDir)
+    print('-depsc',fullfile(saveDir,'multiFl_xVal_eta.eps'));
+end

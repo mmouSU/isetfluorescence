@@ -1,17 +1,20 @@
+% This script demonstrates the variance of fluorescence emission when a
+% mixture of fluorophores is present and generates Fig. 3 in the paper.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;
 
+% Define the directory where figures will be saved. If saveDir = [], then
+% figures are not saved.
+% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+saveDir = [];
+
 wave = 380:4:1000;
 
-fName = fullfile(fiToolboxRootPath,'data','redFl');
-redFl = fiReadFluorophore(fName,'wave',wave);
-
-fName = fullfile(fiToolboxRootPath,'data','greenFl');
-greenFl = fiReadFluorophore(fName,'wave',wave);
-
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
-
+% Figure style parameters
 fs = 10;
 lw = 1;
 ms = 10;
@@ -24,6 +27,19 @@ markers = {'o','x','^'};
 colors = {'r','g','b'};
 selWaves = 1:3:length(wave);
 
+
+
+
+% Load the fluorophores used in experiments
+fName = fullfile(fiToolboxRootPath,'data','redFl');
+redFl = fiReadFluorophore(fName,'wave',wave);
+
+fName = fullfile(fiToolboxRootPath,'data','greenFl');
+greenFl = fiReadFluorophore(fName,'wave',wave);
+
+
+
+%% Plot excitation and emission spectra
 figure;
 hold on; grid off; box on;
 
@@ -45,7 +61,7 @@ set(gca,'fontsize',fs-2)
 lg = legend(l,{'$e_x(\lambda)$','$e_m(\lambda)$'},'fontsize',fs,'location','northeast','interpreter','latex');
 
 
-% Change everything to black
+% Change all legend symbols to black
 ch = get(lg,'Children');
 set(ch,'Color','black');
 
@@ -65,12 +81,17 @@ for i=1:length(textHndl)
     set(textHndl(i),'Position',textPos{i});
 end
 
+if ~isempty(saveDir)
+    fName = fullfile(saveDir,'TwoFluorophores.eps');
+    print('-depsc',fName);
+end
 
-fName = fullfile(saveDir,'TwoFluorophores.eps');
-print('-depsc',fName);
 
+%% Plot the (normalized) emission radiances of the two fluorophore composition
 
-%% Emission spectra
+% We assume that the sample is illuminated with monochromatic light and we
+% select radiances at three different excitation wavelengths.
+selWaveIDs = [10 40 60];
 
 spd = zeros(length(wave));
 for i=1:length(wave)
@@ -84,7 +105,6 @@ end
 spd = spd*diag(1./max(spd));
 
 
-selWaveIDs = [10 40 60];
 
 figure; 
 hold all; grid off; box on;
@@ -117,16 +137,17 @@ set(ch(4),'Marker',markers{2},'MarkerSize',ms/2);
 set(ch(7),'Marker',markers{1},'MarkerSize',ms/2);
 
 
-
-fName = fullfile(saveDir,'chrInv.eps');
-print('-depsc',fName);
-
+if ~isempty(saveDir)
+    fName = fullfile(saveDir,'chrInv.eps');
+    print('-depsc',fName);
+end
 
 
 
 %% Chromaticity diagram.
 
-% Compute spectra and convert to xyY
+% Compute spectra and convert to xyY. Multiply unit intensity spectra by a
+% large number so that they represent plausible photon units.
 spd(isnan(spd)) = 0;
 spd = spd*1e17;
 
@@ -143,7 +164,6 @@ plot(x,y,'kx','LineWidth',lw,'MarkerSize',ms);
 xlabel('x','fontsize',fs);
 ylabel('y','fontsize',fs);
 
-
 set(gca,'XTick',0:0.2:0.8);
 set(gca,'YTick',0:0.2:0.8);
 
@@ -151,9 +171,10 @@ set(gcf,'Units','centimeters');
 set(gcf,'PaperPosition',sz2);
 set(gca,'FontSize',fs-2);
 
-fName = fullfile(saveDir,'chrxy.eps');
-print('-depsc','-opengl','-r400',fName);
-
+if ~isempty(saveDir)
+    fName = fullfile(saveDir,'chrxy.eps');
+    print('-depsc','-opengl','-r400',fName);
+end
 
 
 

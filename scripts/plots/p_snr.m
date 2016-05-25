@@ -1,9 +1,20 @@
+% Generate plots showing the accuracy of the multi- and single fluorophore
+% estimation algorithms as a function of the SNR.
+% This script reproduces Fig. 7 from the paper.
+%
+% Copyright, Henryk Blasinski 2016.
+
+
 close all;
 clear all;
 clc;
 
+% Define the directory where figures will be saved. If saveDir =[], then
+% figures are not saved.
+% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+saveDir = [];
+
 dataset = 'McNamara-Boswell';
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
 
 lw = 1;
 fs = 8;
@@ -32,8 +43,10 @@ xlabel('SNR, dB','fontsize',fs);
 ylabel('RMSE','fontsize',fs);
 legend('Pixel','Reflectance','Excitation','Emission','location','northeast');
 
-fName = fullfile(saveDir,'FlSNR.eps');
-print('-depsc',fName);
+if ~isempty(saveDir)
+    fName = fullfile(saveDir,'FlSNR.eps');
+    print('-depsc',fName);
+end
 
 %% Multi-fluorophore
 
@@ -56,9 +69,10 @@ xlabel('SNR, dB','fontsize',fs);
 ylabel('RMSE','fontsize',fs);
 legend('Pixel','Reflectance','Donaldson matrix','location','northeast');
 
-fName = fullfile(saveDir,'multiFlSNR.eps');
-print('-depsc',fName);
-
+if ~isempty(saveDir)
+    fName = fullfile(saveDir,'multiFlSNR.eps');
+    print('-depsc',fName);
+end
 
 
 

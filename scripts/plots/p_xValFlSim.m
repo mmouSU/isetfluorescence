@@ -1,21 +1,37 @@
+% Generate plots showing the tuning parameter cross validation results of the
+% single fluorophore algorithm. This script generates Fig. 2 from the 
+% Supplemental Material.
+%
+% Copyright, Henryk Blasinski 2016.
+
+
 close all;
 clear all;
 clc;
 
 
-inFName = 'McNamara-Boswell_4x6x1_qe_0.10';
-fName = fullfile(fiToolboxRootPath,'results','xVal',[inFName '_xVal_Fl.mat']);
-load(fName);
+% Define the directory where figures will be saved. If saveDir =[], then
+% figures are not saved.
+% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+saveDir = [];
 
-nAlpha = length(alphaRange);
-nBeta = length(betaRange);
-
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+% Figure style parameters
 lineStyle = {'rs-','gd-','bo-','c^-'};
 lw = 2;
 mkSz = 8;
 fs = 8;
 figSize = [0 0 4.5 2.75];
+
+
+% Load data
+inFName = 'McNamara-Boswell_4x6x1_qe_0.10';
+fName = fullfile(fiToolboxRootPath,'results','xVal',sprintf('%s_xVal_Fl.mat',inFName));
+load(fName);
+
+nAlpha = length(alphaRange);
+nBeta = length(betaRange);
+
+
 
 
 % Alpha
@@ -52,8 +68,10 @@ ylabel('min_{\beta}(RMSE)');
 set(gca,'fontSize',fs);
 set(gca,'xscale','log');
 legend({'Pixel','Reflectance','Excitation','Emission'},'location','northwest');
-print('-depsc',fullfile(saveDir,'singleFl_xVal_alpha.eps'));
 
+if ~isempty(saveDir)
+    print('-depsc',fullfile(saveDir,'singleFl_xVal_alpha.eps'));
+end
 
 % Beta
 
@@ -91,7 +109,9 @@ ylabel('min_{\alpha}(RMSE)');
 set(gca,'fontSize',fs);
 set(gca,'xscale','log');
 legend({'Pixel','Reflectance','Excitation','Emission'},'location','northwest');
-print('-depsc',fullfile(saveDir,'singleFl_xVal_beta.eps'));
 
+if ~isempty(saveDir)
+    print('-depsc',fullfile(saveDir,'singleFl_xVal_beta.eps'));
+end
 
 

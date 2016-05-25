@@ -1,18 +1,30 @@
+% Analyze the single fluorophore estimation results applied to the entire
+% McNamara-Boswell data set. This script generates Fig. 4 in Supplemental
+% Material.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;
 
+% Define the directory where figures will be saved. If saveDir = [], then
+% figures are not saved.
+% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+saveDir = [];
 
-fName = fullfile(fiToolboxRootPath,'results','evaluation','McNamara-Boswell_sim_Fl.mat');
-load(fName);
-
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+% Figure render parameters
 lw = 2;
 mkSz = 8;
 fs = 8;
 figSize = [0 0 4.5 2.75];
 
-% Pixel values
+fName = fullfile(fiToolboxRootPath,'results','evaluation','McNamara-Boswell_sim_Fl.mat');
+load(fName);
+
+
+
+%% Pixel values
 
 [sortedTotalPixelErr, indx] = sort(totalPixelErr,'ascend');
 
@@ -24,7 +36,8 @@ pl(3) = plot(1:nCompounds,sortedTotalPixelErr + totalPixelStd(indx)/sqrt(24),'li
 set(pl,'color','red');
 lg(1) = pl(1);
 
-% Reflectance
+
+%% Reflectance
 [sortedReflErr, indx] = sort(reflErr,'ascend');
 
 pl(1) = plot(1:nCompounds,sortedReflErr,'lineWidth',lw);
@@ -34,7 +47,7 @@ set(pl,'color','green');
 lg(2) = pl(1);
 
 
-% Excitation
+%% Excitation
 [sortedExNormErr, indx] = sort(exNormErr,'ascend');
 
 pl(1) = plot(1:nCompounds,sortedExNormErr,'lineWidth',lw);
@@ -43,7 +56,7 @@ pl(3) = plot(1:nCompounds,sortedExNormErr + exNormStd(indx)/sqrt(24),'lineWidth'
 set(pl,'color','blue');
 lg(3) = pl(1);
 
-% Emission
+%% Emission
 [sortedEmNormErr, indx] = sort(emNormErr,'ascend');
 
 pl(1) = plot(1:nCompounds,sortedEmNormErr,'lineWidth',lw);
@@ -62,5 +75,6 @@ ylim([0.0 0.5]);
 set(gca,'fontSize',fs);
 legend(lg,{'Pixel','Reflectance','Excitation','Emission'},'location','northwest');
 
-print('-depsc',fullfile(saveDir,'Fl_eval.eps'));
-
+if ~isempty(saveDir)
+    print('-depsc',fullfile(saveDir,'Fl_eval.eps'));
+end

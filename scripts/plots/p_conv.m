@@ -1,9 +1,18 @@
+% Generate plots showing the convergence of the multi- and single fluorophore
+% algorithms This script generates Fig. 8 from the paper.
+%
+% Copyright, Henryk Blasinski 2016.
+
 close all;
 clear all;
 clc;
 
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+% Define the directory where figures will be saved. If saveDir = [], then
+% figures are not saved.
+% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+saveDir = [];
 
+% Figure display settings
 lw = 1;
 fs = 8;
 ms = 3;
@@ -53,8 +62,10 @@ xlabel('Iterations','fontsize',fs);
 ylabel('RMSE','fontsize',fs);
 legend('Pixel','Reflectance','Donaldson matrix','location','northeast');
 
-fName = fullfile(saveDir,'multiFlConv.eps');
-print('-depsc',fName);
+if ~isempty(saveDir)
+    fName = fullfile(saveDir,'multiFlConv.eps');
+    print('-depsc',fName);
+end
 
 %% Single fluorophore
 
@@ -119,6 +130,7 @@ xlabel('Iterations','fontsize',fs);
 ylabel('RMSE','fontsize',fs);
 legend('Pixel','Reflectance','Excitation','Emission','location','northeast');
 
-fName = fullfile(saveDir,'flConv.eps');
-print('-depsc',fName);
-
+if ~isempty(saveDir)
+    fName = fullfile(saveDir,'flConv.eps');
+    print('-depsc',fName);
+end

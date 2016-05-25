@@ -1,30 +1,42 @@
+% This script analyzes the accuracy of linear approximation of spectral
+% quantities (reflectance, excitation and emission) and generates Fig. 5
+% from the paper.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;
 
+% Define the directory where figures will be saved. If saveDir =[], then
+% figures are not saved.
+% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+saveDir = [];
+
+% Figure style parameters
+lineStyle = {'rs-','gd-','bo-','c^-'};
+lw = 1;
+mkSz = 2;
+fs = 5;
+figSize = [1 1 4.5 3];
+
 wave = 380:4:1068;
 
+
+% Generate linear basis functions for reflectance, excitation and emission
 nReflBasis = 5;
 nExBasis = 12;
 nEmBasis = 12;
 
-[reflBasis, reflScore] = createBasisSet('reflectance','wave',wave','n',24);
-[exBasis, exScore] = createBasisSet('excitation','wave',wave','n',24);
-[emBasis, emScore] = createBasisSet('emission','wave',wave','n',24);
+[reflBasis, reflScore] = fiCreateBasisSet('reflectance','wave',wave','n',24);
+[exBasis, exScore] = fiCreateBasisSet('excitation','wave',wave','n',24);
+[emBasis, emScore] = fiCreateBasisSet('emission','wave',wave','n',24);
 
 cumNormReflScore = cumsum(reflScore/sum(reflScore));
 cumNormExScore = cumsum(exScore/sum(exScore));
 cumNormEmScore = cumsum(emScore/sum(emScore));
 
 %% Generate plots
-close all;
-
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
-lineStyle = {'rs-','gd-','bo-','c^-'};
-lw = 1;
-mkSz = 2;
-fs = 5;
-figSize = [1 1 4.5 3];
 
 figure;
 hold all; grid on; box on;
@@ -39,7 +51,10 @@ ylim([0.5 1.1]);
 xlabel('# of basis functions','fontsize',fs);
 ylabel('Energy','fontsize',fs);
 set(gca,'fontSize',fs-2);
-print('-depsc',fullfile(saveDir,'basisVariance.eps'));
+
+if ~isempty(saveDir)
+    print('-depsc',fullfile(saveDir,'basisVariance.eps'));
+end
 
 critReflVar = interp1(1:24,cumNormReflScore,nReflBasis);
 critExVar = interp1(1:24,cumNormExScore,nExBasis);
@@ -64,7 +79,9 @@ xlabel('Wavelength, nm','fontsize',fs);
 xlim([min(wave) max(wave)]);
 ylim(1.05*[min(min(reflBasis(:,1:3))) max(max(reflBasis(:,1:3)))]);
 set(gca,'fontSize',fs-2);
-print('-depsc',fullfile(saveDir,'reflBasis.eps'));
+if ~isempty(saveDir)
+    print('-depsc',fullfile(saveDir,'reflBasis.eps'));
+end
 
 % Excitation basis
 
@@ -80,7 +97,9 @@ set(gca,'YTick',-0.2:0.1:0.2);
 xlim([min(wave) max(wave)]);
 ylim(1.05*[min(min(exBasis(:,1:3))) max(max(exBasis(:,1:3)))]);
 set(gca,'fontSize',fs-2);
-print('-depsc',fullfile(saveDir,'exBasis.eps'));
+if ~isempty(saveDir)
+    print('-depsc',fullfile(saveDir,'exBasis.eps'));
+end
 
 % Emission basis
 
@@ -96,8 +115,9 @@ set(gca,'YTick',-0.2:0.1:0.2);
 xlim([min(wave) max(wave)]);
 ylim(1.05*[min(min(emBasis(:,1:3))) max(max(emBasis(:,1:3)))]);
 set(gca,'fontSize',fs-2);
-print('-depsc',fullfile(saveDir,'emBasis.eps'));
-
+if ~isempty(saveDir)
+    print('-depsc',fullfile(saveDir,'emBasis.eps'));
+end
 
 
 

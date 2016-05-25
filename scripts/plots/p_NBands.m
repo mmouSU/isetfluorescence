@@ -1,11 +1,22 @@
+% Generate plots showing the accuracy of the multi- and single fluorophore
+% estimation algorithms as a function of the number of illuminant and
+% camera channels. This script reproduces Fig. 6 from the paper.
+%
+% Copyright, Henryk Blasinski 2016.
+
+
 close all;
 clear all;
 clc;
 
+% Define the directory where figures will be saved. If saveDir =[], then
+% figures are not saved.
+% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+saveDir = [];
 
 dataset = 'McNamara-Boswell';
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
 
+% Figure display parameters
 fs = 8;
 sz = [1 1 8 8];
 lw = 2;
@@ -49,8 +60,10 @@ for i=1:length(cntrs)
 end
 uistack(hndl,'top');
 
-fName = fullfile(saveDir,'flNBands.eps');
-print('-depsc',fName);
+if ~isempty(saveDir)
+    fName = fullfile(saveDir,'flNBands.eps');
+    print('-depsc',fName);
+end
 
 %% Multi fluorophore algorithm
 
@@ -89,6 +102,8 @@ for i=1:length(cntrs)
 end
 uistack(hndl,'top');
 
-fName = fullfile(saveDir,'multiFlNBands.eps');
-print('-depsc',fName);
+if ~isempty(saveDir)
+    fName = fullfile(saveDir,'multiFlNBands.eps');
+    print('-depsc',fName);
+end
 

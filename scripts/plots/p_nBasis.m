@@ -1,8 +1,20 @@
+% Generate plots showing the accuracy of the multi- and single fluorophore
+% estimation algorithms as a function of the number of excitation and 
+% emission basis functions. This script reproduces Fig. 5 from the paper.
+%
+% Copyright, Henryk Blasinski 2016.
+
 close all;
 clear all;
 clc;
 
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+% Define the directory where figures will be saved. If saveDir =[], then
+% figures are not saved.
+% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+saveDir = [];
+
+dataset = 'McNamara-Boswell';
+
 
 fs = 8;
 sz = [1 1 8 8];
@@ -11,7 +23,7 @@ cntrs = [0.025 0.01 0.0075];
 
 %% Single fluorophore
 
-fName = fullfile(fiToolboxRootPath,'results','evaluation','McNamara-Boswell_simNBasis_fl');
+fName = fullfile(fiToolboxRootPath,'results','evaluation',sprintf('%s_simNBasis_fl',dataset));
 load(fName);
 
 figure;
@@ -37,7 +49,7 @@ cMap = colormap(gca);
 C = contourc(unique(emBasisGrid),unique(exBasisGrid),dMatErr,cntrs);
 offset = 1;
 for i=1:length(cntrs);
-    lvl = C(1,offset)
+    lvl = C(1,offset);
     nPts = C(2,offset);
     clr = round(interp1(linspace(min(dMatErr(:)),max(dMatErr(:)),size(cMap,1)),1:size(cMap,1),lvl));
     
@@ -46,13 +58,15 @@ for i=1:length(cntrs);
 end
 uistack(hndl,'top');
 
-fName = fullfile(saveDir,'flNBasis.eps');
-print('-depsc',fName);
+if ~isempty(saveDir)
+    fName = fullfile(saveDir,'flNBasis.eps');
+    print('-depsc',fName);
+end
 
 
 %% Multi-fluorophore
 
-fName = fullfile(fiToolboxRootPath,'results','evaluation','McNamara-Boswell_simNBasis_multiFl');
+fName = fullfile(fiToolboxRootPath,'results','evaluation',sprintf('%s_simNBasis_multiFl',dataset));
 load(fName);
 
 figure;
@@ -87,5 +101,7 @@ for i=1:length(cntrs)
 end
 uistack(hndl,'top');
 
-fName = fullfile(saveDir,'multiFlNBasis.eps');
-print('-depsc',fName);
+if ~isempty(saveDir)
+    fName = fullfile(saveDir,'multiFlNBasis.eps');
+    print('-depsc',fName);
+end
