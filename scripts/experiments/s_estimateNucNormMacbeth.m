@@ -20,7 +20,7 @@ nSamples = 24;
 alpha = 0.01;
 sigma = 0.009; % This parameter is adjusted so that the pixel error matches the error predicted by our methods
 
-testFileName = 'Macbeth+multiFl2';
+testFileName = 'Macbeth+multiFl3';
 backgroundFileName = 'Background+multiFl';
 
 wave = 380:4:1000;
@@ -192,9 +192,9 @@ cameraGain = cameraGain./nF;
 dirName = fullfile(fiToolboxRootPath,'results','experiments');
 if ~exist(dirName,'dir'), mkdir(dirName); end;
 
-% fName = fullfile(dirName,sprintf('nucNorm_%s.mat',testFileName));
-% save(fName,'reflEst','emEst','exEst','dMatEst','reflValsEst','flValsEst','hist',...
-%             'wave','alpha','sigma','reflRef','exRef','emRef','dMatRef','measVals');
+fName = fullfile(dirName,sprintf('nucNorm_%s.mat',testFileName));
+save(fName,'reflEst','emEst','exEst','dMatEst','reflValsEst','flValsEst','hist',...
+            'wave','alpha','sigma','reflRef','exRef','emRef','dMatRef','measVals');
                      
 %% Analyze results                     
                      

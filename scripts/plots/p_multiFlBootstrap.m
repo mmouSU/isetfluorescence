@@ -1,16 +1,53 @@
+% Plot the multi-fluorophore estimation results. Estimate confidence
+% intervals through bootstrapping. This script generates Fig. 12 in the
+% paper.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;
 
+% Define the directory where figures will be saved. If saveDir = [], then
+% figures are not saved.
+% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+saveDir = [];
+
+% Figure display parameters
+fs = 10;
+lw = 2;
+ms = 7;
+sz = [1 1 3.5 2.5];
+sz2 = [1 1 3.5 1.75];
+
+leg = {'Multi-fl.','Reference'};
+
+% Select patches whose data is to be saved
+selPatches = [8 23 6];
+nSel = length(selPatches);
+
+% Select excitation and emission wavelength for Donaldson matrix corss-section
+% plots
+emRefWave = [500 484 400];
+exRefWave = [600 512 508];
+
+
 fName = fullfile(fiToolboxRootPath,'results','bootstrap','multiFl_Macbeth+multiFl_bootstrap_100_1.mat');
 load(fName);
 
+% Load a custom color map
 fName = fullfile(fiToolboxRootPath,'data','flCmap');
 load(fName);
 
 wave = wave(:);
 
-%% Pixel values
+% Wavelength subsampling
+sr = 1:5:length(wave);
+
+
+%% Display data for all patches
+
+% Pixel values
 
 multiFlMeasValsEst = cell2mat(shiftdim(reflValsEst,-3)) + cell2mat(shiftdim(flValsEst,-3));
 avgMultiFlMeasValsEst = mean(multiFlMeasValsEst,4);
@@ -47,7 +84,7 @@ end
 end
 
 
-%% Reflectance
+% Reflectance
 
 multiFlReflEst = cell2mat(shiftdim(reflEst,-2));
 avgMultiFlReflEst = mean(multiFlReflEst,3);
@@ -87,7 +124,7 @@ end
 
 
 
-%% Donaldson matrix (scale)
+% Donaldson matrix (absolute)
 
 multiFlDMatEst = cell2mat(shiftdim(cellfun(@(x) cell2mat(shiftdim(x,-2)),dMatEst,'UniformOutput',false),-3));
 avgMultiFlDMatEst = mean(multiFlDMatEst,4);
@@ -114,7 +151,7 @@ end
 
 
 
-%% Donaldson matrix (shape)
+% Donaldson matrix (normalized)
 
 figure;
 set(gcf,'Colormap',flCmap);
@@ -138,10 +175,9 @@ for yy=1:4
 end
 end
 
-%% Excitation plot at a given wavelength
+% Excitation (normalized) plot at a given wavelength
 
-
-emRefWave = 512;
+refWave = 512;
 
 figure;
 for xx=1:6
@@ -154,13 +190,13 @@ for yy=1:4
     hold on; grid on; box on;
     
     
-    t2 = dMatRef{sampleID}(wave == emRefWave,:);
+    t2 = dMatRef{sampleID}(wave == refWave,:);
     t2 = t2/max(t2);
     
-    t1Lb = avgMultiFlDMatEstLb(wave == emRefWave,:,sampleID);
-    t1Ub = avgMultiFlDMatEstUb(wave == emRefWave,:,sampleID);
+    t1Lb = avgMultiFlDMatEstLb(wave == refWave,:,sampleID);
+    t1Ub = avgMultiFlDMatEstUb(wave == refWave,:,sampleID);
     
-    t1avg= avgMultiFlDMatEst(wave == emRefWave,:,sampleID);
+    t1avg= avgMultiFlDMatEst(wave == refWave,:,sampleID);
     nF = max(t1avg);
     
     t1Ub = t1Ub(:)/nF;
@@ -179,10 +215,10 @@ end
 end
 
 
-%% Emission plot at a given wavelength
+% Emission (normalized) plot at a given wavelength
 
 
-emRefWave = 520;
+refWave = 520;
 
 figure;
 for xx=1:6
@@ -195,13 +231,13 @@ for yy=1:4
     hold on; grid on; box on;
     
     
-    t2 = dMatRef{sampleID}(:,wave == emRefWave);
+    t2 = dMatRef{sampleID}(:,wave == refWave);
     t2 = t2/max(t2);
     
-    t1Lb = avgMultiFlDMatEstLb(:,wave == emRefWave,sampleID);
-    t1Ub = avgMultiFlDMatEstUb(:,wave == emRefWave,sampleID);
+    t1Lb = avgMultiFlDMatEstLb(:,wave == refWave,sampleID);
+    t1Ub = avgMultiFlDMatEstUb(:,wave == refWave,sampleID);
     
-    t1avg= avgMultiFlDMatEst(:,wave == emRefWave,sampleID);
+    t1avg= avgMultiFlDMatEst(:,wave == refWave,sampleID);
     nF = max(t1avg);
     
     t1Ub = t1Ub(:)/nF;
@@ -219,30 +255,9 @@ for yy=1:4
 end
 end
 
-%% Printable plots
+%% Now generate figures for specific, selected patches
 
-% First specify some figure parameters such as size, line widths, font
-% sizes etc.
-
-fs = 10;
-lw = 2;
-ms = 7;
-sz = [1 1 3.5 2.5];
-sz2 = [1 1 3.5 1.75];
-sr = 1:5:length(wave);
-
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
-leg = {'Multi-fl.','Reference'};
-
-
-selPatches = [8 23 6];
-nSel = length(selPatches);
-
-emRefWave = [500 484 400];
-exRefWave = [600 512 508];
-
-
-%% Pixel values
+% Pixel values
 
 multiFlMeasValsEst = cell2mat(shiftdim(reflValsEst,-3)) + cell2mat(shiftdim(flValsEst,-3));
 avgMultiFlMeasValsEst = mean(multiFlMeasValsEst,4);
@@ -278,17 +293,14 @@ for s=1:nSel
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     
-    fName = fullfile(saveDir,sprintf('multiFlPixels_%i.eps',id));
-    print('-depsc',fName);
+    if ~isempty(saveDir)
+        fName = fullfile(saveDir,sprintf('multiFlPixels_%i.eps',id));
+        print('-depsc',fName);
+    end
 end
 
 
-
-
-
-
-
-%%  Reflectance
+%  Reflectance
 for s=1:nSel
    
     id = selPatches(s);
@@ -322,14 +334,14 @@ for s=1:nSel
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     
-    fName = fullfile(saveDir,sprintf('multiFlRefl_%i.eps',id));
-    print('-depsc',fName);
+    if ~isempty(saveDir)
+        fName = fullfile(saveDir,sprintf('multiFlRefl_%i.eps',id));
+        print('-depsc',fName);
+    end
 end
 
 
-%% Donaldson matrix
-
-
+% Donaldson matrix
 for s=1:nSel
    
     id = selPatches(s);
@@ -367,8 +379,10 @@ for s=1:nSel
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     
-    fName = fullfile(saveDir,sprintf('multiFlDMat_%i.eps',id));
-    print('-depsc',fName);
+    if ~isempty(saveDir)
+        fName = fullfile(saveDir,sprintf('multiFlDMat_%i.eps',id));
+        print('-depsc',fName);
+    end
     
     % Reference
     figure;
@@ -400,8 +414,11 @@ for s=1:nSel
     set(gcf,'PaperPosition',sz);
     set(gcf,'Colormap',flCmap);
     
-    fName = fullfile(saveDir,sprintf('multiFlDMatRef_%i.eps',id));
-    print('-depsc',fName);
+    if ~isempty(saveDir)
+        fName = fullfile(saveDir,sprintf('multiFlDMatRef_%i.eps',id));
+        print('-depsc',fName);
+    end
+    
     
     % Colorbar
     figure;
@@ -414,20 +431,18 @@ for s=1:nSel
     
     cb = colorbar([0.1 0.1  0.5  0.8]);
     set(gca,'CLim',[0 mVal]);
-    % set(gca,'TickLabelFormat','%.2f');
     set(gca,'fontsize',fs-2);
     set(gcf,'OuterPosition',pos);
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',[1 1 sz(3)/5 sz(4)]);
         
-    
-    fName = fullfile(saveDir,sprintf('multiFlScale_%i.eps',id));
-    print('-depsc',fName);
-    
+    if ~isempty(saveDir)
+        fName = fullfile(saveDir,sprintf('multiFlScale_%i.eps',id));
+        print('-depsc',fName);
+    end
 end
 
-%% Excitation
-
+% Excitation (cross section along a row
 
 for s=1:nSel
 
@@ -465,14 +480,14 @@ for s=1:nSel
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz2);
     
-    fName = fullfile(saveDir,sprintf('multiFlEx_%i.eps',id));
-    print('-depsc',fName);
+    if ~isempty(saveDir)
+        fName = fullfile(saveDir,sprintf('multiFlEx_%i.eps',id));
+        print('-depsc',fName);
+    end
 end
 
 
-%% Emission
-
-
+% Emission (cross section along a column)
 
 for s=1:nSel
 
@@ -510,8 +525,10 @@ for s=1:nSel
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz2);
     
-    fName = fullfile(saveDir,sprintf('multiFlEm_%i.eps',id));
-    print('-depsc',fName);
+    if ~isempty(saveDir)
+        fName = fullfile(saveDir,sprintf('multiFlEm_%i.eps',id));
+        print('-depsc',fName);
+    end
 end
 
 

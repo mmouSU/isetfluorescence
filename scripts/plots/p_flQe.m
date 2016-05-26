@@ -1,17 +1,28 @@
+% Generate plots showing the single fluorophore estimation accuracy as a
+% function of fluorophore quantum efficiency. This figure was NOT included
+% in the published paper due to space constraints.
+%
+% Copyright, Henryk Blasinski 2016.
+
 close all;
 clear all;
 clc;
 
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+% Define the directory where figures will be saved. If saveDir = [], then
+% figures are not saved.
+% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+saveDir = [];
+
+% Figure display parameters
+lw = 1;
+ms = 5;
+sz = [1 1 9 4];
+fs = 6;
 
 
 fName = fullfile(fiToolboxRootPath,'results','evaluation','McNamara-Boswell_simQe_Fl.mat');
 load(fName);
 
-lw = 1;
-ms = 5;
-sz = [1 1 9 4];
-fs = 6;
 
 figure;
 hold all; grid on; box on; 
@@ -30,6 +41,7 @@ lg = legend('Pixel','Reflectance','Excitation','Emission','location','northeast'
 set(lg,'location','northeast');
 grid minor;
 
-
-fName = fullfile(saveDir,'fluorophoreQe.eps');
-print('-depsc',fName);
+if ~isempty(saveDir)
+    fName = fullfile(saveDir,'fluorophoreQe.eps');
+    print('-depsc',fName);
+end

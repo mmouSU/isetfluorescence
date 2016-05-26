@@ -1,3 +1,8 @@
+% Render images of a test targed under different illuminants. This script
+% generates synthetic images in Fig. 13 in the paper.
+%
+% Copyright, Henryk Blasinski
+
 close all;
 clear all;
 clc;
@@ -6,16 +11,13 @@ ieInit;
 wave = 380:4:1000;
 nWaves = length(wave);
 
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures','Canon G7x V2');
-if ~exist(saveDir,'dir')
-    mkdir(saveDir);
-end
+% Define the directory where figures will be saved. If saveDir = [], then
+% figures are not saved.
+% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+saveDir = [];
 
-fName = fullfile(fiToolboxRootPath,'camera','illuminants');
-illuminant = ieReadSpectra(fName,wave);
-
-illSubset = illuminant(:,[2 6]);
-
+% Load illuminant spd's.
+illSubset = [];
 fName = fullfile(fiToolboxRootPath,'data','Broadband9800K');
 illSubset = [illSubset, ieReadSpectra(fName,wave)]; 
 fName = fullfile(fiToolboxRootPath,'data','Broadband6500K');
@@ -29,7 +31,7 @@ dataDir = fullfile(fiToolboxRootPath,'results','experiments');
 nCols = 128;
 nRows = 103; 
 
-% Load scene reflectance
+% Load scene reflectance and fluorescence
 reflArray = zeros(nRows,nCols,156);
 for cc=1:nCols
     
@@ -134,26 +136,27 @@ for i=1:size(illSubset,2)
     sRGBReFl = ipGet(ipReFl,'data srgb');
     sRGBMacbeth = ipGet(ipMacbeth,'data srgb');
     
-    
-    fName = fullfile(saveDir,sprintf('RenderedLight_%i_re.png',i));
-    imwrite(lRGBRe,fName);
-    fName = fullfile(saveDir,sprintf('RenderedLight_%i_fl.png',i));
-    imwrite(lRGBFl,fName);
-    fName = fullfile(saveDir,sprintf('RenderedLight_%i_reFl.png',i));
-    imwrite(lRGBReFl,fName);
-    fName = fullfile(saveDir,sprintf('RenderedLight_%i_Macbeth.png',i));
-    imwrite(lRGBMacbeth,fName);
-    
-    fName = fullfile(saveDir,sprintf('RenderedLight_%i_re_XYZ.mat',i));
-    XYZre = imresize(ieXYZFromPhotons(sceneGet(sceneRe,'photons'),wave),[size(lRGBRe,1) size(lRGBRe,2)]);
-    save(fName,'XYZre');
-    fName = fullfile(saveDir,sprintf('RenderedLight_%i_fl_XYZ.mat',i));
-    XYZfl = imresize(ieXYZFromPhotons(sceneGet(sceneFl,'photons'),wave),[size(lRGBFl,1) size(lRGBFl,2)]);
-    save(fName,'XYZfl');
-    fName = fullfile(saveDir,sprintf('RenderedLight_%i_reFl_XYZ.mat',i));
-    XYZreFl = imresize(ieXYZFromPhotons(sceneGet(sceneReFl,'photons'),wave),[size(lRGBReFl,1) size(lRGBReFl,2)]);
-    save(fName,'XYZreFl');
-
+    % Save images
+    if ~isempty(saveDir)
+        fName = fullfile(saveDir,sprintf('RenderedLight_%i_re.png',i));
+        imwrite(lRGBRe,fName);
+        fName = fullfile(saveDir,sprintf('RenderedLight_%i_fl.png',i));
+        imwrite(lRGBFl,fName);
+        fName = fullfile(saveDir,sprintf('RenderedLight_%i_reFl.png',i));
+        imwrite(lRGBReFl,fName);
+        fName = fullfile(saveDir,sprintf('RenderedLight_%i_Macbeth.png',i));
+        imwrite(lRGBMacbeth,fName);
+        
+        fName = fullfile(saveDir,sprintf('RenderedLight_%i_re_XYZ.mat',i));
+        XYZre = imresize(ieXYZFromPhotons(sceneGet(sceneRe,'photons'),wave),[size(lRGBRe,1) size(lRGBRe,2)]);
+        save(fName,'XYZre');
+        fName = fullfile(saveDir,sprintf('RenderedLight_%i_fl_XYZ.mat',i));
+        XYZfl = imresize(ieXYZFromPhotons(sceneGet(sceneFl,'photons'),wave),[size(lRGBFl,1) size(lRGBFl,2)]);
+        save(fName,'XYZfl');
+        fName = fullfile(saveDir,sprintf('RenderedLight_%i_reFl_XYZ.mat',i));
+        XYZreFl = imresize(ieXYZFromPhotons(sceneGet(sceneReFl,'photons'),wave),[size(lRGBReFl,1) size(lRGBReFl,2)]);
+        save(fName,'XYZreFl');
+    end
     
     
     figure; imshow([lRGBRe lRGBFl lRGBReFl lRGBMacbeth]);

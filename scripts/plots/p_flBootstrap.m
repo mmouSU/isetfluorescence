@@ -1,8 +1,30 @@
+% Plot single fluorophore and CIM estimation results. Estimate confidence
+% intervals through bootstrapping. This script generates Fig. 14 in the
+% paper.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;
 
-% wave = 380:4:1000; wave = wave(:);
+% Define the directory where figures will be saved. If saveDir = [], then
+% figures are not saved.
+% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+saveDir = [];
+
+% Figure display properties
+fs = 10;
+lw = 2;
+ms = 7;
+sz = [1 1 3.5 2.5];
+
+% Figure legend
+leg = {'Reference','Single fl.','CIM'};
+
+% Patches for which figures will be generated and saved as .eps files
+selPatches = [4 5];
+nSel = length(selPatches);
 
 
 fName = fullfile(fiToolboxRootPath,'results','bootstrap','fl_Macbeth+Fl_bootstrap_100_1.mat');
@@ -12,7 +34,12 @@ wave = flBoot.wave(:);
 fName = fullfile(fiToolboxRootPath,'results','bootstrap','em_Macbeth+Fl_bootstrap_100_1.mat');
 emBoot = load(fName);
 
-%% Pixel values
+
+sr = 1:5:length(wave);
+
+%% Display data for all patches
+
+% Pixel values
 
 flMeasValsEst = cell2mat(shiftdim(flBoot.reflValsEst,-3)) + cell2mat(shiftdim(flBoot.flValsEst,-3));
 avgFlMeasValsEst = mean(flMeasValsEst,4);
@@ -46,7 +73,7 @@ end
 end
 
 
-%% Reflectance
+% Reflectance
 
 flReflEst = cell2mat(shiftdim(flBoot.reflEst,-2));
 avgFlReflEst = mean(flReflEst,3);
@@ -96,7 +123,7 @@ for yy=1:4
 end
 end
 
-%% Emission (normalized)
+% Emission (normalized)
 
 flEmEst = cell2mat(shiftdim(flBoot.emEst,-2));
 avgFlEmEst = mean(flEmEst,3);
@@ -143,7 +170,7 @@ for yy=1:4
 end
 end
 
-%% Excitation
+% Excitation
 
 flExEst = cell2mat(shiftdim(flBoot.exEst,-2));
 
@@ -179,27 +206,11 @@ for yy=1:4
 end
 end
 
-%% Plot selected patches and save to files
-
-% First specify some figure parameters such as size, line widths, font
-% sizes etc.
-
-fs = 10;
-lw = 2;
-ms = 7;
-sz = [1 1 3.5 2.5];
-sr = 1:5:length(wave);
-
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
-leg = {'Reference','Single fl.','CIM'};
 
 
-selPatches = [4 5];
-nSel = length(selPatches);
+%% Now generate figures for specific, selected patches
 
-% Now generate the figures
-
-%% Pixel values
+% Pixel values
 
 flMeasValsEst = cell2mat(shiftdim(flBoot.reflValsEst,-3)) + cell2mat(shiftdim(flBoot.flValsEst,-3));
 avgFlMeasValsEst = mean(flMeasValsEst,4);
@@ -221,30 +232,13 @@ for s=1:nSel
 
 
     figure;
-    hold on; grid on; box on;
-    
-    % Confidence interval on emission estimate. First, fit a line for lower
-    % and upper bounds, and then plot the line.
-    % tmp1 = avgEmMeasValsEstUb(:,:,id);
-    % tmp2 = avgEmMeasValsEstUb(:,:,id);
-    
-    % uL = tmp(:)\tmp1(:);
-    % lL = tmp(:)\tmp2(:);
-
-    
-    % fill([tmp; rot90(tmp,2)],[tmp1(uL*tmp); rot90(tmp2(lL*tmp),2)],[0.8 0.8 0.8],'edgeColor','none');
-   
-    
-    % Confidence interval on single fluorophore estimate
-    % fill([wave; rot90(wave,2)],[avgFlReflEstUb(:,id); rot90(avgFlReflEstLb(:,id),2)],[0.8 1 0.8],'edgeColor','none');
-    
+    hold on; grid on; box on;    
      
     % Single fluorophore estimate
     tmp2 = avgFlMeasValsEst(:,:,id);
     l(2) = plot(tmp(:),tmp2(:),'go','markerSize',ms,'lineWidth',lw);
     
-    % Emission estimate
-    
+    % CIM estimate
     tmp2 = avgEmMeasValsEst(:,:,id);
     l(3) = plot(tmp(:),tmp2(:),'kx','markerSize',ms,'lineWidth',lw);
     
@@ -264,13 +258,15 @@ for s=1:nSel
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     
-    fName = fullfile(saveDir,sprintf('flPixels_%i.eps',id));
-    print('-depsc',fName);
+    if ~isempty(saveDir)
+        fName = fullfile(saveDir,sprintf('flPixels_%i.eps',id));
+        print('-depsc',fName);
+    end
 end
 
 
 
-%%  Reflectance
+%  Reflectance
 for s=1:nSel
    
     id = selPatches(s);
@@ -278,7 +274,7 @@ for s=1:nSel
     figure;
     hold on; grid on; box on;
     
-    % Confidence interval on emission estimate
+    % Confidence interval on the CIM estimate
     fill([wave; rot90(wave,2)],[avgEmReflEstUb(:,id); rot90(avgEmReflEstLb(:,id),2)],[0.8 0.8 0.8],'edgeColor','none');
    
     
@@ -290,7 +286,7 @@ for s=1:nSel
     l(2) = plot(wave,avgFlReflEst(:,id),'g--','lineWidth',lw);
     plot(wave(sr),avgFlReflEst(sr,id),'go','markerSize',ms,'lineWidth',lw*0.5);
     
-    % Emission estimate
+    % CIM estimate
     l(3) = plot(wave,avgEmReflEst(:,id),'k--','lineWidth',lw);
     plot(wave(sr),avgEmReflEst(sr,id),'kx','markerSize',ms,'lineWidth',lw*0.5);
     
@@ -312,12 +308,14 @@ for s=1:nSel
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     
-    fName = fullfile(saveDir,sprintf('flRefl_%i.eps',id));
-    print('-depsc',fName);
+    if ~isempty(saveDir)
+        fName = fullfile(saveDir,sprintf('flRefl_%i.eps',id));
+        print('-depsc',fName);
+    end
 end
 
 
-%%  Emission (max scaled)
+%  Emission (normalized)
 for s=1:nSel
    
     id = selPatches(s);
@@ -327,7 +325,7 @@ for s=1:nSel
     figure;
     hold on; grid on; box on;
     
-    % Confidence interval on emission estimate
+    % Confidence interval on CIM estimate
     fill([wave; rot90(wave,2)],[avgEmEstUb(:,id)/nFem; rot90(avgEmEstLb(:,id)/nFem,2)],[0.8 0.8 0.8],'edgeColor','none');
     
     % Confidence interval on single fluorophore estimate
@@ -359,11 +357,13 @@ for s=1:nSel
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     
-    fName = fullfile(saveDir,sprintf('flEm_%i.eps',id));
-    print('-depsc',fName);
+    if ~isempty(saveDir)
+        fName = fullfile(saveDir,sprintf('flEm_%i.eps',id));
+        print('-depsc',fName);
+    end
 end
 
-%%  Excitation (max scaled)
+%  Excitation (normalized)
 l = [];
 for s=1:nSel
    
@@ -387,7 +387,7 @@ for s=1:nSel
     xlim([min(wave) max(wave)]);
     ylim([-0.05 1.05]);
     
-    lh = legend(l,leg,'location','northeast');
+    lh = legend(l(1:2),leg(1:2),'location','northeast');
     ch = get(lh,'Children');
     set(ch(1),'Marker','o','MarkerSize',ms);
     
@@ -397,12 +397,14 @@ for s=1:nSel
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     
-    fName = fullfile(saveDir,sprintf('flEx_%i.eps',id));
-    print('-depsc',fName);
+    if ~isempty(saveDir)
+        fName = fullfile(saveDir,sprintf('flEx_%i.eps',id));
+        print('-depsc',fName);
+    end
 end
 
 
-% Excitation (to scale)
+% Excitation (absolute)
 l = [];
 for s=1:nSel
    
@@ -426,7 +428,7 @@ for s=1:nSel
     
     xlim([min(wave) max(wave)]);
     
-    lh = legend(l,leg,'location','northeast');
+    lh = legend(l(1:2),leg(1:2),'location','northeast');
     ch = get(lh,'Children');
     set(ch(1),'Marker','o','MarkerSize',ms);
     
@@ -435,7 +437,9 @@ for s=1:nSel
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     
-    fName = fullfile(saveDir,sprintf('flExToScale_%i.eps',id));
-    print('-depsc',fName);
+    if ~isempty(saveDir)
+        fName = fullfile(saveDir,sprintf('flExToScale_%i.eps',id));
+        print('-depsc',fName);
+    end
 end
 
