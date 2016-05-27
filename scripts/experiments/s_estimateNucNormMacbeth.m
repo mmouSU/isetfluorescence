@@ -14,14 +14,21 @@ clc;
 
 ieInit;
 
-nSamples = 24;
+%%
 
+nSamples = 24;
 
 alpha = 0.01;
 sigma = 0.009; % This parameter is adjusted so that the pixel error matches the error predicted by our methods
 
-testFileName = 'Macbeth+multiFl3';
+testFileName = 'Macbeth+multiFl2';
 backgroundFileName = 'Background+multiFl';
+
+% Save results to file if saveFName ~= []
+dirName = fullfile(fiToolboxRootPath,'results','experiments');
+if ~exist(dirName,'dir'), mkdir(dirName); end;
+% saveFName = fullfile(dirName,sprintf('nucNorm_%s.mat',testFileName));
+saveFName = [];
 
 wave = 380:4:1000;
 deltaL = wave(2) - wave(1);
@@ -188,14 +195,12 @@ cameraGain = cameraGain./nF;
 [ reflEst, emEst, exEst, dMatEst, reflValsEst, flValsEst, hist ] = fiRecReflAndFlNucNorm( measVals,...
     camera, cameraGain*deltaL, cameraOffset, illuminantPhotons, alpha, sigma, 'maxIter',500 );
 
-%% Save results
-dirName = fullfile(fiToolboxRootPath,'results','experiments');
-if ~exist(dirName,'dir'), mkdir(dirName); end;
+% Save results
 
-fName = fullfile(dirName,sprintf('nucNorm_%s.mat',testFileName));
-save(fName,'reflEst','emEst','exEst','dMatEst','reflValsEst','flValsEst','hist',...
+if ~isempty(saveFName)
+    save(saveFName,'reflEst','emEst','exEst','dMatEst','reflValsEst','flValsEst','hist',...
             'wave','alpha','sigma','reflRef','exRef','emRef','dMatRef','measVals');
-                     
+end
 %% Analyze results                     
                      
 measValsEst = reflValsEst + flValsEst;

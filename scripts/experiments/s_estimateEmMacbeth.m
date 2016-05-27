@@ -24,6 +24,12 @@ beta = 0.2;
 testFileName = 'Macbeth+Fl';
 backgroundFileName = 'Background';
 
+% Save data to file if saveFName ~= []
+dirName = fullfile(fiToolboxRootPath,'results','experiments');
+if ~exist(dirName,'dir'), mkdir(dirName); end;
+% saveFName = fullfile(dirName,sprintf('em_%s.mat',testFileName));
+saveFName = [];
+
 wave = 380:4:1000;
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
@@ -69,9 +75,9 @@ reflRef(:,[3:4:nSamples 4:4:nSamples]) = diag(redTr)*reflRef(:,[3:4:nSamples 4:4
 reflBasis = pca(reflRef','centered',false);
 reflBasis = reflBasis(:,1:nReflBasis);
 % Or use generic basis functions, the difference is minimal
-% reflBasis = createBasisSet('reflectance','wave',wave','n',nReflBasis);
+% reflBasis = fiCreateBasisSet('reflectance','wave',wave','n',nReflBasis);
 
-emBasis = createBasisSet('emission','wave',wave','n',nEmBasis);
+emBasis = fiCreateBasisSet('emission','wave',wave','n',nEmBasis);
 
 
 % These values are the measured ground truth data.
@@ -174,12 +180,10 @@ cameraGain = cameraGain./nF;
     fiRecReflAndEm( measVals, camera, cameraGain*deltaL, cameraOffset,...
     illuminantPhotons, reflBasis, emBasis, alpha, beta, 'maxIter', 20);
 
-dirName = fullfile(fiToolboxRootPath,'results','experiments');
-if ~exist(dirName,'dir'), mkdir(dirName); end;
-
-fName = fullfile(dirName,sprintf('em_%s.mat',testFileName));
-save(fName,'reflEst','reflCoeffs','emEst','emCoeffs','emWghts','reflValsEst','flValsEst','hist',...
-            'wave','alpha','beta','reflRef','exRef','emRef','measVals');
+if ~isempty(saveFName)
+    save(saveFName,'reflEst','reflCoeffs','emEst','emCoeffs','emWghts','reflValsEst','flValsEst','hist',...
+        'wave','alpha','beta','reflRef','exRef','emRef','measVals');
+end
 
 measValsEst = reflValsEst + flValsEst;
 

@@ -4,13 +4,13 @@
 %
 % Copyright, Henryk Blasinski 2016
 
-
 close all;
 clear all;
 clc;
 
 ieInit;
 
+%%
 
 nSamples = 24;
 
@@ -24,7 +24,7 @@ nWaves = length(wave);
 
 % Create basis function sets
 nReflBasis = 5;
-reflBasis = createBasisSet('reflectance','wave',wave','n',nReflBasis);
+reflBasis = fiCreateBasisSet('reflectance','wave',wave','n',nReflBasis);
 
 
 % Load the light spectra (in photons). We scale by the maximum for

@@ -25,6 +25,12 @@ beta = 0.1;
 testFileName = 'Macbeth+Fl';
 backgroundFileName = 'Background';
 
+% Save data to file if saveFName ~= []
+dirName = fullfile(fiToolboxRootPath,'results','experiments');
+if ~exist(dirName,'dir'), mkdir(dirName); end;
+% saveFName = fullfile(dirName,sprintf('fl_%s.mat',testFileName));
+saveFName = [];
+
 wave = 380:4:1000;
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
@@ -72,10 +78,10 @@ flQe = [0.25 0.53];
 reflBasis = pca(reflRef','centered',false);
 reflBasis = reflBasis(:,1:nReflBasis);
 % Or use generic basis functions, the difference is minimal
-% reflBasis = createBasisSet('reflectance','wave',wave','n',nReflBasis);
+% reflBasis = fiCreateBasisSet('reflectance','wave',wave','n',nReflBasis);
 
-exBasis = createBasisSet('excitation','wave',wave','n',nExBasis);
-emBasis = createBasisSet('emission','wave',wave','n',nEmBasis);
+exBasis = fiCreateBasisSet('excitation','wave',wave','n',nExBasis);
+emBasis = fiCreateBasisSet('emission','wave',wave','n',nEmBasis);
 
 % Load fluorescence data and get reference spectra
 fName = fullfile(fiToolboxRootPath,'data','redFl');
@@ -172,12 +178,10 @@ cameraGain = cameraGain./nF;
 [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, reflValsEst, flValsEst, hist  ] = ...
 fiRecReflAndFl( measVals, camera, cameraGain*deltaL, cameraOffset, illuminantPhotons, reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter', 50);
 
-dirName = fullfile(fiToolboxRootPath,'results','experiments');
-if ~exist(dirName,'dir'), mkdir(dirName); end;
-
-fName = fullfile(dirName,sprintf('fl_%s.mat',testFileName));
-save(fName,'reflEst','rfCoeffs','emEst','emCoeffs','exEst','exCoeffs','reflValsEst','flValsEst','hist',...
-            'wave','alpha','beta','reflRef','exRef','emRef','measVals');
+if ~isempty(saveFName)
+    save(saveFName,'reflEst','rfCoeffs','emEst','emCoeffs','exEst','exCoeffs','reflValsEst','flValsEst','hist',...
+        'wave','alpha','beta','reflRef','exRef','emRef','measVals');
+end
 
 measValsEst = reflValsEst + flValsEst;
 

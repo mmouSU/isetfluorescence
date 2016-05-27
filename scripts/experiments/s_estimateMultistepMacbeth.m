@@ -27,6 +27,12 @@ gamma = 0.01;
 testFileName = 'Macbeth+Fl';
 backgroundFileName = 'Background';
 
+% Save outputs to file if saveFName ~= []
+dirName = fullfile(fiToolboxRootPath,'results','experiments');
+if ~exist(dirName,'dir'), mkdir(dirName); end;
+% saveFName = fullfile(dirName,sprintf('multistep_%s.mat',testFileName));
+saveFName = [];
+
 wave = 380:4:1000;
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
@@ -72,9 +78,9 @@ flQe = [0.25 0.53];
 reflBasis = pca(reflRef','centered',false);
 reflBasis = reflBasis(:,1:nReflBasis);
 % Or use generic basis functions, the difference is minimal
-% reflBasis = createBasisSet('reflectance','wave',wave','n',nReflBasis);
+% reflBasis = fiCreateBasisSet('reflectance','wave',wave','n',nReflBasis);
 
-exBasis = createBasisSet('excitation','wave',wave','n',nExBasis);
+exBasis = fiCreateBasisSet('excitation','wave',wave','n',nExBasis);
 
 % Load fluorescence data and get reference spectra
 fName = fullfile(fiToolboxRootPath,'data','redFl');
@@ -181,14 +187,12 @@ cameraGain = cameraGain./nF;
 [ reflEst, reflCoeffs, emEst, emChromaticity, exEst, exCoeffs, reflValsEst, flValsEst, hist ] = fiRecReflAndFlMultistep( measVals,...
     camera, cameraGain*deltaL, cameraOffset, illuminantPhotons, reflBasis, DB, exBasis, alpha, gamma );
 
-%% Save results to file
-dirName = fullfile(fiToolboxRootPath,'results','experiments');
-if ~exist(dirName,'dir'), mkdir(dirName); end;
+% Save results to file
 
-fName = fullfile(dirName,sprintf('multistep_%s.mat',testFileName));
-% save(fName,'reflEst','reflCoeffs','emEst','emChromaticity','exEst','exCoeffs','reflValsEst','flValsEst','hist',...
-%             'wave','alpha','gamma','reflRef','exRef','emRef','measVals');
-
+if ~isempty(saveFName)
+    save(saveFName,'reflEst','reflCoeffs','emEst','emChromaticity','exEst','exCoeffs','reflValsEst','flValsEst','hist',...
+            'wave','alpha','gamma','reflRef','exRef','emRef','measVals');
+end
 %% Display results 
 measValsEst = reflValsEst + flValsEst;
 

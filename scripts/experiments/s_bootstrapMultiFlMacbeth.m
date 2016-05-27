@@ -31,6 +31,12 @@ eta = 0.01;
 testFileName = 'Macbeth+multiFl2';
 backgroundFileName = 'Background+multiFl';
 
+% Save data to file only if saveFName ~= []
+dirName = fullfile(fiToolboxRootPath,'results','bootstrap');
+if ~exist(dirName,'dir'), mkdir(dirName); end;
+% saveFName = fullfile(dirName,sprintf('multifl_%s_bootstrap_%i_%i.mat',testFileName,nBootstrap,sampleSize));
+saveFName = [];
+
 wave = 380:4:1000;
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
@@ -82,10 +88,10 @@ reflRef(:,4:4:nSamples) = diag(redTr)*reflRef(:,4:4:nSamples);
 reflBasis = pca(reflRef','centered',false);
 reflBasis = reflBasis(:,1:nReflBasis);
 % Or use generic basis functions, the difference is minimal
-% reflBasis = createBasisSet('reflectance','wave',wave','n',nReflBasis);
+% reflBasis = fiCreateBasisSet('reflectance','wave',wave','n',nReflBasis);
 
-exBasis = createBasisSet('excitation','wave',wave','n',nExBasis);
-emBasis = createBasisSet('emission','wave',wave','n',nEmBasis);
+exBasis = fiCreateBasisSet('excitation','wave',wave','n',nExBasis);
+emBasis = fiCreateBasisSet('emission','wave',wave','n',nEmBasis);
 
 % Load fluorescence data and get reference spectra
 fName = fullfile(fiToolboxRootPath,'data','redFl');
@@ -245,13 +251,11 @@ try
 catch 
 end
 
+%% Save results
 
-dirName = fullfile(fiToolboxRootPath,'results','bootstrap');
-if ~exist(dirName,'dir'), mkdir(dirName); end;
-
-fName = fullfile(dirName,sprintf('multifl_%s_bootstrap_%i_%i.mat',testFileName,nBootstrap,sampleSize));
-save(fName,'reflEst','reflCoeffs','emEst','emCoeffs','exEst','exCoeffs','dMatEst','reflValsEst','flValsEst','hist',...
-            'wave','alpha','beta','eta','reflRef','exRef','emRef','dMatRef','measVals','nBootstrap','sampleSize');
-                     
+if ~isempty(saveFName)
+    save(saveFName,'reflEst','reflCoeffs','emEst','emCoeffs','exEst','exCoeffs','dMatEst','reflValsEst','flValsEst','hist',...
+        'wave','alpha','beta','eta','reflRef','exRef','emRef','dMatRef','measVals','nBootstrap','sampleSize');
+end
                      
                      
