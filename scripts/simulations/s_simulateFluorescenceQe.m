@@ -1,3 +1,14 @@
+% Use Image Systems Engineering Toolbox to simulate a set of captures using
+% a model of the image acquisition system. Create a fluorescent scene with
+% the fiToolbox functions. The captured data contains simulated pixel intensities
+% for each of the 24 patches illuminated with each of the 14 narrowband 
+% lights and as seen through each of the 8 camera filters. 
+%
+% Generate data using the same fluorescent scene and varing the practical
+% fluorescence efficiency parameter. 
+%
+% Copyright, Henryk Blasinski 2016.
+
 close all;
 clear all;
 clc;
@@ -5,7 +16,7 @@ clc;
 ieInit;
 
 dataset = 'McNamara-Boswell';
-flQe = logspace(-3,0,10);
+flQe = logspace(-3,0,10);               % Range of practical fluorescence efficiencies (quantum efficiencies)
 height = 4;
 width = 6;
 nFluorophores = 1;
@@ -44,19 +55,12 @@ flScene = fluorescentSceneCreate('height',height,'width',width,'wave',wave,'nFlu
                                  'peakExRange',[wave(5) wave(end-5)],...
                                  'dataSet',dataset);
         
-
-
            
 
-%% Run ISET simulations
+% Run ISET simulations
 
 for q=1:length(flQe);
-    
-    fName = fullfile(fiToolboxRootPath,'data','simulations',sprintf('%s_%ix%ix%i_qe_%0.3f.mat',dataset,height,width,nFluorophores,flQe(q)));
-    % if exist(fName,'file'),
-    %     continue;
-    % end
-    
+        
     flScene = fluorescentSceneSet(flScene,'qe',flQe(q));
     
     dMatRef = fluorescentSceneGet(flScene,'Donaldson reference');        
@@ -147,7 +151,7 @@ for q=1:length(flQe);
     save(fName,'cameraGain','cameraOffset','measVals','reflRef','dMatRef','exRef','emRef','reflValsRef','flValsRef',...
         'wave','illuminant','camera','illuminantPhotons','nFilters','nChannels');
     
-    %% Remove unnecessary objects
+    %% Remove unnecessary ISET objects to save memory
     objs = vcGetObjects('scene');
     vcDeleteSomeObjects('scene',1:length(objs));
     
@@ -159,6 +163,5 @@ for q=1:length(flQe);
     
     objs = vcGetObjects('ip');
     vcDeleteSomeObjects('ip',1:length(objs));
-    
     
 end

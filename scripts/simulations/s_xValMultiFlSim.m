@@ -1,8 +1,21 @@
+% Use simulation data to perform tuing parameter crossvalidation for the
+% multi fluorophore algorithm (parameters alpha, beta and eta). Note that this
+% function is computation heavy and when not parallelized can take a lot of
+% time to complete.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;
 
-%% Load simulation data
+% Choose save directory. If empty no results will be saved.
+dirName = fullfile(fiToolboxRootPath,'results','xVal');
+if ~exist(dirName,'dir'), mkdir(dirName); end
+% saveFName = fullfile(dirName,[inFName '_xVal_multiFl.mat']);
+saveFName = [];
+
+% Load simulation data
 % The simulation data file contains wavelength sampling vector.
 inFName = 'McNamara-Boswell_4x6x1_qe_0.10';
 fName = fullfile(fiToolboxRootPath,'data','simulations',[inFName '.mat']);
@@ -11,15 +24,17 @@ load(fName);
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
-nAlpha = 10;
-nBeta = 10;
-nNu = 10;
+maxIter = 250;                              % Number of algorithm iterations                   
 
-alphaRange = logspace(-3,1,nAlpha);
-betaRange = logspace(-3,1,nBeta);
-nuRange = logspace(-3,1,nNu);
+alphaRange = logspace(-3,1,10);         % Parameter values
+betaRange = logspace(-3,1,10);
+etaRange = logspace(-3,1,10);
 
-[alpha, beta, nu] = ndgrid(alphaRange, betaRange, nuRange);
+nAlpha = length(alphaRange);
+nBeta = length(betaRange);
+nEta = length(etaRange);
+
+[alpha, beta, eta] = ndgrid(alphaRange, betaRange, etaRange);
 nSets = numel(alpha);
 
 % Create basis function sets
@@ -27,9 +42,9 @@ nReflBasis = 5;
 nExBasis = 12;
 nEmBasis = 12;
 
-[reflBasis, reflScore] = createBasisSet('reflectance','wave',wave','n',nReflBasis);
-[exBasis, exScore] = createBasisSet('excitation','wave',wave','n',nExBasis);
-[emBasis, emScore] = createBasisSet('emission','wave',wave','n',nEmBasis);
+[reflBasis, reflScore] = fiCreateBasisSet('reflectance','wave',wave','n',nReflBasis);
+[exBasis, exScore] = fiCreateBasisSet('excitation','wave',wave','n',nExBasis);
+[emBasis, emScore] = fiCreateBasisSet('emission','wave',wave','n',nEmBasis);
 
 
 % Load the light spectra (in photons)
@@ -48,31 +63,30 @@ qe = ieReadSpectra(fName,wave);
 camera = diag(qe)*filters;
 nFilters = size(camera,2);
        
-
-
 nSamples = size(measVals,3);
 cameraGain = repmat(cameraGain,[1 1 nSamples]);
 cameraOffset = repmat(cameraOffset,[1 1 nSamples]);
 
-totalPixelErr = zeros(nSets,1);
-reflPixelErr = zeros(nSets,1);
-flPixelErr = zeros(nSets,1);
-reflErr = zeros(nSets,1);
-dMatErr = zeros(nSets,1);
-dMatNormErr = zeros(nSets,1);
 
-totalPixelStd = zeros(nSets,1);
-reflPixelStd = zeros(nSets,1);
-flPixelStd = zeros(nSets,1);
-reflStd = zeros(nSets,1);
-dMatStd = zeros(nSets,1);
-dMatNormStd = zeros(nSets,1);
+totalPixelErr = zeros(nAlpha,nBeta,nEta);
+reflPixelErr = zeros(nAlpha,nBeta,nEta);
+flPixelErr = zeros(nAlpha,nBeta,nEta);
+reflErr = zeros(nAlpha,nBeta,nEta);
+dMatErr = zeros(nAlpha,nBeta,nEta);
+dMatNormErr = zeros(nAlpha,nBeta,nEta);
+
+totalPixelStd = zeros(nAlpha,nBeta,nEta);
+reflPixelStd = zeros(nAlpha,nBeta,nEta);
+flPixelStd = zeros(nAlpha,nBeta,nEta);
+reflStd = zeros(nAlpha,nBeta,nEta);
+dMatStd = zeros(nAlpha,nBeta,nEta);
+dMatNormStd = zeros(nAlpha,nBeta,nEta);
 
 
 %% The main cross-validation loop
 
 try
-    matlabpool open local
+    parpool open local
 catch 
 end
 
@@ -80,168 +94,34 @@ parfor i=1:nSets
     
     [ reflEst, reflCoeffs, emEst, emCoeffs, exEst, exCoeffs, dMatEst, reflValsEst, flValsEst, hist  ] = ...
         fiRecReflAndMultiFl( measVals, camera, illuminant, cameraGain*deltaL,...
-        cameraOffset, reflBasis, emBasis, exBasis, alpha(i), beta(i), beta(i), nu(i), 'maxIter',250);
-    
+        cameraOffset, reflBasis, emBasis, exBasis, alpha(i), beta(i), beta(i), eta(i), 'maxIter',maxIter);
     
     % Compute errors
     
     measValsEst = reflValsEst + flValsEst + cameraOffset;
     
-    [totalPixelErr(i), totalPixelStd(i)] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals,[nChannels*nFilters,nSamples]), '');
-    [reflPixelErr(i), reflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(reflValsRef,[nChannels*nFilters,nSamples]), '');
-    [flPixelErr(i), flPixelStd(i)] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(flValsRef,[nChannels*nFilters,nSamples]), '');
+    [totalPixelErr(i), totalPixelStd(i)] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals,[nChannels*nFilters,nSamples]), 'absolute');
+    [reflPixelErr(i), reflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(reflValsRef,[nChannels*nFilters,nSamples]), 'absolute');
+    [flPixelErr(i), flPixelStd(i)] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(flValsRef,[nChannels*nFilters,nSamples]), 'absolute');
     
-    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, reflRef, '');
+    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, reflRef, 'absolute');
     
-    [dMatErr(i), dMatStd(i)] = fiComputeError(dMatEst, dMatRef, '');
+    [dMatErr(i), dMatStd(i)] = fiComputeError(dMatEst, dMatRef, 'absolute');
     [dMatNormErr(i), dMatNormStd(i)] = fiComputeError(dMatEst, dMatRef, 'normalized');
     
 end
 
 try
-    matlabpool close
+    parpool close
 catch
 end
-
-totalPixelErr = reshape(totalPixelErr,[nAlpha, nBeta, nNu]);
-reflPixelErr = reshape(reflPixelErr,[nAlpha, nBeta, nNu]);
-flPixelErr = reshape(flPixelErr,[nAlpha, nBeta, nNu]);
-reflErr = reshape(reflErr,[nAlpha, nBeta, nNu]);
-dMatErr = reshape(dMatErr,[nAlpha, nBeta, nNu]);
-dMatNormErr = reshape(dMatNormErr,[nAlpha, nBeta, nNu]);
-
-totalPixelStd = reshape(totalPixelStd,[nAlpha, nBeta, nNu]);
-reflPixelStd = reshape(reflPixelStd,[nAlpha, nBeta, nNu]);
-flPixelStd = reshape(flPixelStd,[nAlpha, nBeta, nNu]);
-reflStd = reshape(reflStd,[nAlpha, nBeta, nNu]);
-dMatStd = reshape(dMatStd,[nAlpha, nBeta, nNu]);
-dMatNormStd = reshape(dMatNormStd,[nAlpha, nBeta, nNu]);
-
 
 
 %% Save results
 
-dirName = fullfile(fiToolboxRootPath,'results','xVal');
-if ~exist(dirName,'dir'), mkdir(dirName); end
+if ~isempty(saveFName)
+    save(saveFName,'alpha','beta','eta','alphaRange','betaRange','etaRange','nAlpha','nBeta','nEta',...
+        'totalPixelErr','reflPixelErr','flPixelErr','reflErr','dMatErr','dMatNormErr',...
+        'totalPixelStd','reflPixelStd','flPixelStd','reflStd','dMatStd','dMatNormStd');
+end
 
-fName = fullfile(dirName,[inFName '_xVal_multiFl.mat']);
-
-save(fName,'alpha','beta','nu','alphaRange','betaRange','nuRange','nAlpha','nBeta','nNu',...
-           'totalPixelErr','reflPixelErr','flPixelErr','reflErr','dMatErr','dMatNormErr',...
-           'totalPixelStd','reflPixelStd','flPixelStd','reflStd','dMatStd','dMatNormStd');
-
-
-%% Display figures
-close all;
-
-saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
-lineStyle = {'rs-','gd-','bo-'};
-lw = 2;
-mkSz = 8;
-fs = 8;
-figSize = [0 0 4.5 2.75];
-
-% Alpha
-
-[pixelErrPlot, minLoc] = min(reshape(permute(totalPixelErr,[2 3 1]),[nBeta*nNu, nAlpha]));
-tmp = reshape(permute(totalPixelStd,[2 3 1]),[nBeta*nNu, nAlpha]);
-inds = sub2ind([nBeta*nNu, nAlpha],minLoc,1:nAlpha);
-pixelErrPlotStd = tmp(inds)/sqrt(24);
-
-[reflErrPlot, minLoc] = min(reshape(permute(reflErr,[2 3 1]),[nBeta*nNu, nAlpha]));
-tmp = reshape(permute(reflStd,[2 3 1]),[nBeta*nNu, nAlpha]);
-inds = sub2ind([nBeta*nNu, nAlpha],minLoc,1:nAlpha);
-reflErrPlotStd = tmp(inds)/sqrt(24);
-
-[dMatNormErrPlot, minLoc] = min(reshape(permute(dMatNormErr,[2 3 1]),[nBeta*nNu, nAlpha]));
-tmp = reshape(permute(dMatNormStd,[2 3 1]),[nBeta*nNu, nAlpha]);
-inds = sub2ind([nBeta*nNu, nAlpha],minLoc,1:nAlpha);
-dMatNormPlotStd = tmp(inds)/sqrt(24);
-
-figure;
-hold all; grid on; box on;
-pl(1) = errorbar(alphaRange,pixelErrPlot,pixelErrPlotStd,lineStyle{1});
-pl(2) = errorbar(alphaRange,reflErrPlot,reflErrPlotStd,lineStyle{2});
-pl(3) = errorbar(alphaRange,dMatNormErrPlot,dMatNormPlotStd,lineStyle{3});
-set(pl,'lineWidth',lw,'markerSize',mkSz);
-set(gcf,'PaperUnits','inches');
-set(gcf,'PaperPosition',figSize);
-ylim([0 0.07]);
-xlim([0.9*min(alphaRange) 1.1*max(alphaRange)]);
-xlabel('\alpha');
-ylabel('min_{\beta,\eta}(RMSE)');
-set(gca,'fontSize',fs);
-set(gca,'xscale','log');
-print('-depsc',fullfile(saveDir,'multiFl_xVal_alpha.eps'));
-
-
-% Beta
-
-[pixelErrPlot, minLoc] = min(reshape(permute(totalPixelErr,[1 3 2]),[nAlpha*nNu, nBeta]));
-tmp = reshape(permute(totalPixelStd,[1 3 2]),[nAlpha*nNu, nBeta]);
-inds = sub2ind([nAlpha*nNu, nBeta],minLoc,1:nBeta);
-pixelErrPlotStd = tmp(inds)/sqrt(24);
-
-[reflErrPlot, minLoc] = min(reshape(permute(reflErr,[1 3 2]),[nAlpha*nNu, nBeta]));
-tmp = reshape(permute(reflStd,[1 3 2]),[nAlpha*nNu, nBeta]);
-inds = sub2ind([nAlpha*nNu, nBeta],minLoc,1:nBeta);
-reflErrPlotStd = tmp(inds)/sqrt(24);
-
-[dMatNormErrPlot, minLoc] = min(reshape(permute(dMatNormErr,[1 3 2]),[nAlpha*nNu, nBeta]));
-tmp = reshape(permute(dMatNormStd,[1 3 2]),[nAlpha*nNu, nBeta]);
-inds = sub2ind([nAlpha*nNu, nBeta],minLoc,1:nBeta);
-dMatNormPlotStd = tmp(inds)/sqrt(24);
-
-
-
-figure;
-hold all; grid on; box on;
-pl(1) = errorbar(betaRange,pixelErrPlot,pixelErrPlotStd,lineStyle{1});
-pl(2) = errorbar(betaRange,reflErrPlot,reflErrPlotStd,lineStyle{2});
-pl(3) = errorbar(betaRange,dMatNormErrPlot,dMatNormPlotStd,lineStyle{3});
-set(pl,'lineWidth',lw,'markerSize',mkSz);
-set(gcf,'PaperUnits','inches');
-set(gcf,'PaperPosition',figSize);
-xlim([0.9*min(betaRange) 1.1*max(betaRange)]);
-ylim([0 0.07]);
-xlabel('\beta');
-ylabel('min_{\alpha,\eta}(RMSE)');
-set(gca,'fontSize',fs);
-set(gca,'xscale','log');
-print('-depsc',fullfile(saveDir,'multiFl_xVal_beta.eps'));
-
-
-% Nu
-
-[pixelErrPlot, minLoc] = min(reshape(permute(totalPixelErr,[1 2 3]),[nAlpha*nBeta, nNu]));
-tmp = reshape(permute(totalPixelStd,[1 2 3]),[nAlpha*nBeta, nNu]);
-inds = sub2ind([nAlpha*nBeta, nNu],minLoc,1:nNu);
-pixelErrPlotStd = tmp(inds)/sqrt(24);
-
-[reflErrPlot, minLoc] = min(reshape(permute(reflErr,[1 2 3]),[nAlpha*nBeta, nNu]));
-tmp = reshape(permute(reflStd,[1 2 3]),[nAlpha*nBeta, nNu]);
-inds = sub2ind([nAlpha*nBeta, nNu],minLoc,1:nNu);
-reflErrPlotStd = tmp(inds)/sqrt(24);
-
-[dMatNormErrPlot, minLoc] = min(reshape(permute(dMatNormErr,[1 2 3]),[nAlpha*nBeta, nNu]));
-tmp = reshape(permute(dMatNormStd,[1 2 3]),[nAlpha*nBeta, nNu]);
-inds = sub2ind([nAlpha*nBeta, nNu],minLoc,1:nNu);
-dMatNormPlotStd = tmp(inds)/sqrt(24);
-
-
-
-figure;
-hold all; grid on; box on;
-pl(1) = errorbar(nuRange,pixelErrPlot,pixelErrPlotStd,lineStyle{1});
-pl(2) = errorbar(nuRange,reflErrPlot,reflErrPlotStd,lineStyle{2});
-pl(3) = errorbar(nuRange,dMatNormErrPlot,dMatNormPlotStd,lineStyle{3});
-set(pl,'lineWidth',lw,'markerSize',mkSz);
-set(gcf,'PaperUnits','inches');
-set(gcf,'PaperPosition',figSize);
-xlim([0.9*min(nuRange) 1.1*max(nuRange)]);
-ylim([0 0.07]);
-xlabel('\eta');
-ylabel('min_{\alpha,\beta}(RMSE)');
-set(gca,'fontSize',fs);
-set(gca,'xscale','log');
-print('-depsc',fullfile(saveDir,'multiFl_xVal_eta.eps'));

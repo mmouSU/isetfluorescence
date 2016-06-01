@@ -84,11 +84,14 @@ hist = cell(nSamples,1);
 
 for i=1:nSamples
 
+    fprintf('Processing sample %i ... ',i);
+    
     input = measVals(:,:,i) - cameraOffset(:,:,i);
     
     [reflEst{i}, emEst(:,i), exEst(:,i), dMatEst{i}, predRefl(:,:,i), predFl(:,:,i), hist{i}] = ...
     fiRecOneReflAndFlNucNorm(input,cameraMat,cameraGain(:,:,i),illuminant,alpha,sigma,varargin{:});
     
+    fprintf('Done!\n');
 end
 
 end

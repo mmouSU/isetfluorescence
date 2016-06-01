@@ -1,3 +1,13 @@
+% Use Image Systems Engineering Toolbox to simulate a set of captures using
+% a model of the image acquisition system. Create a fluorescent scene with
+% the fiToolbox functions. The captured data contains simulated pixel intensities
+% for each of the 24 patches illuminated with each of the 14 narrowband 
+% lights and as seen through each of the 8 camera filters. 
+%
+% Generate fluorescent scenes using fluorophores with different Stokes shifts 
+%
+% Copyright, Henryk Blasinski 2016.
+
 close all;
 clear all;
 clc;
@@ -5,11 +15,11 @@ clc;
 ieInit;
 
 dataset = 'McNamara-Boswell';
-flQe = 0.1;
+flQe = 0.1;                             % We assume constant practical efficiency 
 height = 4;
 width = 6;
 nFluorophores = 1;
-stokesRanges = [0 25 50 75 100];
+stokesRanges = [0 25 50 75 100];        % Define Stokes shift ranges: 0-25, 25-50, 50-75, 75-100
 
 wave = 380:4:1000;
 nWaves = length(wave);
@@ -38,14 +48,9 @@ scene = sceneSet(scene,'distance',1);
 
 fName = fullfile(isetRootPath,'data','surfaces','macbethChart');
 reflRef = ieReadSpectra(fName,wave);
+          
 
-
-        
-
-
-           
-
-%% Run ISET simulations
+% Run ISET simulations
 
 for q=1:(length(stokesRanges)-1);
     
@@ -146,7 +151,7 @@ for q=1:(length(stokesRanges)-1);
     save(fName,'cameraGain','cameraOffset','measVals','reflRef','dMatRef','exRef','emRef','reflValsRef','flValsRef',...
         'wave','illuminant','camera','illuminantPhotons','nFilters','nChannels');
     
-    %% Remove unnecessary objects
+    %% Remove unnecessary ISET objects to save memory
     objs = vcGetObjects('scene');
     vcDeleteSomeObjects('scene',1:length(objs));
     

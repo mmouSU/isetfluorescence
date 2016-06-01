@@ -1,10 +1,15 @@
+% Use the nuclear norm algorithm of Suo et al. (Optics Express 2014)
+% to estimate the reflectance and fluorescence properties from simulated data.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;
 
-inFName = 'McNamara-Boswell_4x6x1_qe_0.10';
 
 % Load simulation data
+inFName = 'McNamara-Boswell_4x6x1_qe_0.10';
 fName = fullfile(fiToolboxRootPath,'data','simulations',[inFName '.mat']);
 load(fName);
 
@@ -13,14 +18,14 @@ nWaves = length(wave);
 
 alpha = 0.01;
 sigma = 0.001;
-
+maxIter = 250;
 
 % Create basis function sets
 nReflBasis = 5;
 nExBasis = 12;
 
-[reflBasis, reflScore] = createBasisSet('reflectance','wave',wave','n',nReflBasis);
-[exBasis, exScore] = createBasisSet('excitation','wave',wave','n',nExBasis);
+[reflBasis, reflScore] = fiCreateBasisSet('reflectance','wave',wave','n',nReflBasis);
+[exBasis, exScore] = fiCreateBasisSet('excitation','wave',wave','n',nExBasis);
 
 
 % Load the light spectra (in photons)
@@ -52,32 +57,30 @@ cameraGain = cameraGain./repmat(nF,[nFilters nChannels 1]);
 %%
 
 [ reflEst, emEst, exEst, dMatEst, reflValsEst, flValsEst, hist ] = fiRecReflAndFlNucNorm( measVals,...
-    camera, cameraGain*deltaL, cameraOffset, illuminant, alpha, sigma, 'maxIter',100 );
+    camera, cameraGain*deltaL, cameraOffset, illuminant, alpha, sigma, 'maxIter', maxIter );
 
 measValsEst = reflValsEst + flValsEst;
 
+%%
 
-[err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals - cameraOffset,[nChannels*nFilters,nSamples]), '');
+[err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals - cameraOffset,[nChannels*nFilters,nSamples]), 'absolute');
 fprintf('Total pixel error %.3f, std %.3f\n',err,std);
 
-[err, std] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(reflValsRef,[nChannels*nFilters,nSamples]), '');
+[err, std] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(reflValsRef,[nChannels*nFilters,nSamples]), 'absolute');
 fprintf('Reflected pixel error %.3f, std %.3f\n',err,std);
 
-[err, std] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(flValsRef,[nChannels*nFilters,nSamples]), '');
+[err, std] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(flValsRef,[nChannels*nFilters,nSamples]), 'absolute');
 fprintf('Fluoresced pixel error %.3f, std %.3f\n',err,std);
 
-% [err, std] = fiComputeError(reflEst, reflRef, '');
-% fprintf('Reflectance error %.3f, std %.3f\n',err,std);
-
-
-
+% By default the algorithm returns the reflectance estimate as a matrix, we
+% need to change the way reflRef is represented
+reflRefCell = cell(nSamples,1);
+for i=1:nSamples, reflRefCell{i} = diag(reflRef(:,i)); end
+[err, std] = fiComputeError(reflEst, reflRefCell, 'absolute');
+fprintf('Reflectance error %.3f, std %.3f\n',err,std);
 
 
 %% Plot the results
-
-fName = fullfile(fiToolboxRootPath,'data','flCmap');
-load(fName);
-
 % Predicted vs. simulated pixel intensities
 
 figure;
@@ -162,7 +165,6 @@ end
 
 % Estimated vs. ground truth Donaldson matrics: scale
 figure;
-set(gcf,'Colormap',flCmap);
 for xx=1:6
 for yy=1:4
 
@@ -180,7 +182,6 @@ end
 
 % Estimated vs. ground truth Donaldson matrics: shape
 figure;
-set(gcf,'Colormap',flCmap);
 for xx=1:6
 for yy=1:4
 

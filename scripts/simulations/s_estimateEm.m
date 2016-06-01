@@ -1,8 +1,19 @@
+% Use the CIM algorithm to estimate the reflectance and fluorescence
+% properties from simulated data.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear variables;
 clc;
 
-wave = 400:4:1000;
+% Load data
+inFName = 'McNamara-Boswell_4x6x1_qe_0.10';
+fName = fullfile(fiToolboxRootPath,'data','simulations',[inFName '.mat']);
+load(fName);
+
+% Wavelength sampling is defined in the loaded data file
+% wave = 400:4:1000;
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
@@ -13,9 +24,8 @@ beta = 0.1;
 nReflBasis = 5;
 nEmBasis = 12;
 
-[reflBasis, reflScore] = createBasisSet('reflectance','wave',wave','n',nReflBasis);
-[emBasis, emScore] = createBasisSet('emission','wave',wave','n',nEmBasis);
-
+[reflBasis, reflScore] = fiCreateBasisSet('reflectance','wave',wave','n',nReflBasis);
+[emBasis, emScore] = fiCreateBasisSet('emission','wave',wave','n',nEmBasis);
 
 % Load the light spectra (in photons)
 fName = fullfile(fiToolboxRootPath,'camera','illuminants');
@@ -32,9 +42,8 @@ qe = ieReadSpectra(fName,wave);
 
 camera = diag(qe)*filters;
 nFilters = size(camera,2);
-       
-%% Load simulation data 
-load('simulation.mat');
+      
+%% Perform estimation
 
 nSamples = size(measVals,3);
 cameraGain = repmat(cameraGain,[1 1 nSamples]);
@@ -48,17 +57,17 @@ measValsEst = flValsEst + reflValsEst;
 
 %% Plot the results
 
-[err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals - cameraOffset,[nChannels*nFilters,nSamples]), 'default');
+[err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals - cameraOffset,[nChannels*nFilters,nSamples]), 'absolute');
 fprintf('Total pixel error %.3f, std %.3f\n',err,std);
 
-[err, std] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(reflValsRef,[nChannels*nFilters,nSamples]), 'default');
+[err, std] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(reflValsRef,[nChannels*nFilters,nSamples]), 'absolute');
 fprintf('Reflected pixel error %.3f, std %.3f\n',err,std);
 
-[err, std] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(flValsRef,[nChannels*nFilters,nSamples]), 'default');
+[err, std] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(flValsRef,[nChannels*nFilters,nSamples]), 'absolute');
 fprintf('Fluoresced pixel error %.3f, std %.3f\n',err,std);
 
 
-[err, std] = fiComputeError(reflEst, reflRef, 'default');
+[err, std] = fiComputeError(reflEst, reflRef, 'absolute');
 fprintf('Reflectance error %.3f, std %.3f\n',err,std);
 
 [err, std] = fiComputeError(emEst, emRef, 'normalized');
