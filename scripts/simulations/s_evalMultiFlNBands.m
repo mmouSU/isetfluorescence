@@ -1,16 +1,34 @@
+% Evaluate the multi fluorophore algorithm using simulated data captured
+% with systems containing different numbers of illuminants and spectral
+% channels.
+%
+% This script is computationally intense and may take a long time to run.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;
+
+% Save results to file if saveFName ~= []
+% saveFName = fullfile(fiToolboxRootPath,'results','evaluation',sprintf('%s_simNBands_multiFl.mat',dataset));
+saveFName = [];
 
 wave = 380:4:1000;
 spSize = wave(end) - wave(1);
 nWaves = length(wave);
 deltaL = wave(2) - wave(1);
 
+% Tuning parameters
 alpha = 0.001;
 beta = 0.001;
-nu = 0.001;
+eta = 0.001;
 
+% Number of filters and channels to evaluate
+maxChannels = 30;
+maxFilters = 30;
+
+% Scene properties
 flQe = 0.5;
 nFluorophores = 1;
 dataset = 'McNamara-Boswell';
@@ -22,9 +40,9 @@ nSamples = height*width;
 nReflBasis = 5;
 nEmBasis = 12;
 nExBasis = 12;
-reflBasis = createBasisSet('reflectance','wave',wave','n',nReflBasis);
-exBasis = createBasisSet('excitation','wave',wave','n',nExBasis);
-emBasis = createBasisSet('emission','wave',wave','n',nEmBasis);
+reflBasis = fiCreateBasisSet('reflectance','wave',wave','n',nReflBasis);
+exBasis = fiCreateBasisSet('excitation','wave',wave','n',nExBasis);
+emBasis = fiCreateBasisSet('emission','wave',wave','n',nEmBasis);
 
 
 % Create reflective scene
@@ -43,15 +61,9 @@ flScene = fluorescentSceneCreate('height',height,'width',width,'wave',wave,'qe',
          
 dMatRef = fluorescentSceneGet(flScene,'Donaldson reference');        
 
-
-maxChannels = 30;
-maxFilters = 30;
-
 [channelGrid, filterGrid] = meshgrid(1:maxChannels,1:maxFilters);
 
-
-
-
+% Error placeholder variables
 reflErr = zeros(maxChannels,maxFilters);
 reflStd = zeros(maxChannels,maxFilters);
 
@@ -108,7 +120,7 @@ parfor i=1:numel(channelGrid);
     
     [ reflEst, ~, emEst, ~, exEst, ~, dMatEst, reflValsEst, flValsEst, hist  ] = ...
     fiRecReflAndMultiFl( measVals, camera, illuminant, cameraGain*deltaL,...
-                         cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, nu, 'maxIter',250,'rescaleRho',false);
+                         cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, eta, 'maxIter',250,'rescaleRho',false);
 
 
     measValsEst = reflValsEst + flValsEst + cameraOffset;
@@ -122,14 +134,14 @@ parfor i=1:numel(channelGrid);
 
 end
 
-fName = fullfile(fiToolboxRootPath,'results','evaluation',sprintf('%s_simNBands_multiFl.mat',dataset));
-save(fName,'pixelErr','pixelStd','dMatErr','dMatStd','reflErr','reflStd',...
-           'filterGrid','channelGrid','alpha','beta','nu','dMatRef','reflRef',...
-           'nReflBasis','nExBasis','nEmBasis');
-
-
 try
     delete(pool);
 catch
+end
+
+if ~isempty(saveFName)
+    save(saveFName,'pixelErr','pixelStd','dMatErr','dMatStd','reflErr','reflStd',...
+        'filterGrid','channelGrid','alpha','beta','eta','dMatRef','reflRef',...
+        'nReflBasis','nExBasis','nEmBasis');
 end
 

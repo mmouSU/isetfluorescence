@@ -1,14 +1,33 @@
+% Evaluate the multi fluorophore algorithm using simulated data captured
+% with a bispectral system to evaluate the number of excitation and
+% emission basis used for spectra approximation.
+%
+% This script is computationally intense and may take a long time to run.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;
+
+% Save results to file if saveFName ~= []
+% saveFName = fullfile(fiToolboxRootPath,'results','evaluation','multiFl_nBasis.mat');
+saveFName = [];
 
 wave = 380:4:1000;
 nWaves = length(wave);
 deltaL = wave(2) - wave(1);
 
+% Number of excitation and emission basis to evaluate
+maxExBasis = 25;
+maxEmBasis = 25;
+
+% Tuning parameters
 alpha = 0.001;
 beta = 0.001;
-nu = 0.001;
+eta = 0.001;
+
+% Scene properties
 flQe = 0.5;
 nFluorophores = 1;
 dataset = 'McNamara-Boswell';
@@ -18,7 +37,7 @@ nSamples = height*width;
 
 % Reflectance basis
 nReflBasis = 5;
-[reflBasis, reflScore] = createBasisSet('reflectance','wave',wave','n',nReflBasis);
+[reflBasis, reflScore] = fiCreateBasisSet('reflectance','wave',wave','n',nReflBasis);
 
 
 % Load the light spectra (in photons)
@@ -60,14 +79,10 @@ nF = repmat(nF,[nFilters,nChannels,1]);
 measVals = measVals./nF;
 cameraGain = cameraGain./nF;
 
-
-
-maxExBasis = 25;
-maxEmBasis = 25;
 [emBasisGrid, exBasisGrid] = meshgrid(1:maxEmBasis,1:maxExBasis);
 
 
-
+% Error placeholder variables
 reflErr = zeros(maxEmBasis,maxExBasis);
 reflStd = zeros(maxEmBasis,maxExBasis);
 
@@ -93,28 +108,31 @@ parfor i=1:numel(emBasisGrid);
     
     [ reflEst, ~, emEst, ~, exEst, ~, dMatEst, reflValsEst, flValsEst, hist  ] = ...
     fiRecReflAndMultiFl( measVals, camera, illuminant, cameraGain*deltaL,...
-                         cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, nu, 'maxIter',2500,'rescaleRho',false);
+                         cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, eta, 'maxIter',2500,'rescaleRho',false);
 
 
     measValsEst = reflValsEst + flValsEst + cameraOffset;
 
-    [pixelErr(i), pixelStd(i)] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals,[nChannels*nFilters,nSamples]), 'default');
+    [pixelErr(i), pixelStd(i)] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals,[nChannels*nFilters,nSamples]), 'absolute');
 
-    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, reflRef, '');
+    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, reflRef, 'absolute');
 
     [dMatErr(i), dMatStd(i)] = fiComputeError(dMatEst, dMatRef, 'normalized');
                   
 
 end
 
-fName = fullfile(fiToolboxRootPath,'results','evaluation','multiFl_nBasis.mat');
-save(fName,'pixelErr','pixelStd','dMatErr','dMatStd','reflErr','reflStd',...
-           'exBasisGrid','emBasisGrid','alpha','beta','nu','dMatRef','reflRef',...
-           'nReflBasis');
-
-
 try
     delete(pool);
 catch
 end
+
+%% Save file
+
+if ~isempty(saveFName)
+    save(saveFName,'pixelErr','pixelStd','dMatErr','dMatStd','reflErr','reflStd',...
+        'exBasisGrid','emBasisGrid','alpha','beta','eta','dMatRef','reflRef',...
+        'nReflBasis');
+end
+
 

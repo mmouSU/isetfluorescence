@@ -1,24 +1,37 @@
+% Evaluate the single fluorophore algorithm on fluorophores with different
+% values of the Stokes shift.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;
 
-% Evaluate the accuracy on the entire dataset
+% Save results to a file saveFName if not empty.
+dirName = fullfile(fiToolboxRootPath,'results','evaluation');
+if ~exist(dirName,'dir'), mkdir(dirName); end
+% saveFName = fullfile(dirName,[dataset '_simStokes_Fl.mat']);
+saveFName = [];
 
-dataset = 'McNamara-Boswell';
 wave = 380:4:1000;
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
+% Tuning parameters
 alpha = 0.1;
 beta = 0.1;
+
+% Scene properties
+dataset = 'McNamara-Boswell';
 height = 4;
 width = 6;
 nSamples = height*width;
 nFluorophores = 1;
-
 flQe = 0.1;
-stokesRanges = [0 25 50 75 100];
 
+
+% Stokes shift ranges
+stokesRanges = [0 25 50 75 100];
 nStokes = length(stokesRanges)-1;
 
 % Create basis function sets
@@ -26,11 +39,11 @@ nReflBasis = 5;
 nExBasis = 12;
 nEmBasis = 12;
 
-[reflBasis, reflScore] = createBasisSet('reflectance','wave',wave','n',nReflBasis);
-[exBasis, exScore] = createBasisSet('excitation','wave',wave','n',nExBasis);
-[emBasis, emScore] = createBasisSet('emission','wave',wave','n',nEmBasis);
+[reflBasis, reflScore] = fiCreateBasisSet('reflectance','wave',wave','n',nReflBasis);
+[exBasis, exScore] = fiCreateBasisSet('excitation','wave',wave','n',nExBasis);
+[emBasis, emScore] = fiCreateBasisSet('emission','wave',wave','n',nEmBasis);
 
-
+% Error placeholder variables
 totalPixelErr = zeros(nStokes,1);
 reflPixelErr = zeros(nStokes,1);
 flPixelErr = zeros(nStokes,1);
@@ -77,16 +90,16 @@ parfor i=1:nStokes
     
     measValsEst = reflValsEst + flValsEst + cameraOffset;
     
-    [totalPixelErr(i), totalPixelStd(i)] = fiComputeError(reshape(measValsEst,[data.nChannels*data.nFilters,nSamples]), reshape(data.measVals,[data.nChannels*data.nFilters,nSamples]), '');
-    [reflPixelErr(i), reflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[data.nChannels*data.nFilters,nSamples]), reshape(data.reflValsRef,[data.nChannels*data.nFilters,nSamples]), '');
-    [flPixelErr(i), flPixelStd(i)] = fiComputeError(reshape(flValsEst,[data.nChannels*data.nFilters,nSamples]), reshape(data.flValsRef,[data.nChannels*data.nFilters,nSamples]), '');
+    [totalPixelErr(i), totalPixelStd(i)] = fiComputeError(reshape(measValsEst,[data.nChannels*data.nFilters,nSamples]), reshape(data.measVals,[data.nChannels*data.nFilters,nSamples]), 'absolute');
+    [reflPixelErr(i), reflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[data.nChannels*data.nFilters,nSamples]), reshape(data.reflValsRef,[data.nChannels*data.nFilters,nSamples]), 'absolute');
+    [flPixelErr(i), flPixelStd(i)] = fiComputeError(reshape(flValsEst,[data.nChannels*data.nFilters,nSamples]), reshape(data.flValsRef,[data.nChannels*data.nFilters,nSamples]), 'absolute');
     
-    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, data.reflRef, '');
+    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, data.reflRef, 'absolute');
     
-    [emErr(i), emStd(i)] = fiComputeError(emEst, data.emRef, '');
+    [emErr(i), emStd(i)] = fiComputeError(emEst, data.emRef, 'absolute');
     [emNormErr(i), emNormStd(i)] = fiComputeError(emEst, data.emRef, 'normalized');
     
-    [exErr(i), exStd(i)] = fiComputeError(exEst, data.exRef, '');
+    [exErr(i), exStd(i)] = fiComputeError(exEst, data.exRef, 'absolute');
     [exNormErr(i), exNormStd(i)] = fiComputeError(exEst, data.exRef, 'normalized');
     
 
@@ -98,13 +111,10 @@ catch
 end
 
 %% Save results
-dirName = fullfile(fiToolboxRootPath,'results','evaluation');
-if ~exist(dirName,'dir'), mkdir(dirName); end
 
-fName = fullfile(dirName,[dataset '_simStokes_Fl.mat']);
-
-save(fName,'stokesRanges',...
-           'totalPixelErr','reflPixelErr','flPixelErr','reflErr','exErr','exNormErr','emErr','emNormErr',...
-           'totalPixelStd','reflPixelStd','flPixelStd','reflStd','exStd','exNormStd','emStd','emNormStd');
-
+if ~isempty(saveFName)
+    save(saveFName,'stokesRanges',...
+        'totalPixelErr','reflPixelErr','flPixelErr','reflErr','exErr','exNormErr','emErr','emNormErr',...
+        'totalPixelStd','reflPixelStd','flPixelStd','reflStd','exStd','exNormStd','emStd','emNormStd');
+end
        

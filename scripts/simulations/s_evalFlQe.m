@@ -1,21 +1,35 @@
+% Evaluate the single fluorophore algorithm on a scene with fixed
+% excitation and emission properties but with varyig levels of quantum
+% efficiency.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;
 
-% Evaluate the accuracy on the entire dataset
+% Save results to a file saveFName
+dirName = fullfile(fiToolboxRootPath,'results','evaluation');
+if ~exist(dirName,'dir'), mkdir(dirName); end
+% saveFName = fullfile(dirName,[dataset '_simQe_Fl.mat']);
+saveFName = [];
 
-dataset = 'McNamara-Boswell';
 wave = 380:4:1000;
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
+% Tuning parameters
 alpha = 0.1;
 beta = 0.1;
+
+% Scene properties
+dataset = 'McNamara-Boswell';
 height = 4;
 width = 6;
 nSamples = height*width;
 nFluorophores = 1;
 
+% Quantum efficiency settings
 flQe = logspace(-3,0,10);
 nQe = length(flQe);
 
@@ -24,11 +38,11 @@ nReflBasis = 5;
 nExBasis = 12;
 nEmBasis = 12;
 
-[reflBasis, reflScore] = createBasisSet('reflectance','wave',wave','n',nReflBasis);
-[exBasis, exScore] = createBasisSet('excitation','wave',wave','n',nExBasis);
-[emBasis, emScore] = createBasisSet('emission','wave',wave','n',nEmBasis);
+[reflBasis, reflScore] = fiCreateBasisSet('reflectance','wave',wave','n',nReflBasis);
+[exBasis, exScore] = fiCreateBasisSet('excitation','wave',wave','n',nExBasis);
+[emBasis, emScore] = fiCreateBasisSet('emission','wave',wave','n',nEmBasis);
 
-
+% Placeholders for error variables
 totalPixelErr = zeros(nQe,1);
 reflPixelErr = zeros(nQe,1);
 flPixelErr = zeros(nQe,1);
@@ -75,11 +89,11 @@ parfor i=1:nQe
     
     measValsEst = reflValsEst + flValsEst + cameraOffset;
     
-    [totalPixelErr(i), totalPixelStd(i)] = fiComputeError(reshape(measValsEst,[data.nChannels*data.nFilters,nSamples]), reshape(data.measVals,[data.nChannels*data.nFilters,nSamples]), '');
-    [reflPixelErr(i), reflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[data.nChannels*data.nFilters,nSamples]), reshape(data.reflValsRef,[data.nChannels*data.nFilters,nSamples]), '');
-    [flPixelErr(i), flPixelStd(i)] = fiComputeError(reshape(flValsEst,[data.nChannels*data.nFilters,nSamples]), reshape(data.flValsRef,[data.nChannels*data.nFilters,nSamples]), '');
+    [totalPixelErr(i), totalPixelStd(i)] = fiComputeError(reshape(measValsEst,[data.nChannels*data.nFilters,nSamples]), reshape(data.measVals,[data.nChannels*data.nFilters,nSamples]), 'absolute');
+    [reflPixelErr(i), reflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[data.nChannels*data.nFilters,nSamples]), reshape(data.reflValsRef,[data.nChannels*data.nFilters,nSamples]), 'absolute');
+    [flPixelErr(i), flPixelStd(i)] = fiComputeError(reshape(flValsEst,[data.nChannels*data.nFilters,nSamples]), reshape(data.flValsRef,[data.nChannels*data.nFilters,nSamples]), 'absolute');
     
-    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, data.reflRef, '');
+    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, data.reflRef, 'absolute');
     
     [emErr(i), emStd(i)] = fiComputeError(emEst, data.emRef, '');
     [emNormErr(i), emNormStd(i)] = fiComputeError(emEst, data.emRef, 'normalized');
@@ -96,13 +110,10 @@ catch
 end
 
 %% Save results
-dirName = fullfile(fiToolboxRootPath,'results','evaluation');
-if ~exist(dirName,'dir'), mkdir(dirName); end
 
-fName = fullfile(dirName,[dataset '_simQe_Fl.mat']);
-
-save(fName,'flQe',...
-           'totalPixelErr','reflPixelErr','flPixelErr','reflErr','exErr','exNormErr','emErr','emNormErr',...
-           'totalPixelStd','reflPixelStd','flPixelStd','reflStd','exStd','exNormStd','emStd','emNormStd');
-
+if ~isempty(saveFName)
+    save(saveFName,'flQe',...
+        'totalPixelErr','reflPixelErr','flPixelErr','reflErr','exErr','exNormErr','emErr','emNormErr',...
+        'totalPixelStd','reflPixelStd','flPixelStd','reflStd','exStd','exNormStd','emStd','emNormStd');
+end
        

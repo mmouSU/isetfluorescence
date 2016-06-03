@@ -1,16 +1,28 @@
+% Evaluate the single fluorophore algorithm on all fluorophores from the
+% McNamara-Boswell dataset. For every fluorophore a target with 24 reflectance 
+% patches is created.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;
 
-% Evaluate the accuracy on the entire dataset
+% Save results to a file saveFName
+dirName = fullfile(fiToolboxRootPath,'results');
+if ~exist(dirName,'dir'), mkdir(dirName); end
+% saveFName = fullfile(dirName,[dataset '_sim_Fl.mat']);
+saveFName = [];
 
-dataset = 'McNamara-Boswell';
 wave = 380:4:1000;
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
+% Scene properties
+dataset = 'McNamara-Boswell';
 flQe = 0.1;
 
+% Algorithm tuning parameters
 alpha = 0.1;
 beta = 0.1;
 
@@ -19,9 +31,9 @@ nReflBasis = 5;
 nExBasis = 12;
 nEmBasis = 12;
 
-[reflBasis, reflScore] = createBasisSet('reflectance','wave',wave','n',nReflBasis);
-[exBasis, exScore] = createBasisSet('excitation','wave',wave','n',nExBasis);
-[emBasis, emScore] = createBasisSet('emission','wave',wave','n',nEmBasis);
+[reflBasis, reflScore] = fiCreateBasisSet('reflectance','wave',wave','n',nReflBasis);
+[exBasis, exScore] = fiCreateBasisSet('excitation','wave',wave','n',nExBasis);
+[emBasis, emScore] = fiCreateBasisSet('emission','wave',wave','n',nEmBasis);
 
 
 % Load the light spectra (in photons)
@@ -59,7 +71,7 @@ reflRef = ieReadSpectra(fName,wave);
 
 
 
-
+% Placeholder variables for error measurements
 totalPixelErr = zeros(nCompounds,1);
 reflPixelErr = zeros(nCompounds,1);
 flPixelErr = zeros(nCompounds,1);
@@ -68,8 +80,6 @@ exErr = zeros(nCompounds,1);
 exNormErr = zeros(nCompounds,1);
 emErr = zeros(nCompounds,1);
 emNormErr = zeros(nCompounds,1);
-
-
 
 totalPixelStd = zeros(nCompounds,1);
 reflPixelStd = zeros(nCompounds,1);
@@ -83,7 +93,7 @@ emNormStd = zeros(nCompounds,1);
 %% The main cross-validation loop
 
 try
-    matlabpool open local
+    parpool open local
 catch 
 end
 
@@ -176,16 +186,16 @@ for i=1:nCompounds
     
     measValsEst = reflValsEst + flValsEst + cameraOffset;
     
-    [totalPixelErr(i), totalPixelStd(i)] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,24]), reshape(measVals,[nChannels*nFilters,24]), '');
-    [reflPixelErr(i), reflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,24]), reshape(reflValsRef,[nChannels*nFilters,24]), '');
-    [flPixelErr(i), flPixelStd(i)] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,24]), reshape(flValsRef,[nChannels*nFilters,24]), '');
+    [totalPixelErr(i), totalPixelStd(i)] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,24]), reshape(measVals,[nChannels*nFilters,24]), 'absolute');
+    [reflPixelErr(i), reflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,24]), reshape(reflValsRef,[nChannels*nFilters,24]), 'absolute');
+    [flPixelErr(i), flPixelStd(i)] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,24]), reshape(flValsRef,[nChannels*nFilters,24]), 'absolute');
     
-    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, reflRef, '');
+    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, reflRef, 'absolute');
     
-    [emErr(i), emStd(i)] = fiComputeError(emEst, emRef, '');
+    [emErr(i), emStd(i)] = fiComputeError(emEst, emRef, 'absolute');
     [emNormErr(i), emNormStd(i)] = fiComputeError(emEst, emRef, 'normalized');
     
-    [exErr(i), exStd(i)] = fiComputeError(exEst, exRef, '');
+    [exErr(i), exStd(i)] = fiComputeError(exEst, exRef, 'absolute');
     [exNormErr(i), exNormStd(i)] = fiComputeError(exEst, exRef, 'normalized');
     
     %% ISET cleanup, remove all objects.
@@ -200,7 +210,14 @@ for i=1:nCompounds
 end
 
 try
-    matlabpool close
+    parpool close
 catch
 end
 
+%% Save results
+
+if ~isempty(saveFName)
+    save(saveFName,'fluorophores','ids','nCompounds',...
+        'totalPixelErr','reflPixelErr','flPixelErr','reflErr','exErr','emErr','exNormErr','emNormErr',...
+        'totalPixelStd','reflPixelStd','flPixelStd','reflStd','exStd','emStd','exNormStd','emNormStd');
+end

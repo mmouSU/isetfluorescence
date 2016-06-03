@@ -163,7 +163,7 @@ for i=1:inputs.maxIter
     % Estimate Reflectnace
     if ~isempty(inputs.reflRef)
         reflEst = basisRefl*(rfCoeffs);
-        hist.reflErr(i) = fiComputeError(reflEst,inputs.reflRef,'');
+        hist.reflErr(i) = fiComputeError(reflEst,inputs.reflRef,'absolute');
     end
 
     % Estimate Fluorescence 

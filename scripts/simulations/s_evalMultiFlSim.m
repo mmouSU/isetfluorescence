@@ -1,28 +1,40 @@
+% Evaluate the multi fluorophore algorithm on all fluorophores from the
+% McNamara-Boswell dataset. For every fluorophore a target with 24 reflectance 
+% patches is created.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;
 
-% Evaluate the accuracy on the entire dataset
+% Save results to a file saveFName (or don't if saveFName is empty)
+dirName = fullfile(fiToolboxRootPath,'results');
+if ~exist(dirName,'dir'), mkdir(dirName); end
+% saveFName = fullfile(dirName,[dataset '_sim_multiFl.mat']);
+saveFName = [];
 
+% Scene properties
 dataset = 'McNamara-Boswell';
+flQe = 0.1;
+
 wave = 380:4:1000;
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
-flQe = 0.1;
-
+% Tuning parameters
 alpha = 0.1;
 beta = 0.1;
-nu = 0.1;
+eta = 0.1;
 
 % Create basis function sets
 nReflBasis = 5;
 nExBasis = 12;
 nEmBasis = 12;
 
-[reflBasis, reflScore] = createBasisSet('reflectance','wave',wave','n',nReflBasis);
-[exBasis, exScore] = createBasisSet('excitation','wave',wave','n',nExBasis);
-[emBasis, emScore] = createBasisSet('emission','wave',wave','n',nEmBasis);
+[reflBasis, reflScore] = fiCreateBasisSet('reflectance','wave',wave','n',nReflBasis);
+[exBasis, exScore] = fiCreateBasisSet('excitation','wave',wave','n',nExBasis);
+[emBasis, emScore] = fiCreateBasisSet('emission','wave',wave','n',nEmBasis);
 
 
 % Load the light spectra (in photons)
@@ -58,9 +70,7 @@ scene = sceneSet(scene,'distance',1);
 fName = fullfile(isetRootPath,'data','surfaces','macbethChart');
 reflRef = ieReadSpectra(fName,wave);
 
-
-
-
+% Error placeholder variables
 totalPixelErr = zeros(nCompounds,1);
 reflPixelErr = zeros(nCompounds,1);
 flPixelErr = zeros(nCompounds,1);
@@ -78,7 +88,7 @@ dMatNormStd = zeros(nCompounds,1);
 %% The main cross-validation loop
 
 try
-    matlabpool open local
+    parpool open local
 catch 
 end
 
@@ -165,20 +175,20 @@ for i=1:nCompounds
     
     [ reflEst, reflCoeffs, emEst, emCoeffs, exEst, exCoeffs, dMatEst, reflValsEst, flValsEst, hist  ] = ...
         fiRecReflAndMultiFl( measVals, camera, illuminantPhotons, cameraGain*deltaL,...
-        cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, nu, 'maxIter',250);
+        cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, eta, 'maxIter',250);
     
     
     %% Evaluation
     
     measValsEst = reflValsEst + flValsEst + cameraOffset;
     
-    [totalPixelErr(i), totalPixelStd(i)] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,24]), reshape(measVals,[nChannels*nFilters,24]), '');
-    [reflPixelErr(i), reflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,24]), reshape(reflValsRef,[nChannels*nFilters,24]), '');
-    [flPixelErr(i), flPixelStd(i)] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,24]), reshape(flValsRef,[nChannels*nFilters,24]), '');
+    [totalPixelErr(i), totalPixelStd(i)] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,24]), reshape(measVals,[nChannels*nFilters,24]), 'absolute');
+    [reflPixelErr(i), reflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,24]), reshape(reflValsRef,[nChannels*nFilters,24]), 'absolute');
+    [flPixelErr(i), flPixelStd(i)] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,24]), reshape(flValsRef,[nChannels*nFilters,24]), 'absolute');
     
-    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, reflRef, '');
+    [reflErr(i), reflStd(i)] = fiComputeError(reflEst, reflRef, 'absolute');
     
-    [dMatErr(i), dMatStd(i)] = fiComputeError(dMatEst, dMatRef, '');
+    [dMatErr(i), dMatStd(i)] = fiComputeError(dMatEst, dMatRef, 'absolute');
     [dMatNormErr(i), dMatNormStd(i)] = fiComputeError(dMatEst, dMatRef, 'normalized');
     
     %% ISET cleanup, remove all objects.
@@ -193,18 +203,15 @@ for i=1:nCompounds
 end
 
 try
-    matlabpool close
+    parpool close
 catch
 end
 
 %% Save results
-dirName = fullfile(fiToolboxRootPath,'results');
-if ~exist(dirName,'dir'), mkdir(dirName); end
 
-fName = fullfile(dirName,[dataset '_sim_multiFl.mat']);
-
-save(fName,'fluorophores','ids','nCompounds',...
-           'totalPixelErr','reflPixelErr','flPixelErr','reflErr','dMatErr','dMatNormErr',...
-           'totalPixelStd','reflPixelStd','flPixelStd','reflStd','dMatStd','dMatNormStd');
-
+if ~isempty(saveFName)
+    save(saveFName,'fluorophores','ids','nCompounds',...
+        'totalPixelErr','reflPixelErr','flPixelErr','reflErr','dMatErr','dMatNormErr',...
+        'totalPixelStd','reflPixelStd','flPixelStd','reflStd','dMatStd','dMatNormStd');
+end
        

@@ -1,14 +1,32 @@
+% Evaluate the single fluorophore algorithm using simulated data captured
+% with a bispectral system to evaluate the number of excitation and
+% emission basis used for spectra approximation.
+%
+% This script is computationally intense and may take a long time to run.
+%
+% Copyright, Henryk Blasinski 2016
+
 close all;
 clear all;
 clc;
+
+% Save results to file if saveFName ~= []
+% saveFName = fullfile(fiToolboxRootPath,'results','evaluation',sprintf('%s_simNBasis_fl.mat',dataset));
+saveFName = [];
 
 wave = 380:4:1000;
 nWaves = length(wave);
 deltaL = wave(2) - wave(1);
 
+% Number of basis to evaluate
+maxExBasis = 25;
+maxEmBasis = 25;
+
+% Define algorithm tuning parameters
 alpha = 0.001;
 beta = 0.001;
 
+% Define scene properties
 flQe = 0.5;
 nFluorophores = 1;
 dataset = 'McNamara-Boswell';
@@ -18,7 +36,7 @@ nSamples = height*width;
 
 % Reflectance basis
 nReflBasis = 5;
-[reflBasis, reflScore] = createBasisSet('reflectance','wave',wave','n',nReflBasis);
+[reflBasis, reflScore] = fiCreateBasisSet('reflectance','wave',wave','n',nReflBasis);
 
 
 % Load the light spectra (in photons)
@@ -63,11 +81,8 @@ cameraGain = cameraGain./nF;
 
 
 
-maxExBasis = 25;
-maxEmBasis = 25;
+% Error placeholder variables
 [emBasisGrid, exBasisGrid] = meshgrid(1:maxEmBasis,1:maxExBasis);
-
-
 
 reflErr = zeros(maxEmBasis,maxExBasis);
 reflStd = zeros(maxEmBasis,maxExBasis);
@@ -94,8 +109,8 @@ end
 parfor i=1:numel(emBasisGrid);
 
 
-    exBasis = createBasisSet('excitation','wave',wave','n',exBasisGrid(i));
-    emBasis = createBasisSet('emission','wave',wave','n',emBasisGrid(i));
+    exBasis = fiCreateBasisSet('excitation','wave',wave','n',exBasisGrid(i));
+    emBasis = fiCreateBasisSet('emission','wave',wave','n',emBasisGrid(i));
     
     
     [ reflEst, ~, emEst, ~, exEst, ~, reflValsEst, flValsEst, hist  ] = ...
@@ -121,11 +136,11 @@ parfor i=1:numel(emBasisGrid);
 
 end
 
-fName = fullfile(fiToolboxRootPath,'results','evaluation',sprintf('%s_simNBasis_fl.mat',dataset));
-save(fName,'pixelErr','pixelStd','exNormErr','exNormStd','emNormErr','exNormStd','reflErr','reflStd',...
-           'exBasisGrid','emBasisGrid','alpha','beta','exRef','emRef','reflRef','dMatErr','dMatStd','dMatRef',...
-           'nReflBasis');
-
+if ~isempty(saveFName)
+    save(saveFName,'pixelErr','pixelStd','exNormErr','exNormStd','emNormErr','exNormStd','reflErr','reflStd',...
+        'exBasisGrid','emBasisGrid','alpha','beta','exRef','emRef','reflRef','dMatErr','dMatStd','dMatRef',...
+        'nReflBasis');
+end
 
 try
     delete(pool);
