@@ -54,3 +54,17 @@ b. Code accompanying the Computational Colour Science using Matlab from
    (http://www.mathworks.com/matlabcentral/fileexchange/40640-computational-colour-science-using-matlab-2e)
 
 
+4. Sample data
+--------------
+
+The sample inputs to our algorithms as well as the results of the analyses 
+can be downloaded from Stanford's Digital Repository: 
+http://purl.stanford.edu/xc528jd5098
+The zip file downloaded from the above side contains two directories: 'data'
+with raw input data from real captures and simulations and 'results' storing
+algorithm outputs. Please place these two folders directly in the fiToolbox
+root folder.
+
+
+
+

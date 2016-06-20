@@ -24,7 +24,7 @@ alpha = 0.1;
 beta = 10;
 eta = 0.01;
 
-testFileName = 'Macbeth+multiFl2';
+testFileName = 'Macbeth+multiFl';
 backgroundFileName = 'Background+multiFl';
 
 % Save outputs to file if saveFName ~= []
