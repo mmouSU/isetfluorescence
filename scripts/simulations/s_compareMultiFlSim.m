@@ -9,15 +9,17 @@ close all;
 clear all;
 clc;
 
+% Scene properties
+dataset = 'McNamara-Boswell';
+flQe = 0.1;
+
 % Save results to a file saveFName (or don't if saveFName is empty)
 dirName = fullfile(fiToolboxRootPath,'results');
 if ~exist(dirName,'dir'), mkdir(dirName); end
 saveFName = fullfile(dirName,'evaluation',[dataset '_simCompare_multiFl.mat']);
 % saveFName = [];
 
-% Scene properties
-dataset = 'McNamara-Boswell';
-flQe = 0.1;
+
 
 wave = 380:4:1000;
 deltaL = wave(2) - wave(1);
@@ -206,7 +208,7 @@ parfor i=1:nCompounds
     measValsEst = reflValsEst + flValsEst + cameraOffset;
     
     [multiFlTotalPixelErr(i), multiFlTotalPixelStd(i)] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,24]), reshape(measVals,[nChannels*nFilters,24]), 'absolute');
-    [multiFlTeflPixelErr(i), multiFlTeflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,24]), reshape(reflValsRef,[nChannels*nFilters,24]), 'absolute');
+    [multiFlReflPixelErr(i), multiFlReflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,24]), reshape(reflValsRef,[nChannels*nFilters,24]), 'absolute');
     [multiFlFlPixelErr(i), multiFlFlPixelStd(i)] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,24]), reshape(flValsRef,[nChannels*nFilters,24]), 'absolute');
     
     [multiFlReflErr(i), multiFlReflStd(i)] = fiComputeError(reflEst, reflRef, 'absolute');
@@ -229,7 +231,7 @@ parfor i=1:nCompounds
     measValsEst = reflValsEst + flValsEst + cameraOffset;
     
     [nucNormTotalPixelErr(i), nucNormTotalPixelStd(i)] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,24]), reshape(measVals,[nChannels*nFilters,24]), 'absolute');
-    [nucNormTeflPixelErr(i), nucNormReflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,24]), reshape(reflValsRef,[nChannels*nFilters,24]), 'absolute');
+    [nucNormReflPixelErr(i), nucNormReflPixelStd(i)] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,24]), reshape(reflValsRef,[nChannels*nFilters,24]), 'absolute');
     [nucNormFlPixelErr(i), nucNormFlPixelStd(i)] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,24]), reshape(flValsRef,[nChannels*nFilters,24]), 'absolute');
     
     [nucNormReflErr(i), nucNormReflStd(i)] = fiComputeError(reflEst, reflRef, 'absolute');
