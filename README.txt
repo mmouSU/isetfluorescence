@@ -1,12 +1,11 @@
-Fluorescence Imaging Toolbox for Image Systems Engineering Toolbox
-(fiToolbox for ISET)
+Image Systems Engineering Toolbox Fluorescence Imaging Toolbox
+(ISETfit)
 
 This toolbox serves as an extension of the Image Systems Engineering Toolbox 
 (ISET) which provides a set of functions to simulate scenes with fluorescent 
 components. The fiToolbox also implements several reflectance and
 fluorescence separation and estimation algorithms. A copy of ISET is not
 needed to run these algorithms.
-
 
 If you use this code in your work, please cite
 
