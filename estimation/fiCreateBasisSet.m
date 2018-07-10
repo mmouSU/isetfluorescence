@@ -1,13 +1,11 @@
 function [ basis, score ] = fiCreateBasisSet( type, varargin )
-
-% [ basis, score ] = fiCreateBasisSet( type, varargin )
-%
 % Creates a set of basis functions for spectral quantities.
 %
+% [ basis, score ] = fiCreateBasisSet( type, varargin )
+%
 % Inputs (required):
-%    type - a string specifying the type of spectral quantity for which
-%      basis functions are generated. Allowed values are {'reflectance',
-%      'excitation','emission'}
+%   type - a string specifying the type of spectral basis functions.
+%          Allowed values are {'reflectance', 'excitation','emission'}
 %
 % Inputs (optional):
 %    'wave' - spectral quantities wavelength sampling (default =
@@ -22,15 +20,16 @@ function [ basis, score ] = fiCreateBasisSet( type, varargin )
 %
 % Copytight, Henryk Blasinski 2016
 
-
+%%
 p = inputParser;
 p.addRequired('type',@(x)(strcmp(x,validatestring(x,{'reflectance','excitation','emission'}))));
-p.addParamValue('wave',400:10:700,@isnumeric);
-p.addParamValue('n',5,@isscalar);
+p.addParameter('wave',400:10:700,@isnumeric);
+p.addParameter('n',5,@isscalar);
 
 p.parse(type,varargin{:});
 inputs = p.Results;
 
+%%
 switch type
     case 'reflectance'
         

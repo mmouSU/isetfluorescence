@@ -1,19 +1,21 @@
 function [ flScene, fluorophoreIDs ] = fluorescentSceneCreate( varargin )
-
+% Create a scene (i.e. a spatial arrangement) of different fluorophores. 
+%
+% Description
 % [ flScene, fluorophoreIDs ] = fluorescentSceneCreate(...)
 %
-% Create a scene (i.e. a spatial arrangement) of different fluorophores. The
-% scene is effectively a (h x w x n) array of fluorophore structures, where
-% h and w represent the height and width respectively, n describes the
-% number of fluorescent compounds per spatial location. Current
-% implementation does not explicitly permit different spatial locations to have
-% different number of fluorophores. This restriction can be bypassed by 
-% assigning two or more identical fluorophores to the same spatial location
-% and reducing their emission intensity accordingly.
+% Description
+%  The scene is effectively a (h x w x n) array of fluorophore structures,
+%  where h and w represent the height and width respectively, n describes
+%  the number of fluorescent compounds per spatial location. 
+%
+%  Current implementation does not explicitly permit different spatial
+%  locations to have different number of fluorophores. This restriction can
+%  be bypassed by assigning two or more identical fluorophores to the same
+%  spatial location and reducing their emission intensity accordingly.
 %
 % Inputs:
-%   'type' - describe the fluorescent scene type to be generated. Available
-%      values are
+%   'type' - type of  fluorescent scene to generate. Available values are
 %      'fromfluorophore' - create a scene using a single fluorophore, i.e.
 %         all spatial locations have the same fluorescent properties. The user
 %         is expected to provide the 'fluorophore' input.
@@ -58,25 +60,27 @@ function [ flScene, fluorophoreIDs ] = fluorescentSceneCreate( varargin )
 %
 % Copyright, Henryk Blasinski 2016
 
+%%
 p = inputParser;
 
-p.addParamValue('type','default',@ischar);
-p.addParamValue('dataset','McNamara-Boswell',@(x) strcmp(x,validatestring(x,{'McNamara-Boswell','LifeTechnologies'})))
-p.addParamValue('wave',400:10:700,@isvector);
-p.addParamValue('name','Default',@ischar);
-p.addParamValue('stokesShiftRange',[0 Inf],@isvector);
-p.addParamValue('peakEmRange',[420 680],@isvector);
-p.addParamValue('peakExRange',[420 680],@isvector);
-p.addParamValue('height',1,@isscalar);
-p.addParamValue('width',1,@isscalar);
-p.addParamValue('nFluorophores',1,@isscalar);
-p.addParamValue('qe',1,@isnumeric);
-p.addParamValue('fluorophoreIDs',1,@isnumeric);
-p.addParamValue('fluorophore',[],@isstruct);
+p.addParameter('type','default',@ischar);
+p.addParameter('dataset','McNamara-Boswell',@(x) strcmp(x,validatestring(x,{'McNamara-Boswell','LifeTechnologies'})))
+p.addParameter('wave',400:10:700,@isvector);
+p.addParameter('name','Default',@ischar);
+p.addParameter('stokesShiftRange',[0 Inf],@isvector);
+p.addParameter('peakEmRange',[420 680],@isvector);
+p.addParameter('peakExRange',[420 680],@isvector);
+p.addParameter('height',1,@isscalar);
+p.addParameter('width',1,@isscalar);
+p.addParameter('nFluorophores',1,@isscalar);
+p.addParameter('qe',1,@isnumeric);
+p.addParameter('fluorophoreIDs',1,@isnumeric);
+p.addParameter('fluorophore',[],@isstruct);
 
 p.parse(varargin{:});
 inputs = p.Results;
 
+%%
 flScene.type = 'fluorescent scene';
 flScene.name = inputs.name;
 flScene = initDefaultSpectrum(flScene,'custom',inputs.wave);
@@ -117,8 +121,6 @@ switch inputs.type
         flScene = fluorescentSceneSet(flScene,'qe',inputs.qe/inputs.nFluorophores);
         
 end
-
-
 
 end
 

@@ -25,17 +25,18 @@ function [sensor, optics] = createCameraModel(filterID,varargin)
 % Copytight, Henryk Blasinski 2016.
 
 
-
+%%
 p = inputParser;
-p.addParamValue('wave',(400:10:1000)',@isvector);
 p.addRequired('filterID',@isnumeric);
+p.addParameter('wave',(400:10:1000)',@isvector);
 
 p.parse(filterID,varargin{:});
 inputs = p.Results;
 
 
-% Here are some of the key pixel properties of the PointGrey Flea3 camera
-% with an ONSemi VITA 1300 1.3 Megapixel sensor.
+%% Here are some of the key pixel properties of the PointGrey Flea3 camera
+
+% It has an ONSemi VITA 1300 1.3 Megapixel sensor.
 wellCapacity   = 13700;                     % Electrons
 conversiongain = 90*1e-6;                   % Volts/electron 
 voltageSwing   = conversiongain*wellCapacity;
@@ -66,9 +67,6 @@ qe = ieReadSpectra(fName,inputs.wave,0);
 fName = fullfile(fiToolboxRootPath,'camera','filters');
 transmissivities = ieReadSpectra(fName,inputs.wave,0);
 
-
-
-
 sensor = sensorCreate('Monochrome');
 sensor = sensorSet(sensor,'name',sprintf('Monochrome, filter %i',inputs.filterID));
 
@@ -98,8 +96,6 @@ sensor = sensorSet(sensor,'pixel',pixel);
 
 
 sensor = pixelCenterFillPD(sensor,fillfactor);
-
-
 
 %% Optics
 

@@ -92,7 +92,7 @@ switch param
         
         % If the fluorophore happened to be defined with a Donaldson
         % matrix, remove the matrix from the structure;
-        if isfield(fl,'donaldsonMatrix'), 
+        if isfield(fl,'donaldsonMatrix') 
             fl = rmfield(fl,'donaldsonMatrix');
         end
         
@@ -112,7 +112,7 @@ switch param
         end
         
         % Remove all fields that are relevant to one
-        if isfield(fl,'excitation'), 
+        if isfield(fl,'excitation') 
             fl = rmfield(fl,'excitation');
             fl = rmfield(fl,'emission');
             fl = rmfield(fl,'qe');
@@ -130,7 +130,7 @@ switch param
 
         % Interpolate excitation and emission spectra or the Donaldson
         % matrix
-        if isfield(fl,'donaldsonMatrix'),
+        if isfield(fl,'donaldsonMatrix')
             [oldWem, oldWex] = meshgrid(oldW,oldW);
             [newWem, newWex] = meshgrid(newW,newW);
             

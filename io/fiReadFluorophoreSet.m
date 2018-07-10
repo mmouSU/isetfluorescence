@@ -1,11 +1,12 @@
 function [ flSet, indx ] = fiReadFluorophoreSet( dirName, varargin )
-
+% Read all fluorophores from a database that satisfy certain properties.
+%
 % [ flSet, indx ] = fiReadFluorophoreSet( dirName, ... )
 % 
-% Read all fluorophores from a database that satisfy certain properties.
-% Return an array of the fluorophores and their indices in the database.
-% A database index is simply the position in the sorted directory
-% of the file storing fluorescence properties.
+% Description
+%   Return an array of the fluorophores and their indices in the database.
+%   A database index is simply the position in the sorted directory of the
+%   file storing fluorescence properties.
 %
 % Inputs:
 %   dirName - a path to the directory containing .mat files storing
@@ -35,19 +36,19 @@ function [ flSet, indx ] = fiReadFluorophoreSet( dirName, varargin )
 %
 % Copyright, Henryk Blasinski 2016.
 
-
+%%
 p = inputParser;
 p.addRequired('dirName',@ischar);
-p.addParamValue('stokesShiftRange',[0 Inf],@isvector);
-p.addParamValue('peakEmRange',[0 Inf],@isvector);
-p.addParamValue('peakExRange',[0 Inf],@isvector);
-p.addParamValue('wave',(400:10:700)',@isvector);
-p.addParamValue('verbose',false,@islogical);
+p.addParameter('stokesShiftRange',[0 Inf],@isvector);
+p.addParameter('peakEmRange',[0 Inf],@isvector);
+p.addParameter('peakExRange',[0 Inf],@isvector);
+p.addParameter('wave',(400:10:700)',@isvector);
+p.addParameter('verbose',false,@islogical);
 
 p.parse(dirName,varargin{:});
 inputs = p.Results;
 
-
+%%
 files = dir(fullfile(inputs.dirName,'*.mat'));
 nFiles = length(files);
 

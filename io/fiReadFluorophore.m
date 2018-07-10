@@ -18,16 +18,16 @@ function [ fl ] = fiReadFluorophore( fName, varargin )
 %
 % Copyright, Henryk Blasinski 2016
 
-
+%%
 p = inputParser;
 p.addRequired('fName',@ischar);
-p.addParamValue('wave',(400:10:700)',@isvector);
-p.addParamValue('qe',1,@isscalar);
+p.addParameter('wave',(400:10:700)',@isvector);
+p.addParameter('qe',1,@isscalar);
 
 p.parse(fName,varargin{:});
 inputs = p.Results;
 
-
+%%
 data = load(inputs.fName);
 
 fl = fluorophoreCreate('type','custom',...

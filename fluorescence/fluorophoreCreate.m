@@ -1,13 +1,16 @@
 function fl = fluorophoreCreate(varargin)
-
-% fl = fluorophoreCreate(...)
+% Creates a fluorophore structure
 %
-% Creates a fluorophore structure, which is a basic unit summarizing
-% fluorescence properties of a particular point in space. A fluorophore is
-% defined in terms of its excitation and emission spectra OR its Donaldson
-% matrix. The two representations are mutually exclusive, i.e. settgin
-% excitation and/or emission spectra deletes the Donaldson matrix field and
-% vice versa.
+% Syntax
+%  fl = fluorophoreCreate(...)
+%
+% Descripton
+%   A fluorophore scructure is a basic unit summarizing fluorescence
+%   properties of a particular point in space. A fluorophore is defined in
+%   terms of its excitation and emission spectra OR its Donaldson matrix.
+%   The two representations are mutually exclusive, i.e. settgin excitation
+%   and/or emission spectra deletes the Donaldson matrix field and vice
+%   versa.
 %
 % Inputs (optional)
 %   'type' - describes the type of fluorophore that is created. Currently
@@ -42,21 +45,22 @@ function fl = fluorophoreCreate(varargin)
 %
 % Copyright Henryk Blasinski 2016
 
+%%
 p = inputParser;
 
-p.addParamValue('type','default',@ischar);
-p.addParamValue('wave',400:10:700,@isvector);
-p.addParamValue('name','',@(x)(ischar(x) || isempty(x)));
-p.addParamValue('solvent','',@(x)(ischar(x) || isempty(x)));
-p.addParamValue('excitation',zeros(31,1),@isnumeric);
-p.addParamValue('emission',zeros(31,1),@isnumeric);
-p.addParamValue('qe',1,@isscalar);
-p.addParamValue('DonaldsonMatrix',[],@isnumeric);
+p.addParameter('type','default',@ischar);
+p.addParameter('wave',400:10:700,@isvector);
+p.addParameter('name','',@(x)(ischar(x) || isempty(x)));
+p.addParameter('solvent','',@(x)(ischar(x) || isempty(x)));
+p.addParameter('excitation',zeros(31,1),@isnumeric);
+p.addParameter('emission',zeros(31,1),@isnumeric);
+p.addParameter('qe',1,@isscalar);
+p.addParameter('DonaldsonMatrix',[],@isnumeric);
 
 p.parse(varargin{:});
 inputs = p.Results;
 
-
+%%
 fl.name = inputs.name;
 fl.type = 'fluorophore';
 fl = initDefaultSpectrum(fl,'custom',inputs.wave);
