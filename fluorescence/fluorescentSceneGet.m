@@ -1,12 +1,15 @@
 function [ val ] = fluorescentSceneGet(flScene,param,varargin)
-
+% The get method of the fluorophore scene object. 
+%
 % val = fluorescentSceneGet(flScene,param,...)
 % 
-% The getter method of the fluorophore scene object. This function is used to
-% extract different properties of the fluorophore scene object.
+% This function extract variouis properties of the fluorophore scene
+% object.   That scene object is just the description of a fluorophore,
+% without any spatial structure.
 %
 % Inputs:
 %   flScene - a fluorescent scene object
+%
 %   param - a string defining the parameter to be returned. Param can have
 %      the following values
 %         'name'               - a string description of the scene
@@ -57,24 +60,30 @@ function [ val ] = fluorescentSceneGet(flScene,param,varargin)
 % Copyright, Henryk Blasinski 2016.
 
 p = inputParser;
+
+% Squeeze out spaces and force lower case
+varargin = ieParamFormat(varargin);
+param    = ieParamFormat(param);
+
 p.addRequired('flScene');
 p.addRequired('param',@ischar);
-p.addParamValue('sceneSize',[0 0],@isvector);
-p.addParamValue('flPos',[1 1],@isvector);
-p.addParamValue('wave',[],@isnumeric);
-p.addParamValue('illuminant',[],@isstruct);
+p.addParameter('scenesize',[0 0],@isvector);
+p.addParameter('flpos',[1 1],@isvector);
+p.addParameter('wave',[],@isnumeric);
+p.addParameter('illuminant',[],@isstruct);
 
 p.parse(flScene,param,varargin{:});
-inputs = p.Results;
 
+sceneSize = p.Results.scenesize;
+flPos     = p.Results.flpos;
+wave      = p.Results.wave;
+illuminant= p.Results.illuminant;
 
 val = [];
 
 %% Main switch statement
-inputs.param = lower(inputs.param);
-inputs.param = strrep(inputs.param,' ','');
 
-switch inputs.param
+switch param
     case 'name'
         val = flScene.name;
 
@@ -90,35 +99,36 @@ switch inputs.param
         val = length(flScene.spectrum.wave);
        
     case {'donaldsonmatrix'}
-        
+        % Each column of the Donaldson matrix specifies the emission
+        % spectrum for an excitation wavelength.
         nFluorophores = fluorescentSceneGet(flScene,'nFluorophores');
 
-        if isempty(inputs.wave)  % we've passed a vector of wavelengths
-            inputs.wave = fluorescentSceneGet(flScene,'wave');
+        if isempty(wave)  % we've passed a vector of wavelengths
+            wave = fluorescentSceneGet(flScene,'wave');
         end
 
-        nWave = length(inputs.wave);
-        DM = zeros(nWave);
+        nWave = length(wave);
+        DM = zeros(nWave, nWave);
+        
         % Get a Donaldson matrix for every fluorophore at a particular
         % location and add them up.
-        for i=1:nFluorophores
-
-            fl = fluorophoreSet(flScene.fluorophores(inputs.flPos(1),inputs.flPos(2),i),'wave',inputs.wave);
+        for ii = 1:nFluorophores
+            fl = fluorophoreSet(flScene.fluorophores(flPos(1),flPos(2),ii),...
+                'wave', wave);
             DM = DM + fluorophoreGet(fl,'Donaldson matrix');
         end
 
         val = DM;
 
-
     case 'size'
+        % Defines the spatial structure of the fluorophores
         val = [size(flScene.fluorophores,1); size(flScene.fluorophores,2)];
-
 
     case {'photons'}
         % First check the illuminant
-        illWave  = illuminantGet(inputs.illuminant,'wave');
+        illWave  = illuminantGet(illuminant,'wave');
         nWaves = length(illWave);
-        illSpd = illuminantGet(inputs.illuminant,'photons');
+        illSpd = illuminantGet(illuminant,'photons');
         
         sz = fluorescentSceneGet(flScene,'size');
 
@@ -139,20 +149,24 @@ switch inputs.param
         val = flScene.spectrum.wave;
 
     case {'donaldsonreference'}
-        
-        % For all reference calls we can choose the scene size, so that if
-        % say we have a macbeth chart an a uniform fluorophore we will get
-        % reference data for each Macbeht patch.
+        % The Donaldson reference is a Donaldson matrix for multiple
+        % positions.  The positions are based on the scene size. The scene
+        % size is chosen to match some feature of the original image.  For
+        % example, if plan to add fluorophores to a Macbeth chart we choose
+        % a 4x6 size for the reference.  This produces a match between the
+        % fluorophores and the Macbeth patches.
 
         sz = fluorescentSceneGet(flScene,'size');
-        if sum(inputs.sceneSize) == 0
+        if sum(sceneSize) == 0
+            % The scene has no size.  So we set the sceneSize to match 
             sceneSize = sz;
-        else
-            sceneSize = inputs.sceneSize;
         end
+        
+        % This matches the size of the fluorescene scene (sz) to the size
+        % of some other spatial structure, such as a Macbeth color checker.
         [mapX, mapY] = mapToMatchSceneSize(sz(1),sz(2),sceneSize(1),sceneSize(2));
 
-
+        % Create a Donaldson matrix for each position in the scene
         val = cell(sceneSize(1)*sceneSize(2),1);
         for xx=1:sceneSize(2)
             for yy=1:sceneSize(1)
@@ -163,14 +177,10 @@ switch inputs.param
     
     case {'excitationreference'}
         sz = fluorescentSceneGet(flScene,'size');
-        if sum(inputs.sceneSize) == 0
+        if sum(sceneSize) == 0
             sceneSize = sz;
-        else
-            sceneSize = inputs.sceneSize;
         end
         [mapX, mapY] = mapToMatchSceneSize(sz(1),sz(2),sceneSize(1),sceneSize(2));
-
-
 
         nFluorophores = fluorescentSceneGet(flScene,'nFluorophores');
         nWaves = fluorescentSceneGet(flScene,'nWaves');
@@ -191,10 +201,8 @@ switch inputs.param
 
     case {'emissionreference'}
         sz = fluorescentSceneGet(flScene,'size');
-        if sum(inputs.sceneSize) == 0
+        if sum(sceneSize) == 0
             sceneSize = sz;
-        else
-            sceneSize = inputs.sceneSize;
         end
         [mapX, mapY] = mapToMatchSceneSize(sz(1),sz(2),sceneSize(1),sceneSize(2));
         nFluorophores = fluorescentSceneGet(flScene,'nFluorophores');
@@ -222,16 +230,21 @@ end
 
 end
 
-% This is a helper function that computes a map between reflective and
-% fluorescent charts. The charts have to be multiples of one another. For
-% example a fluorescent chart of (2 x 2) can be overlaid with a reflective
-% chart of dimensions (4 x 2) or (2 x 4) but not say (2 x 3).
-
+% Coordinates spatial coordinate frame of fluorophore and another scene
 function [mapX, mapY] = mapToMatchSceneSize(flHeight,flWidth,scHeight,scWidth)
 
-if flHeight > scHeight || flWidth > scWidth, error('Fluorescent scene has more test patches than the input scene'); end
+% Computes a map between reflective and fluorescent charts. The charts have
+% to be multiples of one another. For example a fluorescent chart of (2 x
+% 2) can be overlaid on a reflective chart of dimensions (4 x 2) or (2 x 4)
+% but not say (2 x 3).
 
-if mod(scHeight,flHeight) ~= 0 || mod(scWidth,flWidth) ~=0, error('Fluorescent and reflective scene patches are not multiples of one another'); end
+if flHeight > scHeight || flWidth > scWidth
+    error('Fluorescent scene has more test patches than the input scene'); 
+end
+
+if mod(scHeight,flHeight) ~= 0 || mod(scWidth,flWidth) ~=0
+    error('Fluorescent and reflective scene patches are not multiples of one another'); 
+end
 
 deltaX = scWidth/flWidth;
 deltaY = scHeight/flHeight;
@@ -247,7 +260,6 @@ for x=1:flWidth
 
     end
 end
-
 
 end
 
