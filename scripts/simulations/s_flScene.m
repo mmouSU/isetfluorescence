@@ -6,18 +6,20 @@
 
 
 %% Scene properties
-dataset = 'McNamara-Boswell';
 
+dataset = 'McNamara-Boswell';
 % Save results to a file saveFName
 dirName = fullfile(fiToolboxRootPath,'results');
 if ~exist(dirName,'dir'), mkdir(dirName); end
 saveFName = fullfile(dirName,'evaluation',[dataset '_simCompare_Fl.mat']);
 % saveFName = [];
 
+
 % Working range for the oral eye camera
 wave = 380:4:780;
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
+
 
 %% Load the light spectra (in photons)
 
@@ -35,7 +37,6 @@ qe = ieReadSpectra(fName,wave);
 
 camera = diag(qe)*filters;
 nFilters = size(camera,2);
-
 
 %% Define which fluorophores will be used
 
