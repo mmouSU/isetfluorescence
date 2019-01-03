@@ -3,6 +3,12 @@
 % Understand the basic functions and parameters
 %
 % JEF/BW Vistasoft, 2018
+%
+% Requires the isetFluorescece toolbox
+
+
+%%
+ieInit
 
 %% Scene and fluorophore properties
 
@@ -11,17 +17,12 @@ deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
 % Grab one fluorophore
-fName  = fullfile(fiToolboxRootPath,'data','LifeTechnologies','phRodoRed.mat');
+fName  = fullfile(isetRootPath,'data','fluorescence','phRodoRed.mat');
 fl  = fiReadFluorophore(fName,'wave',wave);
 
 vcNewGraphWin;
 semilogy(wave,fl.emission,'k-')
 xlabel('Wave (nm)'); ylabel('Relative emission');
-
-vcNewGraphWin;
-semilogy(wave,fl.excitation,'k-')
-xlabel('Wave (nm)'); ylabel('Relative excitation');
-
 
 %%
 donaldsonM = fluorophoreGet(fl,'donaldson matrix');
