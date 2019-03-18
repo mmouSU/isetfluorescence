@@ -113,16 +113,16 @@ switch param
         val = wave(2) - wave(1);
      
     case {'donaldsonmatrix'}
-        
-        % If the fluorophore is defined in terms of the Donaldson matrix,
-        % then return the matrix, otherwise compute it from the excitation
-        % and emission spectra.
+        % This is also the excitation emission matrix.
         deltaL = fluorophoreGet(fl,'deltaWave');
 
         if isfield(fl,'donaldsonMatrix')
+            % If the fluorophore is defined in terms of the Donaldson matrix,
+            % then return the matrix.
             val = fl.donaldsonMatrix*deltaL;
         else
-               
+            % otherwise compute it from the excitation
+            % and emission spectra.
             ex = fluorophoreGet(fl,'excitation photons');
             em = fluorophoreGet(fl,'emission photons');
             qe = fluorophoreGet(fl,'qe');

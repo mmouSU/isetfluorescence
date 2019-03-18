@@ -10,7 +10,7 @@ function [ fl ] = fiReadFluorophore( fName, varargin )
 %
 % Inputs (optional):
 %   'wave' - a vector of waveband samples (default = 400:10:700).
-%   'qe' - fluorophore quantum efficiency (default = 1).
+%   'qe'   - fluorophore quantum efficiency (default = 1).
 %
 % Output:
 %   fl - the fiToolbox fluorophore structure
@@ -20,6 +20,12 @@ function [ fl ] = fiReadFluorophore( fName, varargin )
 %   fl  = fiReadFluorophore(fName);
 %
 % Copyright, Henryk Blasinski 2016
+
+% Examples:
+%{
+  files = dir(fullfile(fiToolboxRootPath,'data','LifeTechnologies','*.mat'));
+  thisF = fiReadFluorophore(files(1).name)
+%}
 
 %%
 p = inputParser;
