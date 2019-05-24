@@ -21,7 +21,7 @@ chdir(fullfile(fiToolboxRootPath,'local'));
 % NAD1.txt
 % NADReduced.txt
 % hemoglobin.txt
-fname = 'NADReduced.txt';
+fname = 'FAD.txt';
 
 %% The  rows are excitation and the columns are emission
 %
@@ -35,11 +35,12 @@ mesh(exWave,emWave,exemMatrix)
 xlabel('Excitation wave'); ylabel('Emission wave')
 identityLine
 %%
-ieNewGraphWin;
+ieNewGraphWin([],[],fname);
 imagesc(exWave,emWave,exemMatrix);
 grid on;
 identityLine;
 xlabel('Excitation wave'); ylabel('Emission wave')
+axis image
 
 %% Now save it out in the isetfluorescence data directory
 
