@@ -15,13 +15,22 @@
 %
 
 %%
-chdir(fullfile(fiToolboxRootPath,'local'));
-% FAD.txt
-% Flavin.txt 
-% NAD1.txt
-% NADReduced.txt
-% hemoglobin.txt
+chdir(fullfile(fiToolboxRootPath,'data','webfluor'));
+%{
 fname = 'FAD.txt';
+fname = 'Flavin.txt;
+fname = 'NADH.txt'
+fname = 'NADPH.txt';
+fname = 'hemoglobin.txt';
+fname = 'protoporphyrin.txt';
+fname = 'collagen1.txt';
+fname = 'collagen4.txt';
+fname = 'collagen5.txt';
+fname = 'collagen6.txt';
+fname = 'collagen7.txt';
+fname = 'elastin.txt';
+%}
+
 
 %% The  rows are excitation and the columns are emission
 %
@@ -34,6 +43,8 @@ exemMatrix = T{:,2:end}';
 mesh(exWave,emWave,exemMatrix)
 xlabel('Excitation wave'); ylabel('Emission wave')
 identityLine
+title(fname);
+
 %%
 ieNewGraphWin([],[],fname);
 imagesc(exWave,emWave,exemMatrix);
