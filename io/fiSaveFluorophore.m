@@ -1,34 +1,36 @@
 function fiSaveFluorophore( fName, fl, comment )
 % Save an fiFluorophore structure into a Matlab .mat file. 
 %
-%  Brief description
+% Syntax:
 %    fiSaveFluorophore( fName, fl, ...)
 %
-% The fluorophore structure is under development. At the moment, it has to
-% contain the following fields 
+% Brief description:
+%  The fluorophore structure is under development. At the moment, it has to
+%  contain the following fields 
 %
-%    .name
-%    .solvent
-%    .excitation
-%    .emission
-%    .comment
-%    .wave
+%    .name       - Fluorophore name
+%    .comment    - Often includes source
+%    .solvent    - Solvent name
+%    .eem        - Excitation emission matrix
+%    .excitation - Excitation curve, separable case 
+%    .emission   - Emission curve, separable case
+%    .qe         - Quantum efficiency of excitation (Default is 1)
+%    .waveExcite - Wavelength samples for excitation 
+%    .waveEmit   - Wavelength samples for emission
 %
 % As we get more data, including the full Excitation-Emission matrix
-% (donaldsonMatrix) from the webfluor site, we may be changing the fields.
+% (eem) also called (donaldsonMatrix) from the webfluor site, we may
+% be changing the field names.
 %
-% In that case excitation and emission should be empty, wave should be
-% empty, and there should be
+% When we have the eem, the excitation and emission fields will be empty,
+% and we specify the excitation and emission wavelengths
 %
-%     exciteW
-%     emitW
-%     donaldsonMatrix (length(exicteW),length(emitW))
 %     
 % Fluorophore model:
-%
 %   For much of HB's work, he assumes that there is an excitation function
 %   and a single emission function.  The output is always the emission
-%   function, but truncated to be longer than the excitation wavelength.
+%   function, but truncated so that only wavelength longer than the
+%   excitation wavelength (Stokes condition).
 %
 %   That allows him to save a fluorophore using only its emission and
 %   excitation spectra.  These are normalized to unit amplitude (for
@@ -37,9 +39,9 @@ function fiSaveFluorophore( fName, fl, comment )
 %   parameters (for example concentration).
 %
 %   A more general model would include the full Excitation-Emission
-%   Spectrum (also called the Donaldson matrix).  We have obtained full
-%   Donaldson matrix data from the webfluor site.  For those datasets we
-%   store the matrix in the field 'donaldsonMatrix'
+%   Matrix (also called the Donaldson matrix).  We have obtained full
+%   eem data from the webfluor site.  For those datasets we store the
+%   matrix in the field 'eem'
 %
 % Inputs:
 %   fName - path to where the fluorophore is to be saved.
@@ -48,7 +50,9 @@ function fiSaveFluorophore( fName, fl, comment )
 % Inputs (optional):
 %   'comment' - an optional comment string.
 %
-% Copyright, Henryk Blasinski 2016
+% See also
+%    ISETCam
+
 
 %%
 p = inputParser;

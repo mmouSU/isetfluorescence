@@ -32,8 +32,8 @@ function val = fluorophoreGet(fl,param,varargin)
 %      'normalized excitation'    - fluorophore's excitation spectrum
 %                                   normalized to unit amplitude
 %
-%      'Donaldson matrix'         - fluorophore's Donaldson matrix
-%
+%      'eem'                      - Excitation-Emission matrix; also
+%                                   called the Donaldson matrix
 %
 %      'Stokes shift'             - wavelength shift between excitation and
 %                                   emission peaks
@@ -62,8 +62,9 @@ if ~exist('param','var') || isempty(param), error('param required'); end
 val = [];
 
 %% Main switch statement
-param = lower(param);
-param = strrep(param,' ','');
+param = ieParamFormat(param);
+% param = lower(param);
+% param = strrep(param,' ','');
 
 switch param
     case 'name'
@@ -87,21 +88,21 @@ switch param
         if ~checkfields(fl,'excitation'), val = []; return; end
         val = fl.excitation;
         
-    case {'norm excitation','normexcitation','normalizedexcitation'}
+    case {'normexcitation','normalizedexcitation'}
         if ~checkfields(fl,'excitation'), val = []; return; end
         val = fl.excitation/max(fl.excitation);
         
-    case {'peakexcitation','peak excitation'}
+    case {'peakexcitation'}
         if ~checkfields(fl,'excitation'), val = []; return; end
         [~, id] = max(fl.excitation);
         val = fl.spectrum.wave(id);    
         
-    case {'peakemission','peak emission'}
+    case {'peakemission'}
         if ~checkfields(fl,'emission'), val = []; return; end
         [~, id] = max(fl.emission);
         val = fl.spectrum.wave(id);
         
-    case {'Stokes shift','stokesshift'}
+    case {'stokesshift'}
         val = fluorophoreGet(fl,'peakemission') - fluorophoreGet(fl,'peakexcitation');
         
     case 'wave'
@@ -112,23 +113,53 @@ switch param
         wave = fluorophoreGet(fl,'wave');
         val = wave(2) - wave(1);
      
-    case {'donaldsonmatrix'}
+    case {'eem','excitationemissionmatrix','donaldsonmatrix',}
         % This is also the excitation emission matrix.
-        deltaL = fluorophoreGet(fl,'deltaWave');
+        deltaL = fluorophoreGet(fl,'delta wave');
 
         if isfield(fl,'donaldsonMatrix')
             % If the fluorophore is defined in terms of the Donaldson matrix,
             % then return the matrix.
             val = fl.donaldsonMatrix*deltaL;
+        elseif isfield(fl,'eem')
+            % We want this name instead.  Converting for now, will
+            % eliminate donaldson path over time.
+            val = fl.eem*deltaL;
         else
-            % otherwise compute it from the excitation
-            % and emission spectra.
+            % otherwise compute it by multiplying the excitation
+            % amplitude times the single emission spectrum, and then
+            % forcing the excitation emission matrix to lower
+            % diagonal; only emissions at longer wavelengths than the
+            % excitation wavelength.
             ex = fluorophoreGet(fl,'excitation photons');
             em = fluorophoreGet(fl,'emission photons');
             qe = fluorophoreGet(fl,'qe');
             
-            % Apply the Stoke's constraint
-            val = qe*tril(em*ex',-1)*deltaL;
+            % For the separable case, a photon at some wavelength has
+            % an efficacy of producing the emission spectrum.  That
+            % efficacy is encoded by the excitation vector.
+            %
+            % The emission spectrum is encoded by the emission vector.
+            %
+            % These are combined so that the incident light at each
+            % wavelength will be multiplied by the excitation efficacy
+            % at each wavelength, and this scales the amount of the
+            % emission spectrum produced.  The same calculation takes
+            % place at every wavelength.
+            %
+            % The fluorophore only sees a fraction of the incident
+            % photons from the light.  We call that the quantum
+            % efficiency of the fluorophore (a scalar).
+            %
+            % Finally, we apply the Stoke's constraint so that only
+            % photons with  energy lower than the energy of the
+            % excitation wavelength (longer wavelengths than the
+            % excitation wavelength) are emitted.
+            %
+            % deltaL is the wavelength spacing (delta lambda)
+            
+            val = qe * tril(em*ex',-1) * deltaL;
+            
         end
         
     case {'photons'}
@@ -141,7 +172,6 @@ switch param
         val = DM*illSpd;
         
     case 'nwave'
-        
         val = length(fluorophoreGet(fl,'wave'));
         
     case 'comment'
