@@ -1,7 +1,6 @@
-Image Systems Engineering Toolbox Fluorescence Imaging Toolbox
-(ISETfit)
+Image Systems Engineering Toolbox for Fluorescence (ISETfluorescence)
 
-This extends the Image Systems Engineering Toolbox for cameras (ISETCam) which provides a set of functions to simulate scenes with fluorescent components. The fiToolbox also implements several reflectance and fluorescence separation and estimation algorithms.
+The ISETfluorescence toolbox provides a set of functions to simulate scenes with fluorescent components. Here, we extend the open-source and freely available tools in Image Systems Engineering Toolbox for cameras (ISETCam).  The  toolbox also implements several reflectance and fluorescence separation and estimation algorithms.
 
 If you use this code in your work, please cite
 
@@ -19,24 +18,14 @@ If you are interested in commercial applications, please contact us as the
 method and apparatus is a subject of a US Patent 20,160,116,410.
 
 
-1. Installation
----------------
-
-To install the fiToolbox run fiToolboxInit function. This function adds all
-the relevant directories to MATLAB path. Make sure that the additional
-dependencies (see below) are on the MATLAB path.
-
-
-
-2. Dependencies (required)
+1. Dependencies (required)
 --------------------------
 
-a. Image Systems Engineering Toolbox (ISET) (http://www.imageval.com).
+a. Image Systems Engineering Toolbox (ISETCam) (https://github.com/ISET/ISETCam).
 b. cvx Convex Optimization toolbox for Matlab (www.cvxr.com).
 
 
-
-3. Dependencies (optional)
+2. Dependencies (optional)
 --------------------------
 
 The following code is used by some data plotting scripts and are not required
@@ -49,7 +38,7 @@ b. Code accompanying the Computational Colour Science using Matlab from
    (http://www.mathworks.com/matlabcentral/fileexchange/40640-computational-colour-science-using-matlab-2e)
 
 
-4. Sample data
+3. Sample data
 --------------
 
 The sample inputs to our algorithms as well as the results of the analyses 
