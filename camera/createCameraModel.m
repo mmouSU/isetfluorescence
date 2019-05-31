@@ -1,20 +1,24 @@
 function [sensor, optics] = createCameraModel(filterID,varargin)
-
+% Create an ISET model of a ptGrey imaging sensor and optics. 
+%
+% Syntax:
 % [sensor, optics] = createCameraModel(filterID,...)
 %
-% Create an ISET model of a specific imaging sensor and optics. In
-% particular this function models a ptGrey Flea3 FL3-U3-13Y3M-C monochrome
-% camera coupled to a Schneider Optics Tele-Xenar 2.2/70mm lens and acquiring
-% broadband images (visible to NIR) or capturing images through seven 
-% different, 25nm bandpass, transmissive filters.
+% Description:
+%  This function models a ptGrey Flea3 FL3-U3-13Y3M-C monochrome
+%  camera coupled to a Schneider Optics Tele-Xenar 2.2/70mm lens and
+%  acquiring broadband images (visible to NIR) or capturing images
+%  through seven different, 25nm bandpass, transmissive filters.
 %
 % Inputs:
 %   filterID - a scalar defining cameras spectral responsivity properties.
-%     Select 1 - monochrome acquisition, or 2 through 8 for narrowband filter
-%     centered at: 2 - 450nm, 3 - 500nm, 4 - 550nm, 6 - 600nm, 7 - 650nm
-%     8 - 700nm, 8 - 800nm.
+%     Select 
+%         1 - monochrome acquisition, 
+%         2 through 8 for narrowband filters
+%           centered at: 2 - 450nm, 3 - 500nm, 4 - 550nm, 6 - 600nm, 7
+%           - 650nm, 8 - 700nm, 8 - 800nm.
 %
-% Inputs (optional):
+% Key/value pairs inputs (optional):
 %   'wave' - a vector defining the wavelength sampling of spectral
 %      quantities (default = 400:10:1000).
 %   

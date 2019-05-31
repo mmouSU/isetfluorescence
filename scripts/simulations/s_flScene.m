@@ -58,7 +58,9 @@ hold on;
 plot(fluorophores(10).spectrum.wave,fluorophores(10).excitation)
 %}
 
-%% Create reflective scene
+%% Create reflective scene, with no fluorescence
+
+% We use the MCC out into the IR
 scene = sceneCreate('macbethEE_IR','',wave);
 scene = sceneSet(scene,'fov',5);
 scene = sceneSet(scene,'distance',1);
@@ -69,9 +71,11 @@ reflRef = ieReadSpectra(fName,wave);
 
 flQe = 2;
 
-whichFluorophore = 50;  % We have a lot of fluorophores, so pick one
 
-% Create fluorescent scene.  This scene has no spatial structure yet.
+%% Create fluorescent scene.  This scene has no spatial structure yet.
+
+% We are going to put this fluorophore kind of everywhere
+whichFluorophore = 50;  % We have a lot of fluorophores, so pick one
 flScene = fluorescentSceneCreate('type', 'fromfluorophore',...
     'wave',wave,...
     'qe',flQe,...
@@ -94,19 +98,10 @@ emRef   = fluorescentSceneGet(flScene,'emission reference','sceneSize',[4 6]);
 
 %% Run ISET simulations
 
-cameraExposure = zeros(nFilters,nChannels);
-cameraGain = zeros(nFilters,nChannels);
-cameraOffset = zeros(nFilters,nChannels);
-
-measVals = zeros(nFilters,nChannels,24);
-
-
-[sensor, optics] = createCameraModel(f,'wave',wave);
-
 for ch = 1:nChannels
     % Illuminant channels
     
-    fprintf('Simulating filter %i illuminant %i\n',f,ch);
+    fprintf('Simulating filter %i illuminant %i\n',filterID,ch);
     
     % Synthesize a fluorescent scene
     localScene = sceneAdjustIlluminant(scene,illuminant(:,ch),0);    
@@ -114,5 +109,21 @@ for ch = 1:nChannels
     
     localScene = sceneSet(localScene,'name',sprintf('Illuminant channel %i',ch));
     ieAddObject(localScene); sceneWindow;
+
 end
+
     
+%% Not implemented yet
+
+% Create a Point Grey Camera
+filterID = 1;
+[sensor, optics] = createCameraModel(filterID,'wave',wave);
+
+%
+cameraExposure = zeros(nFilters,nChannels);
+cameraGain = zeros(nFilters,nChannels);
+cameraOffset = zeros(nFilters,nChannels);
+
+measVals = zeros(nFilters,nChannels,24);
+
+%%

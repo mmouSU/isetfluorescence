@@ -1,11 +1,16 @@
-% Create a simple, fluorescent scene
+% Tutorial:
+%
+%  Create a simple, fluorescent scene
 %
 % Understand the basic functions and parameters
 %
+% Requires the isetFluorescece toolbox
+%
 % JEF/BW Vistasoft, 2018
 %
-% Requires the isetFluorescece toolbox
-
+% See also
+%  s_fl<>  related fluorescence scripts.  Could be combined with this
+%  one.
 
 %%
 ieInit
