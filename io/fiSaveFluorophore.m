@@ -67,14 +67,17 @@ inputs = p.Results;
 
 % Why don't we just save 'fl'?
 %
-name       = inputs.fl.name;
-solvent    = inputs.fl.solvent;
-excitation = inputs.fl.excitation/max(inputs.fl.excitation);
-emission   = inputs.fl.emission/max(inputs.fl.emission);
-comment    = inputs.comment;
-wave       = inputs.fl.spectrum.wave;
+name       = p.Results.fl.name;
+solvent    = p.Results.fl.solvent;
+eem        = p.Results.fl.eem;    % Excitation-emission matrix
+comment    = p.Results.comment;
 
-save(fName,'name','solvent','excitation','emission','comment','wave');
+% Special case for HB when there are only excitation and emission vectors
+excitation = p.Results.fl.excitation/max(inputs.fl.excitation);
+emission   = p.Results.fl.emission/max(inputs.fl.emission);
+wave       = p.Results.fl.spectrum.wave;
+
+save(fName,'name','solvent','excitation','emission','eem','comment','wave');
 
 end
 

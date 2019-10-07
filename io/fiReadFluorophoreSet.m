@@ -1,9 +1,10 @@
 function [ flSet, indx ] = fiReadFluorophoreSet( dirName, varargin )
 % Read all fluorophores from a database that satisfy certain properties.
 %
-% [ flSet, indx ] = fiReadFluorophoreSet( dirName, ... )
+% Syntax:
+%  [ flSet, indx ] = fiReadFluorophoreSet( dirName, ... )
 % 
-% Description
+% Brief description:
 %   Return an array of the fluorophores and their indices in the database.
 %   A database index is simply the position in the sorted directory of the
 %   file storing fluorescence properties.

@@ -5,12 +5,9 @@ function fl = fluorophoreCreate(varargin)
 %  fl = fluorophoreCreate(...)
 %
 % Descripton
-%   A fluorophore scructure is a basic unit summarizing fluorescence
-%   properties of a particular point in space. A fluorophore is defined in
-%   terms of its excitation and emission spectra OR its Donaldson matrix.
-%   The two representations are mutually exclusive, i.e. settgin excitation
-%   and/or emission spectra deletes the Donaldson matrix field and vice
-%   versa.
+%   A fluorophore scructure summarizes the fluorescence properties of a
+%   substrate. We define it in terms of its excitation and emission
+%   spectra, with the emission defined in terms of photons (not energy).
 %
 % Inputs (optional)
 %   'type' - describes the type of fluorophore that is created. Currently
@@ -43,7 +40,14 @@ function fl = fluorophoreCreate(varargin)
 % Outputs
 %    fl - a fluorophore structure
 %
+% Description
+%  We are using only the ExEm vectors, and we derive the Donaldson matrix.
+%  We downloaded PARAFAC to derive ExEm from the Donaldson matrix.
+%
 % Copyright Henryk Blasinski 2016
+%
+% See also
+%
 
 %%
 p = inputParser;
@@ -97,7 +101,6 @@ switch type
         
         deltaL = inputs.wave(2) - inputs.wave(1);
 
-        
         emWave = 550;
         em = exp(-(fl.spectrum.wave - emWave).^2/2/(15^2));
         em = em/sum(em)/deltaL;

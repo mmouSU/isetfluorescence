@@ -70,21 +70,21 @@ switch param
         
         % If the fluorophore happened to be defined with a Donaldson
         % matrix, remove the matrix from the structure;
-        if isfield(fl,'donaldsonMatrix'), 
+        if isfield(fl,'donaldsonMatrix') 
             fl = rmfield(fl,'donaldsonMatrix');
         end
         
         if sum(val<0) > 0, warning('Emission less than zero, truncating'); end
         val = max(val,0);
         
+        % HB set for unit area under the curve.  I think we might just
+        % normalize to a peak of one going forward.  But need to check.
         deltaL = fluorophoreGet(fl,'deltaWave');
         qe = 1/(sum(val)*deltaL);
         if qe ~= 1, warning('Emission not normalized'); end
         
         val = val*qe;
         fl.emission = val(:);
-        
-      
         
     case {'excitationphotons','excitation photons','Excitation photons'}
         
@@ -95,8 +95,6 @@ switch param
         if isfield(fl,'donaldsonMatrix') 
             fl = rmfield(fl,'donaldsonMatrix');
         end
-        
-        
         
         if sum(val<0) > 0, warning('Excitation less than zero, truncating'); end
         val = max(val,0);

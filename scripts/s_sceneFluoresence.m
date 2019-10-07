@@ -4,13 +4,12 @@
 %
 % Understand the basic functions and parameters
 %
-% Requires the isetFluorescece toolbox
+% Requires the isetFluorescence toolbox
 %
 % JEF/BW Vistasoft, 2018
 %
 % See also
-%  s_fl<>  related fluorescence scripts.  Could be combined with this
-%  one.
+%  s_flScene, s_flSceneExample
 
 %%
 ieInit
