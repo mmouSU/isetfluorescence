@@ -45,8 +45,7 @@ if ~exist('val','var') , error('val is required'); end
 %%
 
 % Lower case and remove spaces
-param = lower(param);
-param = strrep(param,' ','');
+param = ieParamFormat(param);
 
 switch param
     case 'name'
@@ -65,8 +64,16 @@ switch param
             fl.qe = val;
         end
         
-    case {'emission photons','Emission photons','emissionphotons'}
-        if length(fluorophoreGet(fl,'wave')) ~= length(val), error('Wavelength sampling mismatch'); end
+    case {'emissionphotons','emission'}
+        % We normally store the emission spectrum as relative (peak set to
+        % 1) because we do not have a meaningful scale for the emission
+        % spectrum.  It will depend on the concentration of the molecules
+        % and properties of the solvent w.r.t. efficacy.  So the scaling
+        % needs to be done by the user.
+        
+        if length(fluorophoreGet(fl,'wave')) ~= length(val) 
+            error('Wavelength sampling mismatch'); 
+        end
         
         % If the fluorophore happened to be defined with a Donaldson
         % matrix, remove the matrix from the structure;
@@ -74,19 +81,25 @@ switch param
             fl = rmfield(fl,'donaldsonMatrix');
         end
         
-        if sum(val<0) > 0, warning('Emission less than zero, truncating'); end
-        val = max(val,0);
+        % Could always do this.  But we only bother if the values really
+        % are negative and we print a warning so the user can fix.
+        if sum(val<0) > 0
+            warning('Negative values, truncating'); 
+            val = max(val,0);
+        end
         
-        % HB set for unit area under the curve.  I think we might just
-        % normalize to a peak of one going forward.  But need to check.
+        % HB used to set for unit area under the curve.
+        %{
         deltaL = fluorophoreGet(fl,'deltaWave');
         qe = 1/(sum(val)*deltaL);
         if qe ~= 1, warning('Emission not normalized'); end
         
         val = val*qe;
+        %}
+        
         fl.emission = val(:);
         
-    case {'excitationphotons','excitation photons','Excitation photons'}
+    case {'excitationphotons','excitation'}
         
         if length(fluorophoreGet(fl,'wave')) ~= length(val), error('Wavelength sampling mismatch'); end
         

@@ -74,23 +74,23 @@ switch param
         % Should always be 'fluorophore'
         val = fl.type;
        
-    case {'emission','emission photons','Emission photons','emissionphotons'}
+    case {'emission','emissionphotons'}
         
         if ~checkfields(fl,'emission'), val = []; return; end
-        val = fl.emission;
+        val = fl.emission(:);
 
-    case {'norm emission','normemission','normalizedemission'}
+    case {'normemission','normalizedemission'}
         if ~checkfields(fl,'emission'), val = []; return; end
-        val = fl.emission/max(fl.emission);
+        val = fl.emission(:)/max(fl.emission);
         
     case {'excitation','excitationphotons'}
         
         if ~checkfields(fl,'excitation'), val = []; return; end
-        val = fl.excitation;
+        val = fl.excitation(:);
         
     case {'normexcitation','normalizedexcitation'}
         if ~checkfields(fl,'excitation'), val = []; return; end
-        val = fl.excitation/max(fl.excitation);
+        val = fl.excitation(:)/max(fl.excitation);
         
     case {'peakexcitation'}
         if ~checkfields(fl,'excitation'), val = []; return; end
@@ -103,6 +103,7 @@ switch param
         val = fl.spectrum.wave(id);
         
     case {'stokesshift'}
+        % Difference between the peak emission and peak excitation
         val = fluorophoreGet(fl,'peakemission') - fluorophoreGet(fl,'peakexcitation');
         
     case 'wave'
@@ -115,6 +116,10 @@ switch param
      
     case {'eem','excitationemissionmatrix','donaldsonmatrix',}
         % This is also the excitation emission matrix.
+        % The matrix is expected to be structured so that
+        %
+        %     fluorescenceSpectrum = dMatrix * illuminantPhotons(:)
+        %
         deltaL = fluorophoreGet(fl,'delta wave');
 
         if isfield(fl,'donaldsonMatrix')
@@ -126,14 +131,16 @@ switch param
             % eliminate donaldson path over time.
             val = fl.eem*deltaL;
         else
-            % otherwise compute it by multiplying the excitation
-            % amplitude times the single emission spectrum, and then
+            % Otherwise compute the Donaldson matrix from excitation and emission vectors. 
+            % The matrix is the outer product
+            %
+            %       excitation amplitude times the single emission spectrum, and then
             % forcing the excitation emission matrix to lower
             % diagonal; only emissions at longer wavelengths than the
             % excitation wavelength.
-            ex = fluorophoreGet(fl,'excitation photons');
-            em = fluorophoreGet(fl,'emission photons');
-            qe = fluorophoreGet(fl,'qe');
+            ex = fluorophoreGet(fl,'excitation photons');  % Column
+            em = fluorophoreGet(fl,'emission photons');    % Column
+            % qe = fluorophoreGet(fl,'qe');
             
             % For the separable case, a photon at some wavelength has
             % an efficacy of producing the emission spectrum.  That
@@ -158,8 +165,16 @@ switch param
             %
             % deltaL is the wavelength spacing (delta lambda)
             
-            val = qe * tril(em*ex',-1) * deltaL;
+            % Each column is the emission spectrum.  We leave out the main
+            % diagonal (-1 argument), which would normally contain the
+            % reflectance function. We scale by delta lambda so that
+            % different wavelength sampling schemes will return a similar
+            % value.  But the reality is we have very little knowledge
+            % about the absolute levels in here.
+            val = tril(em*ex',-1) * deltaL;
             
+            % Set NaNs to 0
+            val(isnan(val)) = 0;
         end
         
     case {'photons'}
