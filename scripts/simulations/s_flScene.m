@@ -98,6 +98,8 @@ emRef   = fluorescentSceneGet(flScene,'emission reference','sceneSize',[4 6]);
 
 %% Run ISET simulations
 
+filterID = 1;
+
 for ch = 1:nChannels
     % Illuminant channels
     
@@ -116,7 +118,6 @@ end
 %% Not implemented yet
 
 % Create a Point Grey Camera
-filterID = 1;
 [sensor, optics] = createCameraModel(filterID,'wave',wave);
 
 %
