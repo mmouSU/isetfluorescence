@@ -115,11 +115,11 @@ switch param
         val = wave(2) - wave(1);
      
     case {'eem','excitationemissionmatrix','donaldsonmatrix',}
-        % This is also the excitation emission matrix.
-        % The matrix is expected to be structured so that
+        % This is the excitation emission matrix. It is structured so that
         %
         %     fluorescenceSpectrum = dMatrix * illuminantPhotons(:)
         %
+        % 
         deltaL = fluorophoreGet(fl,'delta wave');
 
         if isfield(fl,'donaldsonMatrix')
