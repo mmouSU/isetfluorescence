@@ -1,8 +1,8 @@
-function fiSaveFluorophore( fName, fl, comment )
+function fiSaveFluorophore( fName, fl, varargin )
 % Save an fiFluorophore structure into a Matlab .mat file. 
 %
 % Syntax:
-%    fiSaveFluorophore( fName, fl, ...)
+%    fiSaveFluorophore( fName, fl, varargin)
 %
 % Brief description:
 %  The fluorophore structure is under development. At the moment, it has to
@@ -15,8 +15,7 @@ function fiSaveFluorophore( fName, fl, comment )
 %    .excitation - Excitation curve, separable case 
 %    .emission   - Emission curve, separable case
 %    .qe         - Quantum efficiency of excitation (Default is 1)
-%    .waveExcite - Wavelength samples for excitation 
-%    .waveEmit   - Wavelength samples for emission
+%    .spectrum.wave - Wavelength samples
 %
 % As we get more data, including the full Excitation-Emission matrix
 % (eem) also called (donaldsonMatrix) from the webfluor site, we may
@@ -60,22 +59,27 @@ p.addRequired('fName',@ischar);
 p.addRequired('fl',@isstruct);
 p.addOptional('comment','',@ischar);
 
-p.parse(fName,fl,comment);
+p.parse(fName,fl,varargin{:});
 inputs = p.Results;
 
 %% We assume that the fluorophore already contains all the necessary fields.
 
 % Why don't we just save 'fl'?
 %
-name       = p.Results.fl.name;
-solvent    = p.Results.fl.solvent;
-eem        = p.Results.fl.eem;    % Excitation-emission matrix
-comment    = p.Results.comment;
+name       = inputs.fl.name;
+solvent    = inputs.fl.solvent;
+if isfield(inputs.fl,'eem')
+    eem        = inputs.fl.eem;    % Excitation-emission matrix
+else
+    eem = [];
+end
+
+comment    = inputs.comment;
 
 % Special case for HB when there are only excitation and emission vectors
-excitation = p.Results.fl.excitation/max(inputs.fl.excitation);
-emission   = p.Results.fl.emission/max(inputs.fl.emission);
-wave       = p.Results.fl.spectrum.wave;
+excitation = inputs.fl.excitation/max(inputs.fl.excitation);
+emission   = inputs.fl.emission/max(inputs.fl.emission);
+wave       = inputs.fl.wave;
 
 save(fName,'name','solvent','excitation','emission','eem','comment','wave');
 
