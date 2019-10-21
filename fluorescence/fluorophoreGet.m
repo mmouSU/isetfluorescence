@@ -177,6 +177,9 @@ switch param
             val(isnan(val)) = 0;
         end
         
+        % No NaNs on the return.  Make the NaNs 0
+        val(isnan(val)) = 0;
+        
     case {'photons'}
         illWave  = illuminantGet(varargin{1},'wave');
         illSpd = illuminantGet(varargin{1},'photons');
