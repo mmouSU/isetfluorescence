@@ -94,7 +94,8 @@ fname = 'collagen6.txt';
 fname = 'collagen7.txt';
 fname = 'elastin.txt';
 %}
-fname = 'protoporphyrin.txt';
+% chdir('data'); chdir('webfluor');
+fname = 'FAD.txt';
 T = readtable(fname);
 exWave = T{:,1};
 emWave = 260:5:750;
@@ -106,23 +107,32 @@ identityLine;
 xlabel('Excitation wave'); ylabel('Emission wave')
 axis image
 
+%%
+
+Z = parafac(exemMatrix,1);
+ieNewGraphWin; plot(emWave, Z{1}/max(Z{1}), 'k-','linewidth',1); grid on
+xlabel('Wave (nm)'); ylabel('Emission energy')
+title(sprintf('%s Parafac webfluor',fname));
+% wavelength = emWave;
+% data = Z{1};
+% comment = 'Emission energy derived from parafac(webfluor datafile FAD.txt)';
+% ieSaveSpectralFile(wavelength,data,comment,'webfluorFADEmission.mat');
+
+ieNewGraphWin; plot(exWave,Z{2}/max(Z{2}), 'k-','linewidth',1); grid on
+xlabel('Wave (nm)'); ylabel('Excitation sensitivity energy')
+title(sprintf('%s Parafac webfluor',fname));
+wavelength = exWave;
+data = Z{2};
+comment = 'Excitation energy derived from parafac(webfluor datafile FAD.txt)';
+ieSaveSpectralFile(wavelength,data,comment,'webfluorFADExcitation.mat');
+
+
 %% We may have multiple estimates of the same molecule
 %
 % These are scanned from the Monici 2005 paper
-fName = fullfile(fiToolboxRootPath,'data','Monici','Porphyrins.mat');
+fName = fullfile(fiToolboxRootPath,'data','Monici','Elastin.mat');
 f = fluorophoreRead(fName);
 fluorophorePlot(f,'donaldson image');
-
-%%
-Z = parafac(exemMatrix,1);
-ieNewGraphWin; plot(emWave, Z{1}, 'k-','linewidth',1); grid on
-xlabel('Wave (nm)'); ylabel('Emission energy')
-title(sprintf('%s Parafac webfluor',fname));
-
-ieNewGraphWin; plot(exWave,Z{2}, 'k-','linewidth',1); grid on
-xlabel('Wave (nm)'); ylabel('Excitation sensitivity energy')
-title(sprintf('%s Parafac webfluor',fname));
-
 %%
 fluorophorePlot(f,'excitation');
 fluorophorePlot(f,'emission');
