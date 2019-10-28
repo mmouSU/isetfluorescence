@@ -110,7 +110,7 @@ switch param
         if isfield(fl,'spectrum'), val = fl.spectrum.wave; end
         if isvector(val), val = val(:); end
         
-    case {'deltawave','deltaWave'}
+    case {'deltawave'}
         wave = fluorophoreGet(fl,'wave');
         val = wave(2) - wave(1);
      
@@ -131,50 +131,52 @@ switch param
             % eliminate donaldson path over time.
             val = fl.eem*deltaL;
         else
-            % Otherwise compute the Donaldson matrix from excitation and emission vectors. 
-            % The matrix is the outer product
-            %
-            %       excitation amplitude times the single emission spectrum, and then
-            % forcing the excitation emission matrix to lower
-            % diagonal; only emissions at longer wavelengths than the
-            % excitation wavelength.
+            % Otherwise compute the Donaldson matrix from excitation and
+            % emission vectors.
             ex = fluorophoreGet(fl,'excitation photons');  % Column
             em = fluorophoreGet(fl,'emission photons');    % Column
-            % qe = fluorophoreGet(fl,'qe');
             
-            % For the separable case, a photon at some wavelength has
-            % an efficacy of producing the emission spectrum.  That
-            % efficacy is encoded by the excitation vector.
-            %
-            % The emission spectrum is encoded by the emission vector.
-            %
-            % These are combined so that the incident light at each
-            % wavelength will be multiplied by the excitation efficacy
-            % at each wavelength, and this scales the amount of the
-            % emission spectrum produced.  The same calculation takes
-            % place at every wavelength.
-            %
-            % The fluorophore only sees a fraction of the incident
-            % photons from the light.  We call that the quantum
-            % efficiency of the fluorophore (a scalar).
-            %
+            % Logic of the EEM is that an excitation photon at some
+            % wavelength produces an emission spectrum.  We make the
+            % emission vector sum to one (every photon goes somewhere, but
+            % no amplificiation). 
+            em = em/sum(em(:));
+            
+            % We scale the excitation vector so that it has a maximum of
+            % one, though we could scale it so that it sums to one.  Either
+            % way is probably OK because, well, there are no units here.
+            ex = ex/max(ex(:));
+            
+            % We take the outer product so that every column of the
+            % Donaldson matrix is the emission, scaled by the relative
+            % excitability
+            eem = em(:)*ex(:)';
+            
             % Finally, we apply the Stoke's constraint so that only
             % photons with  energy lower than the energy of the
             % excitation wavelength (longer wavelengths than the
             % excitation wavelength) are emitted.
             %
+            % We leave out the main diagonal (-1 argument) which would
+            % normally contain the reflectance function
+            %
             % deltaL is the wavelength spacing (delta lambda)
+            val = tril(eem,-1) * deltaL;
             
-            % Each column is the emission spectrum.  We leave out the main
-            % diagonal (-1 argument), which would normally contain the
-            % reflectance function. We scale by delta lambda so that
-            % different wavelength sampling schemes will return a similar
-            % value.  But the reality is we have very little knowledge
-            % about the absolute levels in here.
-            val = tril(em*ex',-1) * deltaL;
-            
+            % Sometime the excitation and emission have NaNs.
             % Set NaNs to 0
             val(isnan(val)) = 0;
+            
+            % Historical note:  Delete some day.
+            %
+            % qe = fluorophoreGet(fl,'qe');
+            % The fluorophore only sees a fraction of the incident
+            % photons from the light.  We call that the quantum
+            % efficiency of the fluorophore (a scalar).
+            %
+            % We have disabled this because it depends a great deal on the
+            % solvent and general imaging conditions.
+            
         end
         
         % No NaNs on the return.  Make the NaNs 0
