@@ -47,8 +47,8 @@ if ~isempty(wave)
     % Interpolate to these wavelengths
     data.excitation = interp1(data.wave,data.excitation,wave);
     data.emission   = interp1(data.wave,data.emission,wave);
+    data.wave = wave;
 end
-data.wave = wave;
 
 % The emission and excitation are w.r.t. photons, not energy
 fl = fluorophoreCreate('type','custom',...

@@ -14,7 +14,16 @@ FAD = fluorophoreRead('FAD','wave',wave);
 
 % Here is the excitation emission matrix
 eem = fluorophoreGet(FAD,'eem');
-% fluorophorePlot(FAD,'donaldson matrix');
+%{
+ fluorophorePlot(FAD,'donaldson matrix');
+%}
+%{
+ dWave = fluorophoreGet(FAD,'delta wave');
+ wave = fluorophoreGet(FAD,'wave');
+ ex = fluorophoreGet(FAD,'excitation');
+ ieNewGraphWin; 
+ plot(wave,sum(eem)/dWave,'k--',wave,ex/max(ex(:)),'r:')
+%}
 
 % The data are converted to a vector like this
 wave = fluorophoreGet(FAD,'wave');
