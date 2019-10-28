@@ -46,7 +46,7 @@ fig = vcNewGraphWin;
 
 %%
 switch pType
-    case {'donaldsonimage','donaldsonmatrix'}
+    case {'donaldsonimage','donaldsonmatrix','eem'}
         % Computed for photons (not energy)
         % Show an image with the Donaldson matrix (photons)
         % fluorophorePlot(fl,'donaldson image');
@@ -59,7 +59,7 @@ switch pType
         xlabel('Excitation wave (nm)'); ylabel('Emission wave (nm)');
         colorbar; axis image
         title(sprintf('%s',fluorophoreGet(fl,'name')));
-    case 'donaldsonmesh'
+    case {'donaldsonmesh','eemmesh'}
         % Computed for photons (not energy)
         % Plot a mesh with the Donaldson matrix (photons)
         % fluorophorePlot(fl,'donaldson mesh');
