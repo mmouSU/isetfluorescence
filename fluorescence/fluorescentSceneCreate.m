@@ -1,8 +1,8 @@
 function [ flScene, fluorophoreIDs ] = fluorescentSceneCreate( varargin )
 % Create a scene (i.e. a spatial arrangement) of different fluorophores. 
 %
-% Description
-% [ flScene, fluorophoreIDs ] = fluorescentSceneCreate(...)
+% Syntax
+%   [ flScene, fluorophoreIDs ] = fluorescentSceneCreate(...)
 %
 % Description
 %  The scene is effectively a (h x w x n) array of fluorophore structures,

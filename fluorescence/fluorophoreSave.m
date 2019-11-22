@@ -1,5 +1,5 @@
 function fluorophoreSave( fName, fl, comment )
-% Save fluorophore structure into a Matlab .mat file. 
+% Save fluorophore structure into a mat-file. 
 %
 % Syntax
 %   fluorophoreSave(fName, flStruct, comment)
@@ -16,10 +16,10 @@ function fluorophoreSave( fName, fl, comment )
 %    .comment
 %    .wave
 %
-% The units of the fluorophore  emission and excitation spectra are not
-% specified at this time. They should be treated as simply having unit
-% amplitude (for comparison convenience).  If we had real units, we would
-% use them.  But the value depends so much on the context (e.g.,
+% The absolute units of the fluorophore  emission and excitation spectra
+% are not specified at this time. They should be treated as simply having
+% unit amplitude with respect to photons. If we had real units, we
+% would use them.  But the value depends so much on the context (e.g.,
 % concentration, medium) that we do not have a good solution (pun
 % intended).
 %
@@ -34,7 +34,6 @@ function fluorophoreSave( fName, fl, comment )
 %
 % See also
 %   fluorophoreCreate, fluorophoreSet, fluorophoreGet, fluorophorePlot
-%
 
 %%
 p = inputParser;

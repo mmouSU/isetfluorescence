@@ -29,9 +29,9 @@ function fl = fluorophoreCreate(varargin)
 %      diluted. Same fluorophore with different solvents can produce 
 %      different fluorescence properties.
 %   'excitation' - a (w x 1) vector representing the fluorescence
-%      excitation properties (default = [0 0 ... 0]).
+%      excitation properties (photons, default = [0 0 ... 0]).
 %   'emission' - a (w x 1) vector representing the fluorescence emission
-%      properties (default = [0 0 ... 0]).
+%      properties (photons, default = [0 0 ... 0]).
 %   'qe' - fluorophore quantum efficiency, defined as the ratio between
 %      total number of incident and emitted photons (default = 1).
 %   'DonaldsonMatrix' - a (w x w) array representing the Donaldson matrix
@@ -47,7 +47,7 @@ function fl = fluorophoreCreate(varargin)
 % Copyright Henryk Blasinski 2016
 %
 % See also
-%
+%   fluorophoreRead, fluorophoreSave, fluorophoreSet
 
 %%
 p = inputParser;

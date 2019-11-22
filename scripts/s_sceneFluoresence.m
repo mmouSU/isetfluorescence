@@ -1,10 +1,8 @@
-% Tutorial:
+% Create a simple, fluorescent scene
 %
-%  Create a simple, fluorescent scene
+%   Understand the basic functions and parameters
 %
-% Understand the basic functions and parameters
-%
-% Requires the isetFluorescence toolbox
+%   Requires the isetFluorescence toolbox
 %
 % JEF/BW Vistasoft, 2018
 %
@@ -24,41 +22,40 @@ nWaves = length(wave);
 fName  = fullfile(isetRootPath,'data','fluorescence','phRodoRed.mat');
 fl  = fiReadFluorophore(fName,'wave',wave);
 
-vcNewGraphWin;
-semilogy(wave,fl.emission,'k-')
-xlabel('Wave (nm)'); ylabel('Relative emission');
+fluorophorePlot(fl,'emission');
+fluorophorePlot(fl,'excitation');
 
-%%
+%% Have a look at the Donaldson matrix (excitation-emission matrix)
 donaldsonM = fluorophoreGet(fl,'donaldson matrix');
-vcNewGraphWin;
-imagesc(wave,wave,donaldsonM);
-xlabel('Wave (nm)'); ylabel('Wave (nm)');
-grid on; set(gca,'YColor',[0.8 0.8 0.8]);
-set(gca,'XColor',[0.8 0.8 0.8])
+fluorophorePlot(fl,'donaldson matrix');
 
 
 %% Read in some illuminants
 fName = fullfile(fiToolboxRootPath,'camera','illuminants');
 illuminant = ieReadSpectra(fName,wave);
-illuminantPhotons = Energy2Quanta(wave,illuminant);
 nChannels = size(illuminant,2);
 
+% We calculate with photons and fluorescence (not energy)
+illuminantPhotons = Energy2Quanta(wave,illuminant);
 
 %% Create a simple, standard scene and use one of the illuminants
-
 scene = sceneCreate('macbeth',[],wave);
-whichLight = 3;
+
+whichLight = 3;    % 3 is a very short wavelength light
 scene = sceneAdjustIlluminant(scene,illuminant(:,whichLight));
-ieAddObject(scene); sceneWindow;
+sceneWindow(scene);
 
-%%  Read the scene illuminant.  We figure the fluorophore sees this, too.
+%% Calculate the fluorescence for this illuminant
 
-illuminant = sceneGet(scene,'illuminant energy');
+illuminant = sceneGet(scene,'illuminant photons');
 emission = donaldsonM * illuminant(:);
-vcNewGraphWin;
-plot(wave,emission);
+ieNewGraphWin;
+plot(wave,emission,'k-','linewidth',1);
+grid on; xlabel('Photons'); ylabel('Wavelength (nm)');
 
 %% Make a scene that has the emission spectrum at every location
+
+% How big is the image?
 sz = sceneGet(scene,'size');
 
 % Make an XW format of the scene energy

@@ -1,16 +1,11 @@
 function val = fluorophoreGet(fl,param,varargin)
-
-% val = fluorophoreGet(fl,param,...)
-% 
-% The getter method of the fluorophore object. This function is used to
-% extract different properties of the fluorophore object.
 %
-% Examples:
-%   em = fluorophoreGet(fl,'emission');
-%   name = fluorophoreGet(fl,'name');
+% Syntax
+%   val = fluorophoreGet(fl,param,...)
 % 
-%   ill = illuminantCreate('d65');
-%   ph = fluorophoreGet(fl,'photons',ill);
+% Description
+%   The getter method of the fluorophore object. This function is used to
+%   extract different properties of the fluorophore object.
 %
 % Inputs:
 %   fl - a fluorophore structure
@@ -25,7 +20,7 @@ function val = fluorophoreGet(fl,param,varargin)
 %      'emission'                 - fluorophore's emission spectrum
 %      'normalized emission'      - fluorophore's emission normalized to
 %                                   unit amplitude
-%      'peak emission'            - peak emission wavelenght in nm
+%      'peak emission'            - peak emission wavelength in nm
 %
 %      'excitation'               - fluorophore's excitation spectrum
 %      'peak excitation'          - peak excitation wavelength in nm
@@ -53,7 +48,17 @@ function val = fluorophoreGet(fl,param,varargin)
 % Outputs:
 %    val - the value of the requested property.
 %
+% Examples:
+%   em = fluorophoreGet(fl,'emission');
+%   name = fluorophoreGet(fl,'name');
+% 
+%   ill = illuminantCreate('d65');
+%   ph = fluorophoreGet(fl,'photons',ill);
+%
 % Copyright Henryk Blasinski, 2016
+%
+% See also  fluorophoreCreate, fluorophoreSet, fluorophoreRead
+%
 
 %% Parameter checking
 if ~exist('fl','var') || isempty(fl), error('Fluorophore structure required'); end
@@ -75,18 +80,28 @@ switch param
         val = fl.type;
        
     case {'emission','emissionphotons'}
-        
+        % Data are stored in photon units
         if ~checkfields(fl,'emission'), val = []; return; end
         val = fl.emission(:);
 
+    case {'emissionenergy'}
+        val = fluorophoreGet(fl,'emission');  % Photons
+        wave = fluorophoreGet(fl,'wave');     % nm
+        val = Energy2Quanta(wave,val);
+        
     case {'normemission','normalizedemission'}
         if ~checkfields(fl,'emission'), val = []; return; end
         val = fl.emission(:)/max(fl.emission);
         
     case {'excitation','excitationphotons'}
-        
+        % Data are stored in photon units (not energy)
         if ~checkfields(fl,'excitation'), val = []; return; end
         val = fl.excitation(:);
+        
+    case {'excitationenergy'}
+        val = fluorophoreGet(fl,'excitation');  % Photons
+        wave = fluorophoreGet(fl,'wave');     % nm
+        val = Energy2Quanta(wave,val);
         
     case {'normexcitation','normalizedexcitation'}
         if ~checkfields(fl,'excitation'), val = []; return; end

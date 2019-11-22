@@ -1,13 +1,14 @@
-function [ scene ] = fiSceneAddFluorescence( scene, flScene, varargin )
-
-% [ scene ] = fiSceneAddFluorescence( scene, flScene, ... )
+function scene = fiSceneAddFluorescence(scene, flScene, varargin )
 %
-% Modify an Image Systems Engineering Toolbox (ISET) scene to include
-% the contributions of fluorescence, as defined in the fluorescent scene.
-% The illuminant used in fluorescence emission computations is defined in 
-% the scene structure. Note that ISET scenes are not designed to handle
+% Syntax:
+%   scene = fiSceneAddFluorescence( scene, flScene, ... )
+%
+% Modify an Image Systems Engineering Toolbox (ISET) scene to include the
+% contributions of fluorescence, as defined in the fluorescent scene. The
+% illuminant used in fluorescence emission computations is defined in the
+% scene structure. Note that ISET scenes are not designed to handle
 % fluorescent surfaces, therefore many of the ISET functions applied to the
-% returned scene structure may give incorrect results. 
+% returned scene structure may give incorrect results.
 %
 % Inputs:
 %   scene - an ISET scene structure.
@@ -24,24 +25,34 @@ function [ scene ] = fiSceneAddFluorescence( scene, flScene, varargin )
 %      (if replace = false) or fluorescent component only (replace = true).
 %
 % Copyright, Henryk Blasinski 2016
+%
+% See also
+%    
 
+% Examples:
+%{
+scene = sceneCreate;
+fScene = fiSceneCreate;
+%}
+
+%%
 p = inputParser;
-p.addParamValue('replace',false,@islogical);
-p.parse(varargin{:});
+
+p.addRequired('scene', @(x)(isequal(x.type,'scene')));
+p.addRequired('flScene',@(x)(isequal(x.type,'scene')));
+
+p.addParameter('replace',false,@islogical);
+
+p.parse(scene,flScene,varargin{:});
+
 inputs = p.Results;
 
-if ~strcmp(fluorescentSceneGet(flScene,'type'),'fluorescent scene')
-    error('Fluorescent scene required');
-end
-
-if ~strcmp(fluorescentSceneGet(scene,'type'),'scene')
-    error('Scene required');
-end
-
-% Get the illuminant.
+%% Get the illuminant.
 ill = sceneGet(scene,'illuminant');
 
 sz = sceneGet(scene,'size');
+
+% Get the reflectance scene photons
 rePhotons = sceneGet(scene,'photons');
 
 % Compute the fluorescent radiance under the illuminant.
@@ -50,6 +61,8 @@ flPhotons = fluorescentSceneGet(flScene,'photons','illuminant',ill);
 % Re-scale the fluorescent radiance to match the ISET scene size.
 flPhotons = imresize(flPhotons,sz,'nearest');
 
+% We either put in the sum or we just replace the reflectance with the
+% fluorescence.
 if inputs.replace == false
     scene = sceneSet(scene,'photons',rePhotons + flPhotons);
 else
