@@ -39,46 +39,26 @@ nChannels = size(illuminant,2);
 illuminantPhotons = Energy2Quanta(wave,illuminant);
 
 %% Create a simple, standard scene and use one of the illuminants
-scene = sceneCreate('macbeth',[],wave);
+scene = sceneCreate('uniform equal energy',64,wave);
 
 whichLight = 3;    % 3 is a very short wavelength light
 scene = sceneAdjustIlluminant(scene,illuminant(:,whichLight));
 sceneWindow(scene);
 
 %% Calculate the fluorescence for this illuminant
-
 illuminant = sceneGet(scene,'illuminant photons');
-emission = donaldsonM * illuminant(:);
-ieNewGraphWin;
-plot(wave,emission,'k-','linewidth',1);
-grid on; xlabel('Photons'); ylabel('Wavelength (nm)');
-
-%% Make a scene that has the emission spectrum at every location
-
-% How big is the image?
+fName  = fullfile(fiToolboxRootPath,'data','Monici','Porphyrins.mat');
+fl  = fiReadFluorophore(fName,'wave',wave);
 sz = sceneGet(scene,'size');
 
-% Make an XW format of the scene energy
-sceneEnergy = repmat(emission(:)',sz(1)*sz(2),1);
+slope = 2.6;
+pattern = imageSlantedEdge(sz-1,slope);
+fScene = fiSceneCreate(fl,pattern,illuminant);
+sceneWindow(fScene);
 
-% Make a random amount of the fluorophore at each location
-% This qe controls the spatial structure of the scene.
-fLevel = randn(sz)*0.1 + 0.5;
-fLevel(:,1:48) = 0;
-fLevel = RGB2XWFormat(fLevel);
+%% Combine the reflectance and fluorescence scene
 
-% Convert multiply the emission spectrum at each point by the scalar in
-% fLevel, the fluorescence emission level.
-sceneEnergy = diag(fLevel(:))*sceneEnergy;
-sceneEnergy = XW2RGBFormat(sceneEnergy,sz(1),sz(2));
-
-%% Make the fluorescent scene
-flScene = sceneCreate('macbeth',[],wave);
-flScene = sceneSet(flScene,'energy',sceneEnergy);
-ieAddObject(flScene); sceneWindow;
-
-%% Combine the original scene with its fluorescent partner
-combinedScene = sceneAdd(scene,flScene);
-ieAddObject(combinedScene); sceneWindow;
+cScene = fiSceneAddFluorescence(scene, fScene );
+sceneWindow(cScene);
 
 %%

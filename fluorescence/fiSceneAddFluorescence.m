@@ -48,7 +48,7 @@ p.parse(scene,flScene,varargin{:});
 inputs = p.Results;
 
 %% Get the illuminant.
-ill = sceneGet(scene,'illuminant');
+% ill = sceneGet(scene,'illuminant');
 
 sz = sceneGet(scene,'size');
 
@@ -56,10 +56,15 @@ sz = sceneGet(scene,'size');
 rePhotons = sceneGet(scene,'photons');
 
 % Compute the fluorescent radiance under the illuminant.
-flPhotons = fluorescentSceneGet(flScene,'photons','illuminant',ill);
+% flPhotons = fluorescentSceneGet(flScene,'photons','illuminant',ill);
+flPhotons = sceneGet(flScene,'photons');
 
-% Re-scale the fluorescent radiance to match the ISET scene size.
-flPhotons = imresize(flPhotons,sz,'nearest');
+% Re-size the fluorescent radiance to match the scene size.  Best if they
+% are the same size
+if sceneGet(flScene,'size') ~= sz
+    warning('Resizing the fluorescent scene to match the ref scene');
+    flPhotons = imresize(flPhotons,sz,'nearest');
+end
 
 % We either put in the sum or we just replace the reflectance with the
 % fluorescence.
