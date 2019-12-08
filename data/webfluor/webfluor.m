@@ -64,4 +64,32 @@ xlabel('Excitation wave'); ylabel('Emission wave')
 axis image
 
 %% Now save it out in the isetfluorescence data directory
+% I have a EEM and want to derive excitation and emission spectral curves
+% These are then save using fluorophoreSave  
+% use parafac to recover excitation and emission spectra
+spectra = parafac(exemMatrix,1);
+excitation = spectra{2};
+comment = 'spectral excitation of NADH derived from webfluor file called NADH.txt';
+fName  = fullfile(fiToolboxRootPath,'data','webfluor','webfluorNADHExcitation.mat');
+wavelength = exWave; data = excitation;
+save(fName, 'wavelength','data','comment');
+emission = spectra{1};
+fName  = fullfile(fiToolboxRootPath,'data','webfluor','webfluorNADHEmission.mat');
+comment = 'spectral emission of NADH derived from webfluor file called NADH.txt';
+wavelength = emWave'; data = emission;
+save(fName, 'wavelength','data','comment');
+
+
+
+%%
+load('webfluorNADHExcitation.mat')
+excitation = excitation/max(excitation(:));
+load('webfluorNADHEmission.mat');
+emission = emission/max(emission(:));
+figure; plot(emWave,emission);
+figure; plot(exWave,excitation);
+
+
+ 
+
 
