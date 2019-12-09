@@ -49,6 +49,18 @@ function fl = fluorophoreCreate(varargin)
 % See also
 %   fluorophoreRead, fluorophoreSave, fluorophoreSet
 
+% Examples:
+%{
+   wave = 400:10:700;
+   thisF = fluorophoreCreate('type','custom',...
+      'name','testcase',...
+      'solvent','water', ...
+      'wave', wave, ...
+      'excitation',ones(length(wave),1),...
+      'emission',ones(length(wave),1));
+   disp(thisF)
+   fluorophorePlot(thisF,'donaldson matrix')
+%}
 %%
 p = inputParser;
 
