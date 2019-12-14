@@ -53,12 +53,17 @@ title('Excitation');
 %% Plot the lights
 load('LED405.mat');
 ieNewGraphWin;
-plot(wavelength,data/max(data));
+plot(wavelength,data/max(data),'b','LineWidth',2);
 hold on;
 load('LED425.mat');
-plot(wavelength,data/max(data));
+plot(wavelength,data/max(data),'g','LineWidth',2);
 load('LED450.mat');
-plot(wavelength,data/max(data));
+plot(wavelength,data/max(data),'r','LineWidth',2);
+legend('405 nm', '425 nm', '450 nm');
+title('LED spectra');
+ax = gca;
+ax.FontSize=16;
+
 
 %% Multiply fluorophores with 475 nm Longpass filter to see how much fluorescence gets through
 
