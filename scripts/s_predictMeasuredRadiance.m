@@ -32,7 +32,8 @@ theseWaves = 300:5:800;
 nWaves = numel(theseWaves);
 
 %%  1. Read in a fluorophore and create an excitation emission matrix (EEM)
-fluorophoreList = {'NADH.mat','elastin.mat','collagen1.mat'};
+chdir(fullfile(fiToolboxRootPath,'data','webfluor'));
+fluorophoreList = {'NADH.mat','elastin.mat','collagen1.mat','FAD', 'protoporphyrin'};
 dMatrix = zeros(nWaves,nWaves,numel(fluorophoreList));
 
 for ii=1:numel(fluorophoreList)
@@ -42,7 +43,7 @@ for ii=1:numel(fluorophoreList)
 end
 
 %% 2. Read in the light and take the product of the EEM and the light to get the expected radiance
-illName = {'OralEye_385.mat'}; % oraleye repository has to be on the path
+illName = {'OralEye_385.mat','LED405.mat','LED425.mat', 'LED450.mat' }; % oraleye repository has to be on the path
 ill = zeros(nWaves,numel(illName));
 for ii=1:length(illName)
     tmp = ieReadSpectra(illName{ii},theseWaves);
@@ -55,23 +56,49 @@ end
 % hold on; grid on; xlabel('Wavelength (nm)');ylabel('Relative radiance');
 % legend(illName,'FontSize',18)
 
-radiance = zeros(nWaves,numel(fluorophoreList));
-for jj=1:numel(fluorophoreList)
-    radiance(:,jj) = dMatrix(:,:,jj)*ill(:);
+radiance = zeros(nWaves,length(illName),numel(fluorophoreList));
+for ii =1:length(illName)
+    for jj=1:numel(fluorophoreList)
+        radiance(:,ii,jj) = dMatrix(:,:,jj)*ill(:,ii);
+    end
 end
 
-ieNewGraphWin
-plot(theseWaves,radiance);
-hold on; grid on; xlabel('Wavelength (nm)');ylabel('Relative radiance');
-legend(fluorophoreList,'FontSize',18)
+for ii = 1:length(illName)
+    ieNewGraphWin;
+    for jj = 1:numel(fluorophoreList)
+        plot(theseWaves,radiance(:,ii,jj));hold on;
+    end
+    grid on; xlabel('Wavelength (nm)');ylabel('Relative radiance');
+    title(illName(ii));
+    legend(fluorophoreList,'FontSize',18);
+    ylim([0 4]);
+end
+
 
 
 %% 3. Multiply the expected radiance with the longpass filter to remove light that is not passed to the spectrophotometer
+% Remember that this prediction is assuming that there is no reflected light
+% Place a shortpass filter on the light to minimize reflected light
 
-LPfilter = ieReadSpectra('Y44.mat',theseWaves);
-filteredRadiance = LPfilter .* radiance;
+% LPfilter = ieReadSpectra('Y44.mat',theseWaves); % longpass with 425 nm
+% cutoff ... similar to the filter that is on the OralEye camera
+LPfilter = ieReadSpectra('HoyaK2.mat',theseWaves); % Longpass with 475 nm cutoff
+% we will use a 475 longpass filter
+ieNewGraphWin;
+plot(theseWaves,LPfilter);
 
-ieNewGraphWin
-plot(theseWaves,filteredRadiance);
-hold on; grid on; xlabel('Wavelength (nm)');ylabel('Filtered radiance');
-legend(fluorophoreList,'FontSize',18)
+for ii = 1:length(illName)
+    ieNewGraphWin;
+    for jj = 1:numel(fluorophoreList)
+        plot(theseWaves, LPfilter .* radiance(:,ii,jj)); hold on;
+    end
+    grid on; xlabel('Wavelength (nm)');ylabel('Relative radiance');
+    title(illName(ii));
+    legend(fluorophoreList,'FontSize',18);
+    ylim([0 4]);
+end
+
+% For each illuminant, add the radiance across fluorophores in order to get
+% total predicted radiance assuming all fluorophores are stimulated
+
+TotalRadiance = LPfilter.* sum(radiance(:,:,:),3);
