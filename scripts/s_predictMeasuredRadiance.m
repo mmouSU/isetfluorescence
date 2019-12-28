@@ -63,16 +63,16 @@ for ii =1:length(illName)
     end
 end
 
-for ii = 1:length(illName)
-    ieNewGraphWin;
-    for jj = 1:numel(fluorophoreList)
-        plot(theseWaves,radiance(:,ii,jj));hold on;
-    end
-    grid on; xlabel('Wavelength (nm)');ylabel('Relative radiance');
-    title(illName(ii));
-    legend(fluorophoreList,'FontSize',18);
-    ylim([0 4]);
-end
+% for ii = 1:length(illName)
+%     ieNewGraphWin;
+%     for jj = 1:numel(fluorophoreList)
+%         plot(theseWaves,radiance(:,ii,jj));hold on;
+%     end
+%     grid on; xlabel('Wavelength (nm)');ylabel('Relative radiance');
+%     title(illName(ii));
+%     legend(fluorophoreList,'FontSize',18);
+%     ylim([0 4]);
+% end
 
 
 
@@ -90,15 +90,30 @@ plot(theseWaves,LPfilter);
 for ii = 1:length(illName)
     ieNewGraphWin;
     for jj = 1:numel(fluorophoreList)
-        plot(theseWaves, LPfilter .* radiance(:,ii,jj)); hold on;
+        plot(theseWaves, LPfilter .* radiance(:,ii,jj),'linewidth',2); hold on;
     end
     grid on; xlabel('Wavelength (nm)');ylabel('Relative radiance');
     title(illName(ii));
     legend(fluorophoreList,'FontSize',18);
-    ylim([0 4]);
+    ax = gca;
+    ax.FontSize=16;
+    
 end
 
 % For each illuminant, add the radiance across fluorophores in order to get
 % total predicted radiance assuming all fluorophores are stimulated
-
 TotalRadiance = LPfilter.* sum(radiance(:,:,:),3);
+for ii = 1:length(illName)
+    ieNewGraphWin;
+    plot(theseWaves,TotalRadiance(:,ii),'k','linewidth',3);
+    title(illName(ii));
+    ax = gca;
+    ax.FontSize=16;
+    ylim([0 4]);
+end
+
+
+
+
+
+
