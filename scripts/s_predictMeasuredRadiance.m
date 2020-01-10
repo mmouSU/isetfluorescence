@@ -33,6 +33,8 @@ nWaves = numel(theseWaves);
 
 %%  1. Read in a fluorophore and create an excitation emission matrix (EEM)
 chdir(fullfile(fiToolboxRootPath,'data','webfluor'));
+% Remove collagen and NADH and see the difference in the predictions (should be very little)
+%fluorophoreList = {'elastin.mat','FAD', 'protoporphyrin'};
 fluorophoreList = {'NADH.mat','elastin.mat','collagen1.mat','FAD', 'protoporphyrin'};
 dMatrix = zeros(nWaves,nWaves,numel(fluorophoreList));
 
@@ -113,7 +115,18 @@ for ii = 1:length(illName)
 end
 
 
-
+%% without the LP filter
+% For each illuminant, add the radiance across fluorophores in order to get
+% total predicted radiance assuming all fluorophores are stimulated
+TotalRadiance = sum(radiance(:,:,:),3);
+for ii = 1:length(illName)
+    ieNewGraphWin;
+    plot(theseWaves,TotalRadiance(:,ii),'k','linewidth',3);
+    title(illName(ii));
+    ax = gca;
+    ax.FontSize=16;
+    ylim([0 4]);
+end
 
 
 

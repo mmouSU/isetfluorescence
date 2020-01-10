@@ -12,6 +12,23 @@
 theseWaves = 300:5:700;
 
 % Plot Emission Spectra from 3 different sources
+
+% NADH
+ieNewGraphWin;
+chdir(fullfile(fiToolboxRootPath,'data','OtherSources'));
+NADHEmission = ieReadSpectra('NADPH_emission_PaleroEtAl2007.mat',theseWaves); 
+plot(theseWaves,NADHEmission,'b'); hold on;
+chdir(fullfile(fiToolboxRootPath,'data','Monici'));
+NADH = fiReadFluorophore('NADH.mat','wave',theseWaves); 
+plot(theseWaves,NADH.emission,'g'); hold on;
+chdir(fullfile(fiToolboxRootPath,'data','webfluor'));
+NADH = fiReadFluorophore('NADH.mat','wave',theseWaves); 
+plot(theseWaves,NADH.emission,'r','LineWidth',3); hold on;
+legend('Palero Et al 2007', 'Monici', 'DaCosta et al 2003');
+title('NADH Emission');
+ax = gca;
+ax.FontSize=16;
+
 % collagen
 ieNewGraphWin;
 chdir(fullfile(fiToolboxRootPath,'data','OtherSources'));
@@ -75,6 +92,18 @@ ax.FontSize=16;
 
 
 %% Plot Excitation
+
+ieNewGraphWin;
+chdir(fullfile(fiToolboxRootPath,'data','Monici'));
+NADH = fiReadFluorophore('NADH.mat','wave',theseWaves); 
+plot(theseWaves,NADH.excitation,'g'); hold on;
+chdir(fullfile(fiToolboxRootPath,'data','webfluor'));
+NADH = fiReadFluorophore('NADH.mat','wave',theseWaves); 
+plot(theseWaves,NADH.excitation,'r','LineWidth',3); hold on;
+legend('Monici', 'DaCosta et al 2003');
+title('NADH Excitation');
+ax = gca;
+ax.FontSize=16;
 
 ieNewGraphWin;
 % Deal et al 2018 does not have a "real" maximum
