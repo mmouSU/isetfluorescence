@@ -3,7 +3,13 @@ function fig = fluorophorePlot(fl,pType,varargin)
 %
 % Input
 %   fl - Fluorophore structure
-%   pType - plot type.  Options are
+%   pType - plot type.  
+%    Options:
+%      'eem'
+%      'excitation'
+%      'emission'
+%      'donaldsonmesh'
+%      'donaldsonimage'
 %
 % Optional key/value pairs
 %

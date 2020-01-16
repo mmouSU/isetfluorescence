@@ -3,6 +3,13 @@
 % Understand the basic functions and parameters
 %
 % JEF/BW Vistasoft, 2018
+%
+% See also
+%  s_CameraFluorescence, s_sceneFluorescence, s_predictMeasuredRadiance
+%
+
+%% 
+ieInit
 
 %% Scene and fluorophore properties
 

@@ -24,7 +24,7 @@
 % JEF, November 22 2019
 %
 % See also
-%
+%   s_sceneFluorescence, s_predictMeasuredRadiance, s_flSceneExample
 
 %% Clean up the work space, if you like
 ieInit

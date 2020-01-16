@@ -1,4 +1,4 @@
-% Create a simple, fluorescent scene
+%% Create a simple, fluorescent scene
 %
 %   Understand the basic functions and parameters
 %

@@ -1,8 +1,14 @@
-% Create a simple, fluorescent scene
+%% Create a simple, fluorescent scene
+%
+%    Deprecate?
 %
 % Understand the basic functions and parameters
 %
 % JEF/BW Vistasoft, 2018
+%
+% See instead
+%   s_sceneFluorescence, s_flSceneExample
+%
 
 
 %% Scene properties
