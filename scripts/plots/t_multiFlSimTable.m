@@ -30,18 +30,16 @@ pixelStd(1) = mean(multiFlTotalPixelStd);
 
 % The nuclear norm algorithm did not always converge. We assume a somewhat
 % arbitrary detection threshold.
-valid = nucNormTotalPixelErr <= 0.5;
+valid = nucNormTotalPixelErr <= 1;
+
 pixelError(2) = mean(nucNormTotalPixelErr(valid));
 pixelStd(2) = mean(nucNormTotalPixelStd(valid));
 
-
-% Reflectance
 reflError(1) = mean(multiFlReflErr);
 reflStd(1) = mean(multiFlReflStd);
 
 reflError(2) = mean(nucNormReflErr(valid));
 reflStd(2) = mean(nucNormReflStd(valid));
-
 
 % Donaldson matrix (absolute) 
 
