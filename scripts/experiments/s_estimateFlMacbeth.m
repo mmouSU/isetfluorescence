@@ -27,7 +27,7 @@ backgroundFileName = 'Background';
 
 % Save data to file if saveFName ~= []
 dirName = fullfile(fiToolboxRootPath,'results','experiments');
-if ~exist(dirName,'dir'), mkdir(dirName); end;
+if ~exist(dirName,'dir'), mkdir(dirName); end
 % saveFName = fullfile(dirName,sprintf('fl_%s.mat',testFileName));
 saveFName = [];
 
@@ -174,6 +174,18 @@ cameraGain = cameraGain./nF;
 
 %% Estimate the reflectance and single fluorescence
 
+for i=1:3
+    switch i
+        case 1
+            alpha = 0;
+            beta = 0;
+        case 2
+            alpha = 0.01;
+            beta = 0;
+        case 3
+            alpha = 0.01;
+            beta = 0.1;
+    end
 
 [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, reflValsEst, flValsEst, hist  ] = ...
 fiRecReflAndFl( measVals, camera, cameraGain*deltaL, cameraOffset, illuminantPhotons, reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter', 50);
@@ -185,6 +197,9 @@ end
 
 measValsEst = reflValsEst + flValsEst;
 
+fprintf('====== alpha=%.3f beta=%.3f ======\n',alpha, beta);
+
+fprintf('Total time %f, per sample %f, per iteration %f\n',sum(cellfun(@(x) sum(x.computeTime),hist)),mean(cellfun(@(x) sum(x.computeTime),hist)),mean(cellfun(@(x) mean(x.computeTime),hist)));
 
 [err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals - cameraOffset,[nChannels*nFilters,nSamples]), 'absolute');
 fprintf('Total pixel error %.3f, std %.3f\n',err,std);
@@ -207,7 +222,7 @@ fprintf('Emission error (normalized) %.3f, std %.3f\n',err,std);
 [err, std] = fiComputeError(exEst, exRef, 'normalized');
 fprintf('Excitation error %.3f, std %.3f\n',err,std);
 
-
+end
 
 %% Plot the results
 

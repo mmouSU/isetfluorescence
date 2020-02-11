@@ -47,39 +47,66 @@ nFilters = size(camera,2);
        
 %% Load simulation data 
 
-
 nSamples = size(measVals,3);
-cameraGain = repmat(cameraGain,[1 1 nSamples]);
-cameraOffset = repmat(cameraOffset,[1 1 nSamples]);
+% cameraGain = repmat(cameraGain,[1 1 nSamples]);
+% cameraOffset = repmat(cameraOffset,[1 1 nSamples]);
 
-[ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, reflValsEst, flValsEst, hist  ] = ...
-fiRecReflAndFl( measVals, camera, cameraGain*deltaL, cameraOffset, illuminant, reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter',20,...
-'reflRef',reflRef,'exRef',exRef,'emRef',emRef,'eps',0);
+measValsNoise = max(measVals + 0.01*randn(size(measVals)),0);
+        
+localCameraGain = repmat(cameraGain,[1 1 nSamples]);
+localCameraOffset = repmat(cameraOffset,[1 1 nSamples]);
+        
+nF = max(max(measValsNoise,[],1),[],2);
+localCameraGain = localCameraGain./repmat(nF,[nFilters nChannels 1]);
+measValsNoise = measValsNoise./repmat(nF,[nFilters nChannels 1]);
 
 
-measValsEst = reflValsEst + flValsEst;
-
-[err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals - cameraOffset,[nChannels*nFilters,nSamples]), 'absolute');
-fprintf('Total pixel error %.3f, std %.3f\n',err,std);
-
-[err, std] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(reflValsRef,[nChannels*nFilters,nSamples]), 'absolute');
-fprintf('Reflected pixel error %.3f, std %.3f\n',err,std);
-
-[err, std] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(flValsRef,[nChannels*nFilters,nSamples]), 'absolute');
-fprintf('Fluoresced pixel error %.3f, std %.3f\n',err,std);
-
-[err, std] = fiComputeError(reflEst, reflRef, 'absolute');
-fprintf('Reflectance error %.3f, std %.3f\n',err,std);
-
-[err, std] = fiComputeError(emEst, emRef, 'absolute');
-fprintf('Emission error %.3f, std %.3f\n',err,std);
-
-[err, std] = fiComputeError(emEst, emRef, 'normalized');
-fprintf('Emission error (normalized) %.3f, std %.3f\n',err,std);
-
-[err, std] = fiComputeError(exEst, exRef, 'normalized');
-fprintf('Excitation error %.3f, std %.3f\n',err,std);
-
+for i=1:3
+    switch i
+        case 1
+            alpha = 0;
+            beta = 0.1;
+        case 2
+            alpha = 0.1;
+            beta = 0;
+        case 3
+            alpha = 0.1;
+            beta = 0.1;
+    end
+    
+    [ reflEst, rfCoeffs, emEst, emCoeffs, exEst, exCoeffs, reflValsEst, flValsEst, hist  ] = ...
+        fiRecReflAndFl( measValsNoise, camera, localCameraGain*deltaL, localCameraOffset, illuminant, reflBasis, emBasis, exBasis, alpha, beta, beta, 'maxIter', 20,...
+        'reflRef',reflRef,'exRef',exRef,'emRef',emRef,'eps',0);
+    
+    
+    measValsEst = reflValsEst + flValsEst;
+    
+    fprintf('====== alpha=%.3f beta=%.3f ======\n',alpha, beta);
+    
+    fprintf('Total time %f, per sample %f, per iteration %f\n',sum(cellfun(@(x) sum(x.computeTime),hist)),mean(cellfun(@(x) sum(x.computeTime),hist)),mean(cellfun(@(x) mean(x.computeTime),hist)));
+    
+    [err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals - cameraOffset,[nChannels*nFilters,nSamples]), 'absolute');
+    fprintf('Total pixel error %.3f, std %.3f\n',err,std);
+    
+    [err, std] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(reflValsRef,[nChannels*nFilters,nSamples]), 'absolute');
+    fprintf('Reflected pixel error %.3f, std %.3f\n',err,std);
+    
+    [err, std] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(flValsRef,[nChannels*nFilters,nSamples]), 'absolute');
+    fprintf('Fluoresced pixel error %.3f, std %.3f\n',err,std);
+    
+    [err, std] = fiComputeError(reflEst, reflRef, 'absolute');
+    fprintf('Reflectance error %.3f, std %.3f\n',err,std);
+    
+    [err, std] = fiComputeError(emEst, emRef, 'absolute');
+    fprintf('Emission error %.3f, std %.3f\n',err,std);
+    
+    [err, std] = fiComputeError(emEst, emRef, 'normalized');
+    fprintf('Emission error (normalized) %.3f, std %.3f\n',err,std);
+    
+    [err, std] = fiComputeError(exEst, exRef, 'normalized');
+    fprintf('Excitation error %.3f, std %.3f\n',err,std);
+    
+end
 
 
 %% Plot the results

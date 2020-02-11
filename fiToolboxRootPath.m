@@ -1,4 +1,4 @@
-function [ rootPath ] = fiToolboxRootPath()
+function [ rootPath, parentPath ] = fiToolboxRootPath()
 
 % [ rootPath ] = fiToolboxRootPath()
 %
@@ -9,5 +9,6 @@ function [ rootPath ] = fiToolboxRootPath()
 
 rootPath = which('fiToolboxRootPath');
 rootPath = fileparts(rootPath);
+parentPath = fileparts(rootPath);
 
 return

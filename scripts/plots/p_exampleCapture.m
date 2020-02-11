@@ -1,5 +1,6 @@
-% Display images for all pairs of camera filter and illuminant captured for 
-% a particular scene. This script generates images in Fig. 11 in the paper.
+% Display images for all pairs of camera filter and illuminant captured for
+% a particular scene. This script generates images in Fig. 1 in the 
+% Supplemental Material.
 %
 % Copyright, Henryk Blasinski 2016
 
@@ -9,8 +10,9 @@ clc;
 
 % Define the directory where figures will be saved. If saveDir = [], then
 % figures are not saved.
-% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
-saveDir = [];
+saveDir = fullfile('~','Desktop','Figures');
+% saveDir = [];
+if ~exist(saveDir, 'dir'), mkdir(saveDir); end
 
 
 testFileName = 'Macbeth+Fl';

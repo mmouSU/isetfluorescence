@@ -95,9 +95,9 @@ emCoeffs = ones(nFlBasis,1);
 hist.objValsReEm = zeros(inputs.maxIter,1);
 hist.objValsReWe = zeros(inputs.maxIter,1);
 
-for i=1:inputs.maxIter;
+for i=1:inputs.maxIter
     
-    
+    tic;
     
     % Assume that you know the fluorescence weights, search for the shape
     % of the fluorescence and reflectance
@@ -128,10 +128,13 @@ for i=1:inputs.maxIter;
     
     hist.objValsReWe(i) = cvx_optval;
     
+    tend = toc;
     % Exit if the objective improvement is small.
-    if abs(hist.objValsReWe(i) - hist.objValsReEm(i)) <= inputs.tol,
+    if abs(hist.objValsReWe(i) - hist.objValsReEm(i)) <= inputs.tol
         break;
     end
+    
+    hist.computeTime(i) = tend;
     
 end
 

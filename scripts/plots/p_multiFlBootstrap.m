@@ -10,15 +10,16 @@ clc;
 
 % Define the directory where figures will be saved. If saveDir = [], then
 % figures are not saved.
-% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+% saveDir = fullfile('~','Desktop','Figures');
 saveDir = [];
+if ~exist(saveDir, 'dir'), mkdir(saveDir); end
 
 % Figure display parameters
 fs = 10;
 lw = 2;
 ms = 7;
-sz = [1 1 3.5 2.5];
-sz2 = [1 1 3.5 1.75];
+sz = [1 1 3.5 2.5] * 2.5;
+sz2 = [1 1 3.5 1.75] * 2.5;
 
 leg = {'Multi-fl.','Reference'};
 
@@ -57,8 +58,8 @@ avgMultiFlMeasVals = mean(measVals,4);
 figure;
 hold all; grid on; box on;
 plot(avgMultiFlMeasValsEst(:),avgMultiFlMeasVals(:),'.');
-xlabel('Model predicted pixel value');
-ylabel('Measured pixel value');
+xlabel('Model predicted pixel value','interpreter','latex');
+ylabel('Measured pixel value','interpreter','latex');
 
 
 figure;
@@ -284,13 +285,15 @@ for s=1:nSel
     xlim([0 1.05]);
     ylim([0 1.05]);
     
-    xlabel('Measured','fontsize',fs);
-    ylabel('Predicted','fontsize',fs);
+    xlabel('Measured','fontsize',fs,'interpreter','latex');
+    ylabel('Predicted','fontsize',fs,'interpreter','latex');
     
     
     set(gca,'yTick',0:0.2:1);
     set(gca,'fontsize',fs-2);
+    set(gca,'TickLabelInterpreter','latex');
     set(gcf,'Units','centimeters');
+    set(gca,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     
     if ~isempty(saveDir)
@@ -323,15 +326,17 @@ for s=1:nSel
     xlim([min(wave) max(wave)]);
     ylim([-0.05 1.05]);
     
-    lh = legend(l,leg,'location','northwest');
+    lh = legend(l,leg,'location','northwest','interpreter','latex');
     
-    ch = get(lh,'Children');
-    set(ch(1),'Marker','o','MarkerSize',ms);
+   % ch = get(lh,'Children');
+   % set(ch(1),'Marker','o','MarkerSize',ms);
     
-    xlabel('Wavelength, nm','fontsize',fs);
+    xlabel('Wavelength, nm','fontsize',fs,'interpreter','latex');
     set(gca,'yTick',0:0.2:1);
     set(gca,'fontsize',fs-2);
+    set(gca,'TickLabelInterpreter','latex');
     set(gcf,'Units','centimeters');
+    set(gca,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     
     if ~isempty(saveDir)
@@ -372,11 +377,13 @@ for s=1:nSel
 
     
     
-    ylabel('Emission, nm','fontsize',fs);
-    xlabel('Excitation, nm','fontsize',fs);
+    ylabel('Emission, nm','fontsize',fs,'interpreter','latex');
+    xlabel('Excitation, nm','fontsize',fs,'interpreter','latex');
     set(gcf,'Colormap',flCmap);
     set(gca,'fontsize',fs-2);
+    set(gca,'TickLabelInterpreter','latex');
     set(gcf,'Units','centimeters');
+    set(gca,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     
     if ~isempty(saveDir)
@@ -407,10 +414,12 @@ for s=1:nSel
     line([min(wave) max(wave)],ones(2,1)*exRefWave(s),'color','red','lineWidth',lw);
     line(ones(2,1)*emRefWave(s),[min(wave) max(wave)],'color','red','lineWidth',lw);
     
-    ylabel('Emission, nm','fontsize',fs);
-    xlabel('Excitation, nm','fontsize',fs);
+    ylabel('Emission, nm','fontsize',fs,'interpreter','latex');
+    xlabel('Excitation, nm','fontsize',fs,'interpreter','latex');
     set(gca,'fontsize',fs-2);
+    set(gca,'TickLabelInterpreter','latex');
     set(gcf,'Units','centimeters');
+    set(gca,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     set(gcf,'Colormap',flCmap);
     
@@ -429,17 +438,20 @@ for s=1:nSel
     axis off
 
     
-    cb = colorbar([0.1 0.1  0.5  0.8]);
+    cb = colorbar('position',[0.1 0.1  0.5  0.8]);
     set(gca,'CLim',[0 mVal]);
     set(gca,'fontsize',fs-2);
     set(gcf,'OuterPosition',pos);
     set(gcf,'Units','centimeters');
+    set(gca,'Units','centimeters');
+    set(cb,'TickLabelInterpreter','latex');
     set(gcf,'PaperPosition',[1 1 sz(3)/5 sz(4)]);
         
     if ~isempty(saveDir)
         fName = fullfile(saveDir,sprintf('multiFlScale_%i.eps',id));
         print('-depsc',fName);
     end
+    
 end
 
 % Excitation (cross section along a row
@@ -472,11 +484,13 @@ for s=1:nSel
     xlim([min(wave) max(wave)]);
     ylim([-0.05 1.05]);
     
-    legend(l,leg,'location','northeast');
+    legend(l,leg,'location','northeast','interpreter','latex');
     
-    xlabel('Wavelength, nm','fontsize',fs);
+    xlabel('Wavelength, nm','fontsize',fs,'interpreter','latex');
     set(gca,'yTick',0:0.2:1);
     set(gca,'fontsize',fs-2);
+    set(gca,'TickLabelInterpreter','latex');
+    set(gca,'Units','centimeters');
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz2);
     
@@ -517,11 +531,13 @@ for s=1:nSel
     xlim([min(wave) max(wave)]);
     ylim([-0.05 1.05]);
     
-    legend(l,leg,'location','northeast');
+    legend(l,leg,'location','northeast','interpreter','latex');
     
-    xlabel('Wavelength, nm','fontsize',fs);
+    xlabel('Wavelength, nm','fontsize',fs,'interpreter','latex');
     set(gca,'yTick',0:0.2:1);
+    set(gca,'TickLabelInterpreter','latex');
     set(gca,'fontsize',fs-2);
+    set(gca,'Units','centimeters');
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz2);
     

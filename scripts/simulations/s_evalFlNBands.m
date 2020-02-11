@@ -88,7 +88,7 @@ try
 catch
 end
 
-parfor i=1:numel(channelGrid);
+parfor i=1:numel(channelGrid)
 
     nFilters = filterGrid(i);
     nChannels = channelGrid(i);

@@ -11,8 +11,9 @@ clc;
 
 % Define the directory where figures will be saved. If saveDir = [], then
 % figures are not saved.
-% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
-saveDir = [];
+saveDir = fullfile('~','Desktop','Figures');
+% saveDir = [];
+if ~exist(saveDir, 'dir'), mkdir(saveDir); end
 
 
 wave = 380:4:1000;
@@ -25,9 +26,10 @@ lw = 1;
 
 
 %% Camera qe
+
 fName = fullfile(fiToolboxRootPath,'camera','qe');
 qe = ieReadSpectra(fName,wave);
-
+%{
 figure; box off; hold on;
 plot(wave,qe,'LineWidth',lw,'color','black');
 set(gca,'YTick',[0 0.1 0.2 0.3 0.4 0.5]);
@@ -44,13 +46,14 @@ if ~isempty(saveDir)
     fName = fullfile(saveDir,'qe.eps');
     print('-depsc',fName);
 end
-
+%}
 %% Filter transmissivity
 
-% Plot one specific filter
 fName = fullfile(fiToolboxRootPath,'camera','filters');
 camera = ieReadSpectra(fName,wave);
 
+% Plot one specific filter
+%{
 figure; box off; hold on;
 plot(wave,camera(:,4),'LineWidth',lw,'color',[0.5 1 0.2]);
 set(gca,'YTick',0:0.2:1);
@@ -67,18 +70,20 @@ if ~isempty(saveDir)
     fName = fullfile(saveDir,'transmissivity.eps');
     print('-depsc',fName);
 end
+%}
 
-% Plot all filters
+%% Plot all filters
 figure; box on; grid on; hold on;
 plot(wave,diag(qe)*camera,'LineWidth',lw);
 set(gca,'XTick',[400 600 800 1000]);
 set(gca,'FontSize',fs-2);
+set(gca,'TickLabelInterpreter','latex');
 set(gcf,'PaperUnits','centimeters');
 set(gcf,'PaperPosition',sz);
 xlim([min(wave) max(wave)]);
 ylim([0 0.6]);
-xlabel('Wavelength, nm','fontsize',fs);
-ylabel('Transmissivity','fontsize',fs);
+xlabel('Wavelength, nm','fontsize',fs,'interpreter','latex');
+ylabel('Transmissivity','fontsize',fs,'interpreter','latex');
 
 if ~isempty(saveDir)
     fName = fullfile(saveDir,'allFilters.eps');
@@ -86,13 +91,13 @@ if ~isempty(saveDir)
 end
 
 %% Illuminant
-
-% Plot one specific illuminant
-illID = 5;
-
 fName = fullfile(fiToolboxRootPath,'camera','illuminants');
 illuminant = ieReadSpectra(fName,wave);
 illuminant = Energy2Quanta(wave,illuminant);
+
+% Plot one specific illuminant
+%{
+illID = 5;
 
 figure; box off; hold on;
 plot(wave,illuminant(:,illID),'LineWidth',lw,'color','cyan');
@@ -109,18 +114,20 @@ if ~isempty(saveDir)
     fName = fullfile(saveDir,'illuminant.eps');
     print('-depsc',fName);
 end
+%}
 
 % Plot all illuminants
 figure; box on; grid on; hold on;
 plot(wave,illuminant/max(illuminant(:)),'LineWidth',lw);
 set(gca,'XTick',[400 600 800 1000]);
 set(gca,'FontSize',fs-2);
+set(gca,'TickLabelInterpreter','latex');
 set(gcf,'PaperUnits','centimeters');
 set(gcf,'PaperPosition',sz);
 xlim([min(wave) max(wave)]);
 ylim([0 1.05]);
-xlabel('Wavelength, nm','fontsize',fs);
-ylabel('Norm. intensity','fontsize',fs);
+xlabel('Wavelength, nm','fontsize',fs,'interpreter','latex');
+ylabel('Intensity','fontsize',fs,'interpreter','latex');
 
 if ~isempty(saveDir)
     fName = fullfile(saveDir,'allIlluminants.eps');
@@ -130,6 +137,7 @@ end
 %% Radiance
 % Compute reflected and fluoresced radiances under selected illuminants.
 
+%{
 % Pick a reflectance
 fName = fullfile(fiToolboxRootPath,'data','macbethChart');
 reflectance = ieReadSpectra(fName,wave);
@@ -167,4 +175,4 @@ if ~isempty(saveDir)
     fName = fullfile(saveDir,'radiance.eps');
     print('-depsc',fName);
 end
-
+%}

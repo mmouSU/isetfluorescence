@@ -1,5 +1,9 @@
-% Render images of a test targed under different illuminants. This script
-% generates synthetic images in Fig. 13 in the paper.
+% Render images of a test target under different illuminants. This script
+% generates synthetic images shown in the main manuscript as well as
+% the Supplemental Material.
+%
+% Note, run p_relightImg_Natural_Comp.m to run a comparison with real captured
+% data.
 %
 % Copyright, Henryk Blasinski
 
@@ -13,29 +17,58 @@ nWaves = length(wave);
 
 % Define the directory where figures will be saved. If saveDir = [], then
 % figures are not saved.
-% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
-saveDir = [];
-
-% Load illuminant spd's.
-illSubset = [];
-fName = fullfile(fiToolboxRootPath,'data','Broadband9800K');
-illSubset = [illSubset, ieReadSpectra(fName,wave)]; 
-fName = fullfile(fiToolboxRootPath,'data','Broadband6500K');
-illSubset = [illSubset, ieReadSpectra(fName,wave)];
-fName = fullfile(fiToolboxRootPath,'data','Broadband2000K');
-illSubset = [illSubset, ieReadSpectra(fName,wave)];
-fName = fullfile(fiToolboxRootPath,'data','NarrowbandBlue');
-illSubset = [illSubset, ieReadSpectra(fName,wave)];
+saveDir = fullfile('~','Desktop','Test images');
+% saveDir = [];
+if ~exist(saveDir, 'dir'), mkdir(saveDir); end
 
 dataDir = fullfile(fiToolboxRootPath,'results','experiments');
-nCols = 128;
-nRows = 103; 
+
+targetName = 'Natural';
+% targetName = 'Target6';
+
+switch targetName
+    case 'Natural'
+        nCols = 128;
+        nRows = 103;
+        
+        % Load illuminants
+        fName = fullfile(fiToolboxRootPath,'camera','illuminants');
+        illuminant = ieReadSpectra(fName,wave);
+        illSubset = illuminant(:,[2 6]);
+
+        fName = fullfile(fiToolboxRootPath,'data','Broadband9800K');
+        illSubset = [illSubset, ieReadSpectra(fName,wave)]; 
+        fName = fullfile(fiToolboxRootPath,'data','Broadband6500K');
+        illSubset = [illSubset, ieReadSpectra(fName,wave)];
+        fName = fullfile(fiToolboxRootPath,'data','Broadband2000K');
+        illSubset = [illSubset, ieReadSpectra(fName,wave)];
+        fName = fullfile(fiToolboxRootPath,'data','NarrowbandBlue');
+        illSubset = [illSubset, ieReadSpectra(fName,wave)];
+        
+
+    case 'Target6'
+        nCols = 128;
+        nRows = 103;
+        
+        % Load illuminants
+        fName = fullfile(fiToolboxRootPath,'data',targetName,'LEDCubeRadiance','illuminants.mat');
+        ledCubeLights = ieReadSpectra(fName,wave);
+        illSubset = ledCubeLights(:,10);
+        
+        fName = fullfile(fiToolboxRootPath,'data','Broadband9800K');
+        illSubset = [illSubset, ieReadSpectra(fName,wave)]; 
+        
+    otherwise
+        error('Define illuminants for target %s',targetName);
+end
+
+ 
 
 % Load scene reflectance and fluorescence
 reflArray = zeros(nRows,nCols,156);
 for cc=1:nCols
     
-    fName = fullfile(dataDir,sprintf('multifl2_Natural_col_%i.mat',cc));
+    fName = fullfile(dataDir,sprintf('multiFl_%s_col_%i.mat',targetName,cc));
     data = load(fName);
     
     reflArray(:,cc,:) = data.reflEst';
@@ -56,13 +89,12 @@ end
 sceneReTemplate = sceneReflectanceArray(reflArray,1,wave);
 sceneFlTemplate = fluorescentSceneCreate('type','fromfluorophore','fluorophore',flArray);
 
-
 fName = fullfile(fiToolboxRootPath,'data','macbethChart');
 refl = ieReadSpectra(fName,wave);
 sceneMacbeth = sceneReflectanceArray(reshape(refl',[4 6 nWaves]),10,wave);
 
 % Camera filter transmissivities
-fName = fullfile(isetRootPath,'data','sensor','colorfilters','Canon600D');
+fName = fullfile(fiToolboxRootPath,'data','CanonG7x');
 cfa = ieReadSpectra(fName,wave);
 
 
@@ -71,20 +103,20 @@ cfa = ieReadSpectra(fName,wave);
 for i=1:size(illSubset,2)      
         
     sceneMacbeth = sceneAdjustIlluminant(sceneMacbeth,illSubset(:,i),0);
-    vcAddObject(sceneMacbeth);
+    ieAddObject(sceneMacbeth);
     
     sceneRe = sceneAdjustIlluminant(sceneReTemplate,illSubset(:,i),0);
     sceneRe = sceneSet(sceneRe,'name',sprintf('refl - ill%i',i));
-    vcAddObject(sceneRe);
+    ieAddObject(sceneRe);
     
     sceneFl = fiSceneAddFluorescence(sceneRe,sceneFlTemplate,'replace',true);
     sceneFl = sceneSet(sceneFl,'name',sprintf('fl - ill%i',i));
-    vcAddObject(sceneFl);
+    ieAddObject(sceneFl);
     
     % Add fluorescence
     sceneReFl = fiSceneAddFluorescence(sceneRe,sceneFlTemplate);
     sceneReFl = sceneSet(sceneReFl,'name',sprintf('refl+fl - ill%i',i));
-    vcAddObject(sceneReFl);
+    ieAddObject(sceneReFl);
     
     
     sceneWindow;
@@ -138,35 +170,26 @@ for i=1:size(illSubset,2)
     
     % Save images
     if ~isempty(saveDir)
-        fName = fullfile(saveDir,sprintf('RenderedLight_%i_re.png',i));
+        fName = fullfile(saveDir,sprintf('%s_renderedLight_%i_re.png',lower(targetName), i));
         imwrite(lRGBRe,fName);
-        fName = fullfile(saveDir,sprintf('RenderedLight_%i_fl.png',i));
+        fName = fullfile(saveDir,sprintf('%s_renderedLight_%i_fl.png',lower(targetName), i));
         imwrite(lRGBFl,fName);
-        fName = fullfile(saveDir,sprintf('RenderedLight_%i_reFl.png',i));
+        fName = fullfile(saveDir,sprintf('%s_renderedLight_%i_reFl.png',lower(targetName), i));
         imwrite(lRGBReFl,fName);
-        fName = fullfile(saveDir,sprintf('RenderedLight_%i_Macbeth.png',i));
+        fName = fullfile(saveDir,sprintf('%s_renderedLight_%i_Macbeth.png',lower(targetName), i));
         imwrite(lRGBMacbeth,fName);
-        
-        fName = fullfile(saveDir,sprintf('RenderedLight_%i_re_XYZ.mat',i));
-        XYZre = imresize(ieXYZFromPhotons(sceneGet(sceneRe,'photons'),wave),[size(lRGBRe,1) size(lRGBRe,2)]);
-        save(fName,'XYZre');
-        fName = fullfile(saveDir,sprintf('RenderedLight_%i_fl_XYZ.mat',i));
-        XYZfl = imresize(ieXYZFromPhotons(sceneGet(sceneFl,'photons'),wave),[size(lRGBFl,1) size(lRGBFl,2)]);
-        save(fName,'XYZfl');
-        fName = fullfile(saveDir,sprintf('RenderedLight_%i_reFl_XYZ.mat',i));
-        XYZreFl = imresize(ieXYZFromPhotons(sceneGet(sceneReFl,'photons'),wave),[size(lRGBReFl,1) size(lRGBReFl,2)]);
-        save(fName,'XYZreFl');
     end
     
+    linImg = [lRGBRe lRGBFl lRGBReFl lRGBMacbeth];
+    linImg = linImg./max(linImg(:));
     
-    figure; imshow([lRGBRe lRGBFl lRGBReFl lRGBMacbeth]);
-    figure; imshow([sRGBRe sRGBFl sRGBReFl sRGBMacbeth]);
-
+    figure; imshow(linImg.^(1/2.2));
     
-    vcAddObject(ipRe);
-    vcAddObject(ipFl);
-    vcAddObject(ipReFl);
+    ieAddObject(ipRe);
+    ieAddObject(ipFl);
+    ieAddObject(ipReFl);
 
     ipWindow;
     drawnow;
+    
 end

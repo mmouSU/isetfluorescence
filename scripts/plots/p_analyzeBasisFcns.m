@@ -10,15 +10,16 @@ clc;
 
 % Define the directory where figures will be saved. If saveDir =[], then
 % figures are not saved.
-% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
-saveDir = [];
+saveDir = fullfile('~','Desktop','Figures');
+% saveDir = [];
+if ~exist(saveDir, 'dir'), mkdir(saveDir); end
 
 % Figure style parameters
 lineStyle = {'rs-','gd-','bo-','c^-'};
 lw = 1;
-mkSz = 2;
-fs = 5;
-figSize = [1 1 4.5 3];
+mkSz = 5;
+fs = 10;
+figSize = [1 1 4.5 3]*2.5;
 
 wave = 380:4:1068;
 
@@ -46,10 +47,11 @@ pl(3) = plot(1:24,cumNormEmScore,lineStyle{4});
 set(pl,'lineWidth',lw,'markerSize',mkSz);
 set(gcf,'PaperUnits','centimeters');
 set(gcf,'PaperPosition',figSize);
-legend({'Reflectance','Excitation','Emission'},'location','southeast');
+set(gca,'TickLabelInterpreter','latex');
+legend({'Reflectance','Excitation','Emission'},'location','southeast','interpreter','latex');
 ylim([0.5 1.1]);
-xlabel('# of basis functions','fontsize',fs);
-ylabel('Energy','fontsize',fs);
+xlabel('\# of basis functions','fontsize',fs,'interpreter','latex');
+ylabel('Energy','fontsize',fs,'interpreter','latex');
 set(gca,'fontSize',fs-2);
 
 if ~isempty(saveDir)
@@ -72,10 +74,11 @@ hold all; grid on; box on;
 pl = plot(wave,reflBasis(:,1:3));
 set(pl,'lineWidth',lw,'markerSize',mkSz);
 set(gcf,'PaperUnits','centimeters');
+set(gca,'TickLabelInterpreter','latex');
 set(gcf,'PaperPosition',figSize);
 set(gca,'XTick',[400 600 800 1000]);
 set(gca,'YTick',-0.2:0.1:0.2);
-xlabel('Wavelength, nm','fontsize',fs);
+xlabel('Wavelength, nm','fontsize',fs,'interpreter','latex');
 xlim([min(wave) max(wave)]);
 ylim(1.05*[min(min(reflBasis(:,1:3))) max(max(reflBasis(:,1:3)))]);
 set(gca,'fontSize',fs-2);
@@ -91,7 +94,8 @@ pl = plot(wave,exBasis(:,1:3));
 set(pl,'lineWidth',lw,'markerSize',mkSz);
 set(gcf,'PaperUnits','centimeters');
 set(gcf,'PaperPosition',figSize);
-xlabel('Wavelength, nm','fontsize',fs);
+set(gca,'TickLabelInterpreter','latex');
+xlabel('Wavelength, nm','fontsize',fs,'interpreter','latex');
 set(gca,'XTick',[400 600 800 1000]);
 set(gca,'YTick',-0.2:0.1:0.2);
 xlim([min(wave) max(wave)]);
@@ -109,7 +113,8 @@ pl = plot(wave,emBasis(:,1:3));
 set(pl,'lineWidth',lw,'markerSize',mkSz);
 set(gcf,'PaperUnits','centimeters');
 set(gcf,'PaperPosition',figSize);
-xlabel('Wavelength, nm','fontsize',fs);
+set(gca,'TickLabelInterpreter','latex');
+xlabel('Wavelength, nm','fontsize',fs,'interpreter','latex');
 set(gca,'XTick',[400 600 800 1000]);
 set(gca,'YTick',-0.2:0.1:0.2);
 xlim([min(wave) max(wave)]);

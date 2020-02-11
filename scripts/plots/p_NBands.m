@@ -11,8 +11,9 @@ clc;
 
 % Define the directory where figures will be saved. If saveDir =[], then
 % figures are not saved.
-% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+% saveDir = fullfile('~','Desktop','Figures');
 saveDir = [];
+if ~exist(saveDir, 'dir'), mkdir(saveDir); end
 
 dataset = 'McNamara-Boswell';
 
@@ -31,11 +32,12 @@ load(fName);
 figure;
 grid on; hold on;
 hndl = surf(unique(filterGrid),unique(channelGrid),dMatErr);
-xlabel('# camera filters','fontsize',fs);
-ylabel('# illuminants','fontsize',fs);
-zlabel('RMSE','fontsize',fs);
+xlabel('\# camera filters','fontsize',fs,'interpreter','latex');
+ylabel('\# illuminants','fontsize',fs,'interpreter','latex');
+zlabel('RMSE','fontsize',fs,'interpreter','latex');
 set(gca,'fontsize',fs-2);
 set(gca,'ZScale','log');
+set(gca,'TickLabelInterpreter','latex');
 set(gca,'XMinorGrid','off');
 set(gca,'YMinorGrid','off');
 set(gca,'ZMinorGrid','off');
@@ -73,11 +75,12 @@ load(fName);
 figure;
 grid on; hold on;
 hndl = surf(unique(filterGrid),unique(channelGrid),dMatErr);
-xlabel('# camera filters','fontsize',fs);
-ylabel('# illuminants','fontsize',fs);
-zlabel('RMSE','fontsize',fs);
+xlabel('\# camera filters','fontsize',fs,'interpreter','latex');
+ylabel('\# illuminants','fontsize',fs,'interpreter','latex');
+zlabel('RMSE','fontsize',fs,'interpreter','latex');
 set(gca,'fontsize',fs-2);
 set(gca,'ZScale','log');
+set(gca,'TickLabelInterpreter','latex');
 set(gca,'XMinorGrid','off');
 set(gca,'YMinorGrid','off');
 set(gca,'ZMinorGrid','off');

@@ -11,8 +11,13 @@ clc;
 
 % Define the directory where figures will be saved. If saveDir =[], then
 % figures are not saved.
-% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
-saveDir = [];
+saveDir = fullfile('~','Desktop','Figures');
+% saveDir = [];
+if ~exist(saveDir, 'dir'), mkdir(saveDir); end
+
+if ~exist(saveDir,'dir') && ~isempty(saveDir)
+    mkdir(saveDir);
+end
 
 dataset = 'McNamara-Boswell';
 
@@ -38,13 +43,15 @@ set(gcf,'PaperUnits','centimeters');
 set(gcf,'PaperPosition',sz);
 set(gca,'XMinorGrid','off');
 set(gca,'YMinorGrid','off');
-xlim([min(SNRdB) max(SNRdB)]);
-xlabel('SNR, dB','fontsize',fs);
-ylabel('RMSE','fontsize',fs);
-legend('Pixel','Reflectance','Excitation','Emission','location','northeast');
+set(gca,'TickLabelInterpreter','latex');
+xlim([-15 max(SNRdB)]);
+ylim([0 0.6]);
+xlabel('SNR, dB','fontsize',fs,'Interpreter','LaTeX');
+ylabel('RMSE','fontsize',fs,'Interpreter','LaTeX');
+legend({'Pixel','Reflectance','Excitation','Emission'},'location','northeast','Interpreter','LaTeX');
 
 if ~isempty(saveDir)
-    fName = fullfile(saveDir,'FlSNR.eps');
+    fName = fullfile(saveDir,'flSNR.eps');
     print('-depsc',fName);
 end
 
@@ -64,10 +71,12 @@ set(gcf,'PaperUnits','centimeters');
 set(gcf,'PaperPosition',sz);
 set(gca,'XMinorGrid','off');
 set(gca,'YMinorGrid','off');
-xlim([min(SNRdB) max(SNRdB)]);
-xlabel('SNR, dB','fontsize',fs);
-ylabel('RMSE','fontsize',fs);
-legend('Pixel','Reflectance','Donaldson matrix','location','northeast');
+set(gca,'TickLabelInterpreter','latex');
+xlim([-15 max(SNRdB)]);
+ylim([0 0.6]);
+xlabel('SNR, dB','fontsize',fs,'Interpreter','LaTeX');
+ylabel('RMSE','fontsize',fs,'Interpreter','LaTeX');
+legend({'Pixel','Reflectance','Donaldson matrix'},'location','northeast','Interpreter','LaTeX');
 
 if ~isempty(saveDir)
     fName = fullfile(saveDir,'multiFlSNR.eps');

@@ -29,7 +29,7 @@ backgroundFileName = 'Background+multiFl';
 
 % Save outputs to file if saveFName ~= []
 dirName = fullfile(fiToolboxRootPath,'results','experiments');
-if ~exist(dirName,'dir'), mkdir(dirName); end;
+if ~exist(dirName,'dir'), mkdir(dirName); end
 % saveFName = fullfile(dirName,sprintf('multifl_%s.mat',testFileName));
 saveFName = [];
 
@@ -226,6 +226,7 @@ end
                      
 measValsEst = reflValsEst + flValsEst;
 
+fprintf('Total time %f, per sample %f, per iteration %f\n',sum(cellfun(@(x) sum(x.computeTime),hist)),mean(cellfun(@(x) sum(x.computeTime),hist)),mean(cellfun(@(x) mean(x.computeTime),hist)));
 
 [err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals - cameraOffset,[nChannels*nFilters,nSamples]), 'absolute');
 fprintf('Total pixel error %.3f, std %.3f\n',err,std);

@@ -9,8 +9,9 @@ clc;
 
 % Define the directory where figures will be saved. If saveDir = [], then
 % figures are not saved.
-% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
+% saveDir = fullfile('~','Desktop','Figures');
 saveDir = [];
+if ~exist(saveDir, 'dir'), mkdir(saveDir); end
 
 wave = 380:4:1000;
 
@@ -20,8 +21,8 @@ lw = 1;
 ms = 10;
 
 lw2 = 0.5;
-sz = [1 1 5 1.5];
-sz2 = [1 1 3.5 3.5];
+sz = [1 1 5 1.5]*2.5;
+sz2 = [1 1 3.5 3.5]*2.5;
 
 markers = {'o','x','^'};
 colors = {'r','g','b'};
@@ -52,11 +53,10 @@ xlim([min(wave) 800]);
 ylim([-0.05 1.05]);
 set(gca,'XTick',400:200:1000);
 set(gca,'YTick',0:0.2:1);
-
+set(gca,'TickLabelInterpreter','latex');
 set(gcf,'Units','centimeters');
 set(gcf,'PaperPosition',sz);
-
-xlabel('Wavelength, nm','fontsize',fs);
+xlabel('Wavelength, nm','fontsize',fs,'interpreter','latex');
 set(gca,'fontsize',fs-2)
 lg = legend(l,{'$e_x(\lambda)$','$e_m(\lambda)$'},'fontsize',fs,'location','northeast','interpreter','latex');
 
@@ -82,7 +82,7 @@ for i=1:length(textHndl)
 end
 
 if ~isempty(saveDir)
-    fName = fullfile(saveDir,'TwoFluorophores.eps');
+    fName = fullfile(saveDir,'twoFluorophores.eps');
     print('-depsc',fName);
 end
 
@@ -110,32 +110,26 @@ figure;
 hold all; grid off; box on;
 
 for i=1:length(selWaveIDs)
-    lg(i) = plot(wave,spd(:,selWaveIDs(i)),colors{i},'LineWidth',lw);
-    plot(wave(selWaves),spd(selWaves,selWaveIDs(i)),[markers{i} colors{i}],'LineWidth',lw,'markersize',ms/2);
+    plot(wave,spd(:,selWaveIDs(i)),colors{i},'LineWidth',lw);
+    lg(i) = plot(wave(selWaves),spd(selWaves,selWaveIDs(i)),[markers{i} colors{i}],'LineWidth',lw,'markersize',ms/2);
 end
 xlim([min(wave) 800]);
 ylim([-0.05 1.05]);
 
 set(gca,'XTick',400:200:1000);
 set(gca,'YTick',0:0.2:1);
-
+set(gca,'TickLabelInterpreter','latex');
 set(gcf,'Units','centimeters');
 set(gcf,'PaperPosition',sz);
 
 set(gca,'fontsize',fs-2)
-xlabel('Wavelength, nm','fontsize',fs);
+xlabel('Wavelength, nm','fontsize',fs,'interpreter','latex');
 
 for i=1:3
     legLabels{i} = sprintf('%inm',wave(selWaveIDs(i)));
 end
 
-lh = legend(lg,legLabels,'FontSize',fs,'location','northeast');
-
-ch = get(lh,'Children');
-set(ch(1),'Marker',markers{3},'MarkerSize',ms/2);
-set(ch(4),'Marker',markers{2},'MarkerSize',ms/2);
-set(ch(7),'Marker',markers{1},'MarkerSize',ms/2);
-
+lh = legend(lg,legLabels,'FontSize',fs,'location','northeast','interpreter','latex');
 
 if ~isempty(saveDir)
     fName = fullfile(saveDir,'chrInv.eps');
@@ -160,16 +154,18 @@ y = XYZ(:,2)./sum(XYZ,2);
 % Plot on the CIE diagram
 figure; 
 cieplot();
+set(gca,'FontSize',fs-2);
 plot(x,y,'kx','LineWidth',lw,'MarkerSize',ms);
-xlabel('x','fontsize',fs);
-ylabel('y','fontsize',fs);
+xlabel('x','fontsize',fs,'interpreter','latex');
+ylabel('y','fontsize',fs,'interpreter','latex');
 
+set(gca,'TickLabelInterpreter','latex');
 set(gca,'XTick',0:0.2:0.8);
 set(gca,'YTick',0:0.2:0.8);
 
 set(gcf,'Units','centimeters');
 set(gcf,'PaperPosition',sz2);
-set(gca,'FontSize',fs-2);
+
 
 if ~isempty(saveDir)
     fName = fullfile(saveDir,'chrxy.eps');

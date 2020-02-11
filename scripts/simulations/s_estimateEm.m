@@ -57,6 +57,8 @@ measValsEst = flValsEst + reflValsEst;
 
 %% Plot the results
 
+fprintf('Total time %f, per sample %f, per iteration %f\n',sum(cellfun(@(x) sum(x.computeTime),hist)),mean(cellfun(@(x) sum(x.computeTime),hist)),mean(cellfun(@(x) mean(x.computeTime),hist)));
+
 [err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals - cameraOffset,[nChannels*nFilters,nSamples]), 'absolute');
 fprintf('Total pixel error %.3f, std %.3f\n',err,std);
 

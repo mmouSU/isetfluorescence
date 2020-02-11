@@ -57,7 +57,7 @@ switch param
         fl.type = val;
         
     case 'qe'
-        if (val > 1), warning('Qe greater than one, truncating to 1'); end
+        % if (val > 1), warning('Qe greater than one, truncating to 1'); end
         val = min(max(val,0),1);
         
         % We only set qe for the excitation-emission representation
@@ -74,12 +74,12 @@ switch param
             fl = rmfield(fl,'donaldsonMatrix');
         end
         
-        if sum(val<0) > 0, warning('Emission less than zero, truncating'); end
+        % if sum(val<0) > 0, warning('Emission less than zero, truncating'); end
         val = max(val,0);
         
         deltaL = fluorophoreGet(fl,'deltaWave');
         qe = 1/(sum(val)*deltaL);
-        if qe ~= 1, warning('Emission not normalized'); end
+        % if qe ~= 1, warning('Emission not normalized'); end
         
         val = val*qe;
         fl.emission = val(:);
@@ -98,10 +98,10 @@ switch param
         
         
         
-        if sum(val<0) > 0, warning('Excitation less than zero, truncating'); end
+        % if sum(val<0) > 0, warning('Excitation less than zero, truncating'); end
         val = max(val,0);
         
-        if max(val) ~= 1, warning('Peak excitation different from 1, rescaling'); end
+        % if max(val) ~= 1, warning('Peak excitation different from 1, rescaling'); end
         val = val/max(val);
         
         fl.excitation = val(:);

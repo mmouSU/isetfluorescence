@@ -59,7 +59,7 @@ flScene = fluorescentSceneCreate('height',height,'width',width,'wave',wave,'nFlu
 
 % Run ISET simulations
 
-for q=1:length(flQe);
+for q=1:length(flQe)
         
     flScene = fluorescentSceneSet(flScene,'qe',flQe(q));
     

@@ -127,6 +127,7 @@ end
 % Begin a biconvex problem iteration
 for i=1:inputs.maxIter
     
+    tic;
      
     cvx_begin quiet
         cvx_precision default
@@ -151,7 +152,8 @@ for i=1:inputs.maxIter
     if strcmp(cvx_status,'Failed') == 1, break; end
    
     hist.objValsReEx(i) = cvx_optval;
-        
+    hist.computeTime(i) = toc;
+    
     % Exit if the objective improvement is small.
     if abs(hist.objValsReEm(i) - hist.objValsReEx(i)) <= inputs.epsilon
         break;

@@ -1,5 +1,5 @@
 % Analyze the single fluorophore estimation results applied to the entire
-% McNamara-Boswell data set. This script generates Fig. 4 in Supplemental
+% McNamara-Boswell data set. This script generates Fig. 5 in Supplemental
 % Material.
 %
 % Copyright, Henryk Blasinski 2016
@@ -10,14 +10,15 @@ clc;
 
 % Define the directory where figures will be saved. If saveDir = [], then
 % figures are not saved.
-% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
 saveDir = [];
+saveDir = fullfile('~','Desktop','Figures');
+if ~exist(saveDir,'dir'), mkdir(saveDir); end
 
 % Figure render parameters
-lw = 2;
-mkSz = 8;
+lw = 1;
+mkSz = 4;
 fs = 8;
-figSize = [0 0 4.5 2.75];
+figSize = [0 0 4.5 2.25];
 
 fName = fullfile(fiToolboxRootPath,'results','evaluation','McNamara-Boswell_sim_Fl.mat');
 load(fName);
@@ -68,13 +69,14 @@ lg(4) = pl(1);
 
 set(gcf,'PaperUnits','inches');
 set(gcf,'PaperPosition',figSize);
-xlabel('Fluorophore order');
-ylabel('RMSE');
+set(gca,'TickLabelInterpreter','latex');
+xlabel('Error rank order','interpreter','latex');
+ylabel('RMSE','interpreter','latex');
 xlim([1 nCompounds]);
 ylim([0.0 0.5]);
 set(gca,'fontSize',fs);
-legend(lg,{'Pixel','Reflectance','Excitation','Emission'},'location','northwest');
+legend(lg,{'Pixel','Reflectance','Excitation','Emission'},'location','northwest','interpreter','latex');
 
 if ~isempty(saveDir)
-    print('-depsc',fullfile(saveDir,'Fl_eval.eps'));
+    print('-depsc',fullfile(saveDir,'fl_eval.eps'));
 end

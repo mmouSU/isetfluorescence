@@ -145,11 +145,11 @@ if inputs.pixelRef == true
     hist.pixelErr = zeros(inputs.maxIter,1);
 end
 
-if ~isempty(inputs.dMatRef);
+if ~isempty(inputs.dMatRef)
     hist.dMatErr = zeros(inputs.maxIter,1);
 end
 
-if ~isempty(inputs.reflRef);
+if ~isempty(inputs.reflRef)
     hist.reflErr = zeros(inputs.maxIter,1);
 end
 
@@ -229,6 +229,8 @@ for i=1:inputs.maxIter
         tElapsed = 0;
     end
     
+    
+    
     if max(hist.prRes(i),hist.dualRes(i)) < inputs.epsilon && (inputs.epsilon >=0)
         break;
     end
@@ -236,10 +238,10 @@ for i=1:inputs.maxIter
     % Re-scale the parameter rho
     if hist.prRes(i) > inputs.mu*hist.dualRes(i) && inputs.rescaleRho
         hist.rho(i+1) = hist.rho(i)*inputs.tauIncr;
-    end;
+    end
     if hist.dualRes(i) > inputs.mu*hist.prRes(i) && inputs.rescaleRho
         hist.rho(i+1) = hist.rho(i)/inputs.tauDecr;
-    end;
+    end
     
     u1 = u1*hist.rho(i)/hist.rho(i+1);
     u2 = u2*hist.rho(i)/hist.rho(i+1);
@@ -250,7 +252,7 @@ for i=1:inputs.maxIter
     y2minus = y2;
     y3minus = y3;
     
-    
+    hist.computeTime(i) = toc(t1);
     %% Compute approximation error
     % The opitmization is done, let's compute the estimates. All this is in
     % 'if-else' statements to speed up computation if convergence analysis

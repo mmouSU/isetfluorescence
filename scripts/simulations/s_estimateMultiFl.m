@@ -16,11 +16,7 @@ load(fName);
 deltaL = wave(2) - wave(1);
 nWaves = length(wave);
 
-maxIter = 25;
-
-alpha = 0.1;
-beta = 0.1;
-eta = 0.1;
+maxIter = 100;
 
 % Create basis function sets
 nReflBasis = 5;
@@ -54,36 +50,55 @@ nSamples = size(measVals,3);
 cameraGain = repmat(cameraGain,[1 1 nSamples]);
 cameraOffset = repmat(cameraOffset,[1 1 nSamples]);
 
-[ reflEst, reflCoeffs, emEst, emCoeffs, exEst, exCoeffs, dMatEst, reflValsEst, flValsEst, hist  ] = ...
-    fiRecReflAndMultiFl( measVals, camera, illuminant, cameraGain*deltaL,...
-                         cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, eta, 'maxIter',maxIter,...
-                         'dMatRef',dMatRef,'reflRef',reflRef,'pixelRef',true);
-
-
-
-%% Compute errors
-
-measValsEst = reflValsEst + flValsEst + cameraOffset;
-
-[err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals,[nChannels*nFilters,nSamples]), 'absolute');
-fprintf('Total pixel error %.3f, std %.3f\n',err,std);
-
-[err, std] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(reflValsRef,[nChannels*nFilters,nSamples]), 'absolute');
-fprintf('Reflected pixel error %.3f, std %.3f\n',err,std);
-
-[err, std] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(flValsRef,[nChannels*nFilters,nSamples]), 'absolute');
-fprintf('Fluoresced pixel error %.3f, std %.3f\n',err,std);
-
-[err, std] = fiComputeError(reflEst, reflRef, 'absolute');
-fprintf('Reflectance error %.3f, std %.3f\n',err,std);
-
-[err, std] = fiComputeError(dMatEst, dMatRef, 'absolute');
-fprintf('Donaldson Matrix error %f, std %f\n',err,std);
-
-[err, std] = fiComputeError(dMatEst, dMatRef, 'normalized');
-fprintf('Donaldson Matrix (normalized) %.3f, std %.3f\n',err,std);
-
-
+for i=1:3
+    switch i
+        case 1
+            alpha = 0;
+            beta = 0;
+            eta = 0.01;
+        case 2
+            alpha = 0.01;
+            beta = 0.01;
+            eta = 0.0;
+        case 3
+            alpha = 0.01;
+            beta = 0.01;
+            eta = 0.01;
+    end
+    
+    [ reflEst, reflCoeffs, emEst, emCoeffs, exEst, exCoeffs, dMatEst, reflValsEst, flValsEst, hist  ] = ...
+        fiRecReflAndMultiFl( measVals, camera, illuminant, cameraGain*deltaL,...
+        cameraOffset, reflBasis, emBasis, exBasis, alpha, beta, beta, eta, 'maxIter',maxIter,...
+        'dMatRef',dMatRef,'reflRef',reflRef,'pixelRef',true);
+    
+    
+    
+    %% Compute errors
+    
+    measValsEst = reflValsEst + flValsEst + cameraOffset;
+    
+    fprintf('====== alpha=%.3f beta=%.3f eta=%.3f======\n',alpha, beta,eta);
+    
+    
+    [err, std] = fiComputeError(reshape(measValsEst,[nChannels*nFilters,nSamples]), reshape(measVals,[nChannels*nFilters,nSamples]), 'absolute');
+    fprintf('Total pixel error %.3f, std %.3f\n',err,std);
+    
+    [err, std] = fiComputeError(reshape(reflValsEst,[nChannels*nFilters,nSamples]), reshape(reflValsRef,[nChannels*nFilters,nSamples]), 'absolute');
+    fprintf('Reflected pixel error %.3f, std %.3f\n',err,std);
+    
+    [err, std] = fiComputeError(reshape(flValsEst,[nChannels*nFilters,nSamples]), reshape(flValsRef,[nChannels*nFilters,nSamples]), 'absolute');
+    fprintf('Fluoresced pixel error %.3f, std %.3f\n',err,std);
+    
+    [err, std] = fiComputeError(reflEst, reflRef, 'absolute');
+    fprintf('Reflectance error %.3f, std %.3f\n',err,std);
+    
+    [err, std] = fiComputeError(dMatEst, dMatRef, 'absolute');
+    fprintf('Donaldson Matrix error %f, std %f\n',err,std);
+    
+    [err, std] = fiComputeError(dMatEst, dMatRef, 'normalized');
+    fprintf('Donaldson Matrix (normalized) %.3f, std %.3f\n',err,std);
+    
+end
 
 
 %% Plot the results

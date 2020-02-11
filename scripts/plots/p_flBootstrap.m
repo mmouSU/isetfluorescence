@@ -10,14 +10,17 @@ clc;
 
 % Define the directory where figures will be saved. If saveDir = [], then
 % figures are not saved.
-% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
 saveDir = [];
+saveDir = fullfile('~','Desktop','Figures');
+if ~exist(saveDir,'dir')
+    mkdir(saveDir);
+end
 
 % Figure display properties
 fs = 10;
 lw = 2;
 ms = 7;
-sz = [1 1 3.5 2.5];
+sz = [1 1 3.5 2.5] * 2.5;
 
 % Figure legend
 leg = {'Reference','Single fl.','CIM'};
@@ -236,11 +239,11 @@ for s=1:nSel
      
     % Single fluorophore estimate
     tmp2 = avgFlMeasValsEst(:,:,id);
-    l(2) = plot(tmp(:),tmp2(:),'go','markerSize',ms,'lineWidth',lw);
+    l(2) = plot(tmp(:),tmp2(:),'go','markerSize',ms,'lineWidth',0.5*lw);
     
     % CIM estimate
     tmp2 = avgEmMeasValsEst(:,:,id);
-    l(3) = plot(tmp(:),tmp2(:),'kx','markerSize',ms,'lineWidth',lw);
+    l(3) = plot(tmp(:),tmp2(:),'kx','markerSize',ms,'lineWidth',0.5*lw);
     
     % Reference
     plot(linspace(0,1.1,10),linspace(0,1.1,10),'r-','lineWidth',0.5*lw);
@@ -248,13 +251,14 @@ for s=1:nSel
     xlim([0 1.05]);
     ylim([0 1.05]);
     
-    xlabel('Measured pixel intensity','fontsize',fs);
-    ylabel('Predicted pixel intensity','fontsize',fs);
+    xlabel('Measured pixel intensity','fontsize',fs,'interpreter','latex');
+    ylabel('Predicted pixel intensity','fontsize',fs,'interpreter','latex');
     
-    legend(l(2:3),leg(2:3),'location','northwest');
+    legend(l(2:3),leg(2:3),'location','northwest','interpreter','latex','fontsize',fs);
     
     set(gca,'yTick',0:0.2:1);
     set(gca,'fontsize',fs-2);
+    set(gca,'TickLabelInterpreter','latex');
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     
@@ -296,15 +300,14 @@ for s=1:nSel
     xlim([min(wave) max(wave)]);
     ylim([-0.05 1.05]);
     
-    lh = legend(l,leg,'location','northwest');
+    [lh, obj] = legend(l,leg,'location','southeast','interpreter','latex','fontsize',fs);
+    set(obj(7),'Marker','o','MarkerSize',ms,'LineWidth',0.5*lw);
+    set(obj(9),'Marker','x','MarkerSize',ms,'LineWidth',0.5*lw);
     
-    ch = get(lh,'Children');
-    set(ch(4),'Marker','o','MarkerSize',ms);
-    set(ch(1),'Marker','x','MarkerSize',ms);
-    
-    xlabel('Wavelength, nm','fontsize',fs);
+    xlabel('Wavelength, nm','fontsize',fs,'interpreter','latex');
     set(gca,'yTick',0:0.2:1);
     set(gca,'fontsize',fs-2);
+    set(gca,'TickLabelInterpreter','latex');
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     
@@ -346,14 +349,16 @@ for s=1:nSel
     xlim([min(wave) max(wave)]);
     ylim([-0.05 1.05]);
     
-    lh = legend(l,leg,'location','northeast');
-    ch = get(lh,'Children');
-    set(ch(4),'Marker','o','MarkerSize',ms);
-    set(ch(1),'Marker','x','MarkerSize',ms);
     
-    xlabel('Wavelength, nm','fontsize',fs);
+    [lh, obj] = legend(l,leg,'location','northeast','interpreter','latex','fontsize',fs);
+    set(obj(7),'Marker','o','MarkerSize',ms,'LineWidth',0.5*lw);
+    set(obj(9),'Marker','x','MarkerSize',ms,'LineWidth',0.5*lw);
+    
+    
+    xlabel('Wavelength, nm','fontsize',fs,'interpreter','latex');
     set(gca,'yTick',0:0.2:1);
     set(gca,'fontsize',fs-2);
+    set(gca,'TickLabelInterpreter','latex');
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     
@@ -387,13 +392,13 @@ for s=1:nSel
     xlim([min(wave) max(wave)]);
     ylim([-0.05 1.05]);
     
-    lh = legend(l(1:2),leg(1:2),'location','northeast');
-    ch = get(lh,'Children');
-    set(ch(1),'Marker','o','MarkerSize',ms);
+    [lh, obj] = legend(l(1:2),leg(1:2),'location','northeast','interpreter','latex','fontsize',fs);
+    set(obj(6),'Marker','o','MarkerSize',ms,'LineWidth',0.5*lw);
     
-    xlabel('Wavelength, nm','fontsize',fs);
+    xlabel('Wavelength, nm','fontsize',fs,'interpreter','latex');
     set(gca,'yTick',0:0.2:1);
     set(gca,'fontsize',fs-2);
+    set(gca,'TickLabelInterpreter','latex');
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     
@@ -428,12 +433,12 @@ for s=1:nSel
     
     xlim([min(wave) max(wave)]);
     
-    lh = legend(l(1:2),leg(1:2),'location','northeast');
-    ch = get(lh,'Children');
-    set(ch(1),'Marker','o','MarkerSize',ms);
+    [lh, obj] = legend(l(1:2),leg(1:2),'location','northeast','interpreter','latex','fontsize',fs);
+    set(obj(6),'Marker','o','MarkerSize',ms,'LineWidth',0.5*lw);
     
-    xlabel('Wavelength, nm','fontsize',fs);
+    xlabel('Wavelength, nm','fontsize',fs,'interpreter','latex');
     set(gca,'fontsize',fs-2);
+    set(gca,'TickLabelInterpreter','latex');
     set(gcf,'Units','centimeters');
     set(gcf,'PaperPosition',sz);
     

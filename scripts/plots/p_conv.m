@@ -9,8 +9,9 @@ clc;
 
 % Define the directory where figures will be saved. If saveDir = [], then
 % figures are not saved.
-% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
-saveDir = [];
+saveDir = fullfile('~','Desktop','Figures');
+% saveDir = [];
+if ~exist(saveDir, 'dir'), mkdir(saveDir); end
 
 % Figure display settings
 lw = 1;
@@ -52,15 +53,16 @@ errorbar(selPts,avgEmErr(selPts),stdDMatErr(selPts),'-bo','lineWidth',lw,'marker
 set(gca,'yscale','log');
 set(gca,'xscale','log');
 set(gca,'fontsize',fs-2);
+set(gca,'TickLabelInterpreter','latex');
 set(gcf,'PaperUnits','centimeters');
 set(gcf,'PaperPosition',sz);
 set(gca,'XMinorGrid','off');
 set(gca,'YMinorGrid','off');
 xlim([0 data.maxIter]);
 ylim([0.009 1]);
-xlabel('Iterations','fontsize',fs);
-ylabel('RMSE','fontsize',fs);
-legend('Pixel','Reflectance','Donaldson matrix','location','northeast');
+xlabel('Iterations','fontsize',fs,'interpreter','latex');
+ylabel('RMSE','fontsize',fs,'interpreter','latex');
+legend({'Pixel','Reflectance','Donaldson matrix'},'location','northeast','interpreter','latex');
 
 if ~isempty(saveDir)
     fName = fullfile(saveDir,'multiFlConv.eps');
@@ -120,15 +122,16 @@ errorbar(selPts,avgExErr(selPts),stdExErr(selPts),'-bo','lineWidth',lw,'markerSi
 set(gca,'yscale','log');
 set(gca,'xscale','log');
 set(gca,'fontsize',fs-2);
+set(gca,'TickLabelInterpreter','latex');
 set(gcf,'PaperUnits','centimeters');
 set(gcf,'PaperPosition',sz);
 set(gca,'XMinorGrid','off');
 set(gca,'YMinorGrid','off');
 xlim([0 data.maxIter]);
 ylim([0.009 1]);
-xlabel('Iterations','fontsize',fs);
-ylabel('RMSE','fontsize',fs);
-legend('Pixel','Reflectance','Excitation','Emission','location','northeast');
+xlabel('Iterations','fontsize',fs,'interpreter','latex');
+ylabel('RMSE','fontsize',fs,'interpreter','latex');
+legend({'Pixel','Reflectance','Excitation','Emission'},'location','northeast','interpreter','latex');
 
 if ~isempty(saveDir)
     fName = fullfile(saveDir,'flConv.eps');

@@ -1,5 +1,5 @@
 % Generate plots showing the tuning parameter cross validation results of the
-% multi fluorophore algorithm. This script generates Fig. 1 from the 
+% multi fluorophore algorithm. This script generates Fig. 2 from the 
 % Supplemental Material.
 %
 % Copyright, Henryk Blasinski 2016.
@@ -10,15 +10,16 @@ clc;
 
 % Define the directory where figures will be saved. If saveDir = [], then
 % figures are not saved.
-% saveDir = fullfile('~','Dropbox','MsVideo','Notes','FluorescencePaperV2','Figures');
-saveDir = [];
+saveDir = fullfile('~','Desktop','Figures');
+% saveDir = [];
+if ~exist(saveDir, 'dir'), mkdir(saveDir); end
 
 % Figure style parameters
 lineStyle = {'rs-','gd-','bo-'};
-lw = 2;
-mkSz = 8;
+lw = 1;
+mkSz = 4;
 fs = 8;
-figSize = [0 0 4.5 2.75];
+figSize = [0 0 4.5 2.25];
 
 
 % Load data
@@ -59,11 +60,12 @@ set(gcf,'PaperUnits','inches');
 set(gcf,'PaperPosition',figSize);
 ylim([0 0.07]);
 xlim([0.9*min(alphaRange) 1.1*max(alphaRange)]);
-xlabel('\alpha');
-ylabel('min_{\beta,\eta}(RMSE)');
+xlabel('$\alpha$','interpreter','latex');
+ylabel('$\mathrm{min}_{\beta,\eta}$(RMSE)','interpreter','latex');
 set(gca,'fontSize',fs);
+set(gca,'TickLabelInterpreter','latex');
 set(gca,'xscale','log');
-legend({'Pixel','Reflectance','Donaldson matrix'},'location','northwest');
+legend({'Pixel','Reflectance','Donaldson matrix'},'location','northwest','interpreter','latex');
 if ~isempty(saveDir)
     print('-depsc',fullfile(saveDir,'multiFl_xVal_alpha.eps'));
 end
@@ -97,11 +99,12 @@ set(gcf,'PaperUnits','inches');
 set(gcf,'PaperPosition',figSize);
 xlim([0.9*min(betaRange) 1.1*max(betaRange)]);
 ylim([0 0.07]);
-xlabel('\beta');
-ylabel('min_{\alpha,\eta}(RMSE)');
+xlabel('$\beta$','interpreter','latex');
+ylabel('$\mathrm{min}_{\alpha,\eta}$(RMSE)','interpreter','latex');
 set(gca,'fontSize',fs);
+set(gca,'TickLabelInterpreter','latex');
 set(gca,'xscale','log');
-legend({'Pixel','Reflectance','Donaldson matrix'},'location','northwest');
+legend({'Pixel','Reflectance','Donaldson matrix'},'location','northwest','interpreter','latex');
 
 if ~isempty(saveDir)
     print('-depsc',fullfile(saveDir,'multiFl_xVal_beta.eps'));
@@ -136,11 +139,12 @@ set(gcf,'PaperUnits','inches');
 set(gcf,'PaperPosition',figSize);
 xlim([0.9*min(nuRange) 1.1*max(nuRange)]);
 ylim([0 0.07]);
-xlabel('\eta');
-ylabel('min_{\alpha,\beta}(RMSE)');
+xlabel('$\eta$','interpreter','latex');
+ylabel('$\mathrm{min}_{\alpha,\beta}$(RMSE)','interpreter','latex');
 set(gca,'fontSize',fs);
+set(gca,'TickLabelInterpreter','latex');
 set(gca,'xscale','log');
-legend({'Pixel','Reflectance','Donaldson matrix'},'location','northwest');
+legend({'Pixel','Reflectance','Donaldson matrix'},'location','northwest','interpreter','latex');
 
 if ~isempty(saveDir)
     print('-depsc',fullfile(saveDir,'multiFl_xVal_eta.eps'));
