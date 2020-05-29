@@ -30,7 +30,7 @@
 
 %%  Select a file from the webluor site
 
-chdir(fullfile(fiToolboxRootPath,'data','webfluor'));
+chdir(fullfile(fiToolboxRootPath,'data','sources','webfluor'));
 txtFiles = dir('*.txt');
 
 %{
