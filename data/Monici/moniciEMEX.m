@@ -9,8 +9,7 @@
 % Wandell
 
 %%
-chdir(fiToolboxRootPath)
-chdir('local')
+chdir(fullfile(fiToolboxRootPath,'data','sources','monici'))
 wave = 200:5:800;
 
 %% We convert excitation and emission to quanta for consistency with ISETCam
