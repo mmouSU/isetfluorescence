@@ -15,7 +15,7 @@ FAD = fluorophoreRead('FAD','wave',wave);
 % Here is the excitation emission matrix
 eem = fluorophoreGet(FAD,'eem');
 %{
- fluorophorePlot(FAD,'donaldson matrix');
+ fluorophorePlot(FAD,'donaldson mesh');
 %}
 %{
  dWave = fluorophoreGet(FAD,'delta wave');

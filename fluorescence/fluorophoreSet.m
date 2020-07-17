@@ -97,6 +97,9 @@ switch param
         val = val*qe;
         %}
         
+        % Set the NaN values to be zero.
+        val(isnan(val)) = 0;
+        
         fl.emission = val(:);
         
     case {'excitationphotons','excitation'}
@@ -114,6 +117,9 @@ switch param
         
         if max(val) ~= 1, warning('Peak excitation different from 1, rescaling'); end
         val = val/max(val);
+        
+        % Set the NaN values to be zero.
+        val(isnan(val)) = 0;
         
         fl.excitation = val(:);
         
