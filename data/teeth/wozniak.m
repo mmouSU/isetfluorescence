@@ -52,7 +52,7 @@ f = fluorophoreSet(f,'name','Teeth measured');
 
 %% Save it
 
-fname = fullfile(fiToolboxRootPath,'data','teeth','teeth.mat');
+fname = fullfile(fiToolboxRootPath,'data','teeth','teeth-wozniak.mat');
 fprintf('Saving %s\n',fname);
 fluorophoreSave(fname,f,'digitized by JEF from Wozniak and Moore 1978 in the Journal of Dental Research');
 

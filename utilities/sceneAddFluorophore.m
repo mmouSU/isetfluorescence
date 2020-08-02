@@ -18,7 +18,7 @@ function combinedScene = sceneAddFluorophore(scene,fluorophore,concentration)
 %  N/A
 %
 % Outputs
-%   combinedScene:  THe original scene plus the fluorescence signal
+%   combinedScene:  The original scene plus the fluorescence signal
 %
 % Description
 %  We build the fluorescent scene as a match to the reference scene.  But
@@ -28,10 +28,12 @@ function combinedScene = sceneAddFluorophore(scene,fluorophore,concentration)
 %  oeSensorChromaticities, s_MultispectralFluorescenceImaging
 %
 
+wave = sceneGet(scene,'wave');
+
 % To calculate the fluorescence we start with the scene illuminant.  This
 % is generally the illuminant of the camera.  In the future we might decide
 % to send in the illuminant separately from the scene illuminant.
-illEnergy = sceneGet(scene,'illuminant energy');
+illPhotons = sceneGet(scene,'illuminant photons');
 
 % Now get the excitation-emission matrix for this fluorophore
 eem = concentration*fluorophoreGet(fluorophore,'eem');
@@ -39,7 +41,7 @@ eem = concentration*fluorophoreGet(fluorophore,'eem');
 
 % Calculate the emissions for this excitation light at this fluorophore
 % concentration 
-emission = eem * illEnergy(:);
+emission = eem * illPhotons(:);
 % ieNewGraphWin; plotRadiance(wave,emission)
 
 % Build up the fluorescent scene from the emissions
