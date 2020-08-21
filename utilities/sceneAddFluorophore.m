@@ -33,22 +33,22 @@ wave = sceneGet(scene,'wave');
 % To calculate the fluorescence we start with the scene illuminant.  This
 % is generally the illuminant of the camera.  In the future we might decide
 % to send in the illuminant separately from the scene illuminant.
-illPhotons = sceneGet(scene,'illuminant photons');
+illEnergy = sceneGet(scene,'illuminant energy');
 
 % Now get the excitation-emission matrix for this fluorophore
-eem = concentration*fluorophoreGet(fluorophore,'eem');
+eem = concentration*fluorophoreGet(fluorophore,'eemenergy');
 % ieNewGraphWin; imagesc(eem)
 
 % Calculate the emissions for this excitation light at this fluorophore
 % concentration 
-emission = eem * illPhotons(:);
+emission = eem * illEnergy(:);
 % ieNewGraphWin; plotRadiance(wave,emission)
 
 % Build up the fluorescent scene from the emissions
 sz = sceneGet(scene,'size');
-photons = scenePhotonsFromVector(emission,sz(1),sz(2));
+photons = sceneEnergyFromVector(emission,sz(1),sz(2));
 flScene = scene;
-flScene = sceneSet(flScene,'photons',photons);
+flScene = sceneSet(flScene,'energy',photons);
 % max(emission(:))
 
 % Combine the input scene with its fluorescent partner

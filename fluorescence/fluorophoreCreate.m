@@ -71,7 +71,7 @@ p.addParameter('solvent','',@(x)(ischar(x) || isempty(x)));
 p.addParameter('excitation',zeros(31,1),@isnumeric);
 p.addParameter('emission',zeros(31,1),@isnumeric);
 p.addParameter('qe',1,@isscalar);
-p.addParameter('DonaldsonMatrix',[],@isnumeric);
+p.addParameter('eem',[],@isnumeric);
 
 p.parse(varargin{:});
 inputs = p.Results;
@@ -94,7 +94,7 @@ switch type
         fl = fluorophoreCreate('wave',inputs.wave);
         fl = fluorophoreSet(fl,'name',inputs.name);
         fl = fluorophoreSet(fl,'solvent',inputs.solvent);
-        fl = fluorophoreSet(fl,'Donaldson matrix',inputs.DonaldsonMatrix);
+        fl = fluorophoreSet(fl,'eemenergy',inputs.eem);
         fl = fluorophoreSet(fl,'qe',1);
     
     case 'custom'

@@ -87,7 +87,7 @@ switch param
     case {'emissionenergy'}
         val = fluorophoreGet(fl,'emission');  % Photons
         wave = fluorophoreGet(fl,'wave');     % nm
-        val = Energy2Quanta(wave,val);
+        val = Quanta2Energy(wave,val);
         
     case {'normemission','normalizedemission'}
         if ~checkfields(fl,'emission'), val = []; return; end
@@ -101,7 +101,7 @@ switch param
     case {'excitationenergy'}
         val = fluorophoreGet(fl,'excitation');  % Photons
         wave = fluorophoreGet(fl,'wave');     % nm
-        val = Energy2Quanta(wave,val);
+        val = Quanta2Energy(wave,val);
         
     case {'normexcitation','normalizedexcitation'}
         if ~checkfields(fl,'excitation'), val = []; return; end
@@ -129,7 +129,7 @@ switch param
         wave = fluorophoreGet(fl,'wave');
         val = wave(2) - wave(1);
      
-    case {'eem','excitationemissionmatrix','donaldsonmatrix',}
+    case {'eem','excitationemissionmatrix'}
         % This is the excitation emission matrix. It is structured so that
         %
         %     fluorescenceSpectrum = dMatrix * illuminantPhotons(:)
@@ -195,6 +195,72 @@ switch param
         end
         
         % No NaNs on the return.  Make the NaNs 0
+        val(isnan(val)) = 0;
+    case {'eemenergy'}
+        %{
+            wave = fluorophoreGet(fl, 'wave');
+            eemQuanta = fluorophoreGet(fl, 'eem');
+            val = zeros(size(eemQuanta));
+            % Apply Quanta2Energy on matrix
+            exciteQuanta = ones(1, numel(wave));
+            exciteEnergy = Quanta2Energy(wave, exciteQuanta);
+            for ii = 1:numel(wave)
+                val(:,ii) = Quanta2Energy(wave, eemQuanta(:,ii)) / exciteEnergy(ii);
+            end
+        %}
+        deltaL = fluorophoreGet(fl,'delta wave');
+
+        if isfield(fl,'donaldsonMatrix')
+            % If the fluorophore is defined in terms of the Donaldson matrix,
+            % then return the matrix.
+            val = fl.donaldsonMatrix*deltaL;
+            warning('We have a donaldsonMatrix, but double check whether the unit is the one you want')
+        elseif isfield(fl,'eemenergy')
+            % We want this name instead.  Converting for now, will
+            % eliminate donaldson path over time.
+            val = fl.eemenergy*deltaL;
+            warning('We have a donaldsonMatrix, but double check whether the unit is the one you want')
+        else
+            % Otherwise compute the Donaldson matrix from excitation and
+            % emission vectors.
+            ex = fluorophoreGet(fl,'excitation energy');  % Column
+            em = fluorophoreGet(fl,'emission energy');    % Column
+            
+            % Logic of the EEM is that an excitation photon at some
+            % wavelength produces an emission spectrum.  We make the
+            % emission vector sum to one (every photon goes somewhere, but
+            % no amplificiation). 
+            em = em/sum(em(:));
+            
+            % We scale the excitation vector so that it has a maximum of
+            % one, though we could scale it so that it sums to one.  Either
+            % way is probably OK because, well, there are no units here.
+            ex = ex/max(ex(:));
+            
+            % We take the outer product so that every column of the
+            % Donaldson matrix is the emission, scaled by the relative
+            % excitability
+            eem = em(:)*ex(:)';
+            
+            % Finally, we apply the Stoke's constraint so that only
+            % photons with  energy lower than the energy of the
+            % excitation wavelength (longer wavelengths than the
+            % excitation wavelength) are emitted.
+            %
+            % We leave out the main diagonal (-1 argument) which would
+            % normally contain the reflectance function
+            %
+            % deltaL is the wavelength spacing (delta lambda)
+            val = tril(eem,-1) * deltaL;
+                                    
+        end
+        
+        % No NaNs on the return.  Make the NaNs 0
+        val(isnan(val)) = 0;
+    case {'eemenergynormalize'}
+        val = fluorophoreGet(fl, 'eemenergy');
+        warning('Peak of EEM is scaling to 1')
+        val = val / max(val(:));
         val(isnan(val)) = 0;
         
     case {'photons'}

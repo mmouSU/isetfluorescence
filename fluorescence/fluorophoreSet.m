@@ -123,7 +123,7 @@ switch param
         
         fl.excitation = val(:);
         
-    case {'donaldsonmatrix'}
+    case {'donaldsonmatrix', 'eem'}
         if length(fluorophoreGet(fl,'wave')) ~= size(val,1) || length(fluorophoreGet(fl,'wave')) ~= size(val,2)
             error('Wavelength sampling mismatch'); 
         end
@@ -137,6 +137,8 @@ switch param
         
         fl.donaldsonMatrix = val;
         
+    case {'eemenergy'}
+        fl.eemenergy = val;
         
     case {'wave','wavelength'}
         
