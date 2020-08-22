@@ -54,7 +54,7 @@ if isfield(data, 'eem')
         'name', data.name,...
         'solvent', data.solvent,...
         'eem', data.eem);
-
+    warning('Use EEM only');
 else
     if ~isempty(wave)
         % Interpolate to these wavelengths
