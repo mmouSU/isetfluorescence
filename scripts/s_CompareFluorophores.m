@@ -91,6 +91,17 @@ ax = gca;
 ax.FontSize=16;
 xlabel('Wavelength (nm)');
 
+% Keratin
+ieNewGraphWin;
+chdir(fullfile(fiToolboxRootPath,'data','Keratin'));
+Keratin = fiReadFluorophore('Keratin.mat','wave',theseWaves); 
+plot(theseWaves,Keratin.emission,'g','LineWidth',3); hold on;
+legend('Wu & Qu 2006');
+title('Keratin Emission');
+ax = gca;
+ax.FontSize=16;
+xlabel('Wavelength (nm)');
+
 
 %% Plot Excitation
 
@@ -124,6 +135,7 @@ title('Collagen Excitation');
 ax = gca;
 ax.FontSize=16;
 xlabel('Wavelength (nm)');
+x = [385,385]; y = [0,1]; plot(x,y,'k--','LineWidth',3);
 
 ieNewGraphWin;
 % Deal et al 2018 does not have a "real" maximum
@@ -141,6 +153,7 @@ title('Elastin Excitation');
 ax = gca;
 ax.FontSize=16;
 xlabel('Wavelength (nm)');
+x = [385,385]; y = [0,1]; plot(x,y,'k--','LineWidth',3);
 
 ieNewGraphWin;
 FADExcitation = ieReadSpectra('FAD_excitation_DealEtAl2018.mat',theseWaves); 
@@ -156,6 +169,7 @@ title('FAD Excitation');
 ax = gca;
 ax.FontSize=16;
 xlabel('Wavelength (nm)');
+x = [385,385]; y = [0,1]; plot(x,y,'k--','LineWidth',3);
 
 ieNewGraphWin;
 PorphyrinsExcitation = ieReadSpectra('porphyrins_excitation_DealEtAl2018.mat',theseWaves); 
@@ -171,6 +185,9 @@ title('Porphyrins Excitation');
 ax = gca;
 ax.FontSize=16;
 xlabel('Wavelength (nm)');
+x = [385,385]; y = [0,1]; plot(x,y,'k--','LineWidth',3);
+
+
 
 
 %%

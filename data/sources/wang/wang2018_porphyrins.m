@@ -6,7 +6,8 @@
 % Porphyrin
 % Mucosa
 %
-
+ % deprecated - remove this .. the data are stored in energy units.
+ % convert to quanta when we create the EEM
 %%
 iWave = 300:5:900;
 
