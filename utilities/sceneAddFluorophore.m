@@ -28,7 +28,7 @@ function combinedScene = sceneAddFluorophore(scene,fluorophore,concentration)
 %  oeSensorChromaticities, s_MultispectralFluorescenceImaging
 %
 
-wave = sceneGet(scene,'wave');
+% wave = sceneGet(scene,'wave');
 
 % To calculate the fluorescence we start with the scene illuminant.  This
 % is generally the illuminant of the camera.  In the future we might decide
