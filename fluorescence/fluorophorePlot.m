@@ -58,7 +58,7 @@ switch pType
         % fluorophorePlot(fl,'donaldson image');
         
         wave = fluorophoreGet(fl,'wave');
-        dMatrix = fluorophoreGet(fl,'donaldson matrix');
+        dMatrix = fluorophoreGet(fl,'eem');
         imagesc(wave,wave,dMatrix);
         grid on; set(gca,'GridColor',[1 1 1])
         line([min(wave),max(wave)],[min(wave),max(wave)],'Color','w')
