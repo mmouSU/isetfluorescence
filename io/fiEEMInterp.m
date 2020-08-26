@@ -2,8 +2,12 @@ function result = fiEEMInterp(eem, varargin)
 % Interpolate the Excitation and Emission Matrix along a certain direction.
 % For now I assume the x dimension is excitation and y dimension is
 % emission.
+%
+% Henryk???
+
 %% Parse input
 varargin = ieParamFormat(varargin);
+
 p = inputParser;
 p.addRequired('eem', @isnumeric);
 p.addParameter('oldwave', 400:10:700, @isnumeric);
@@ -37,6 +41,7 @@ if ~isequal(max(result(:)),1)
     warning('Peak excitation different from 1, rescaling')
     result = result/max(result(:));
 end
+
 %{
 ieNewGraphWin;
 imagesc(result)

@@ -38,15 +38,15 @@ nWaves = numel(theseWaves);
 
 %%  1. Read in a fluorophore and create an excitation emission matrix (EEM)
 chdir(fullfile(fiToolboxRootPath,'data','webfluor'));
+
 % Remove collagen and NADH and see the difference in the predictions (should be very little)
-%fluorophoreList = {'elastin.mat','FAD', 'protoporphyrin'};
-fluorophoreList = {'NADH.mat','elastin.mat','collagen1.mat','FAD', 'protoporphyrin'};
+fluorophoreList = {'NADH_webfluor.mat','elastin_webfluor.mat','collagen1.mat','FAD_webfluor', 'protoporphyrin'};
 dMatrix = zeros(nWaves,nWaves,numel(fluorophoreList));
 
 for ii=1:numel(fluorophoreList)
     fName           = fullfile(fiToolboxRootPath,'data','webfluor',fluorophoreList{ii});
     fluor(ii)       = fiReadFluorophore(fName,'wave',theseWaves); 
-    dMatrix(:,:,ii) = fluorophoreGet(fluor(ii),'donaldson matrix');
+    dMatrix(:,:,ii) = fluorophoreGet(fluor(ii),'eem');
 end
 
 %% 2. Read in the light and take the product of the EEM and the light to get the expected radiance
@@ -131,5 +131,5 @@ for ii = 1:length(illName)
     ylim([0 4]);
 end
 
-
+%% END
 
