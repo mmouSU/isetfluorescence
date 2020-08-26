@@ -26,8 +26,8 @@ fluorophorePlot(fl,'emission');
 fluorophorePlot(fl,'excitation');
 
 %% Have a look at the Donaldson matrix (excitation-emission matrix)
-donaldsonM = fluorophoreGet(fl,'donaldson matrix');
-fluorophorePlot(fl,'donaldson matrix');
+donaldsonM = fluorophoreGet(fl,'eem');
+fluorophorePlot(fl,'eem');
 
 
 %% Read in some illuminants
