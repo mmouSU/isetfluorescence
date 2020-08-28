@@ -28,7 +28,8 @@ function fl = fluorophoreSet(fl,param,val,varargin)
 %                                   from 1
 %      'qe'                       - fluorophore's quantum efficiency
 %
-%      'Donaldson matrix'         - fluorophore's Donaldson matrix
+%      'eem photons'              - fluorophore's excitation emission
+%                                   matrix, also known as the Donaldson matrix 
 %
 %      'wave'                     - spectral sampling vector
 %
@@ -123,9 +124,14 @@ switch param
         
         fl.excitation = val(:);
         
-    case {'donaldsonmatrix', 'eem'}
-        if length(fluorophoreGet(fl,'wave')) ~= size(val,1) || length(fluorophoreGet(fl,'wave')) ~= size(val,2)
+    case {'eemphotons','donaldsonmatrix', 'eem'}
+        if length(fluorophoreGet(fl,'wave')) ~= size(val,1) || ...
+                length(fluorophoreGet(fl,'wave')) ~= size(val,2)
             error('Wavelength sampling mismatch'); 
+        end
+        
+        if max(val(:)) < 1
+            warning('Guessing this is in energy units, not photons.  Please fix.'); 
         end
         
         % Remove all fields that are relevant to one
@@ -138,6 +144,9 @@ switch param
         fl.donaldsonMatrix = val;
         
     case {'eemenergy'}
+        %
+        disp('Write a routine that converts from eem energy to eem photons');
+        error('We cannot represent eem both in energy and photons');
         fl.eemenergy = val;
         
     case {'wave','wavelength'}

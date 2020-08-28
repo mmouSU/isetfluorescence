@@ -27,8 +27,14 @@ function val = fluorophoreGet(fl,param,varargin)
 %      'normalized excitation'    - fluorophore's excitation spectrum
 %                                   normalized to unit amplitude
 %
-%      'eem'                      - Excitation-Emission matrix; also
-%                                   called the Donaldson matrix
+%      'eem photons'              - Excitation-Emission matrix; also
+%                                   called the Donaldson matrix.  Expressed
+%                                   here in terms of photons which is
+%                                   typical in the literature????
+%
+%      'eem energy'               - If you know the excitation light in
+%                                   energy and you want the emission in
+%                                   energy, you can use this.
 %
 %      'Stokes shift'             - wavelength shift between excitation and
 %                                   emission peaks
@@ -129,7 +135,7 @@ switch param
         wave = fluorophoreGet(fl,'wave');
         val = wave(2) - wave(1);
      
-    case {'eem','excitationemissionmatrix'}
+    case {'eemphotons','eem','excitationemissionmatrix'}
         % This is the excitation emission matrix. It is structured so that
         %
         %     fluorescenceSpectrum = dMatrix * illuminantPhotons(:)
@@ -140,6 +146,7 @@ switch param
         if isfield(fl,'donaldsonMatrix')
             % If the fluorophore is defined in terms of the Donaldson matrix,
             % then return the matrix.
+            warning('Please change the fluorophore file from donaldsonMatrix to eem');
             val = fl.donaldsonMatrix*deltaL;
         elseif isfield(fl,'eem')
             % We want this name instead.  Converting for now, will
@@ -197,6 +204,8 @@ switch param
         % No NaNs on the return.  Make the NaNs 0
         val(isnan(val)) = 0;
     case {'eemenergy'}
+        % When you want the eem expressed in terms of energy. 
+        
         %{
             wave = fluorophoreGet(fl, 'wave');
             eemQuanta = fluorophoreGet(fl, 'eem');
@@ -213,13 +222,16 @@ switch param
         if isfield(fl,'donaldsonMatrix')
             % If the fluorophore is defined in terms of the Donaldson matrix,
             % then return the matrix.
+            warning('Please change the fluorophore file from donaldsonMatrix to eem');
+            warning('Please check whether the matrix is in units of energy.')
             val = fl.donaldsonMatrix*deltaL;
-            warning('We have a donaldsonMatrix, but double check whether the unit is the one you want')
         elseif isfield(fl,'eemenergy')
             % We want this name instead.  Converting for now, will
             % eliminate donaldson path over time.
+            disp('We should not have the variable <eemenergy> stored in the struct.')
+            disp('We should get eem (which is in photons) and convert it to the energy format.');
+            error('Broken until fixed');
             val = fl.eemenergy*deltaL;
-            warning('We have a donaldsonMatrix, but double check whether the unit is the one you want')
         else
             % Otherwise compute the Donaldson matrix from excitation and
             % emission vectors.
@@ -257,6 +269,7 @@ switch param
         
         % No NaNs on the return.  Make the NaNs 0
         val(isnan(val)) = 0;
+        
     case {'eemenergynormalize'}
         val = fluorophoreGet(fl, 'eemenergy');
         warning('Peak of EEM is scaling to 1')
