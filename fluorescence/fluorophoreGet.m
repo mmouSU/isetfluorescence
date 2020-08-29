@@ -225,13 +225,6 @@ switch param
             warning('Please change the fluorophore file from donaldsonMatrix to eem');
             warning('Please check whether the matrix is in units of energy.')
             val = fl.donaldsonMatrix*deltaL;
-        elseif isfield(fl,'eemenergy')
-            % We want this name instead.  Converting for now, will
-            % eliminate donaldson path over time.
-            disp('We should not have the variable <eemenergy> stored in the struct.')
-            disp('We should get eem (which is in photons) and convert it to the energy format.');
-            error('Broken until fixed');
-            val = fl.eemenergy*deltaL;
         else
             % Otherwise compute the Donaldson matrix from excitation and
             % emission vectors.

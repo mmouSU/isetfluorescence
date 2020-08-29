@@ -142,13 +142,7 @@ switch param
         end
         
         fl.donaldsonMatrix = val;
-        
-    case {'eemenergy'}
-        %
-        disp('Write a routine that converts from eem energy to eem photons');
-        error('We cannot represent eem both in energy and photons');
-        fl.eemenergy = val;
-        
+                
     case {'wave','wavelength'}
         
         % Need to interpolate data sets and reset when wave is adjusted.
