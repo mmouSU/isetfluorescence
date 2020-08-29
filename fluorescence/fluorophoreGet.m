@@ -204,61 +204,31 @@ switch param
         % No NaNs on the return.  Make the NaNs 0
         val(isnan(val)) = 0;
     case {'eemenergy'}
-        % When you want the eem expressed in terms of energy. 
+        % The eems are always stored in photons, if the person wants to use
+        % the energy, we place the energy2quanta scalers on either side to
+        % convert the photon to energy.
         
         %{
-            wave = fluorophoreGet(fl, 'wave');
-            eemQuanta = fluorophoreGet(fl, 'eem');
-            val = zeros(size(eemQuanta));
-            % Apply Quanta2Energy on matrix
-            exciteQuanta = ones(1, numel(wave));
-            exciteEnergy = Quanta2Energy(wave, exciteQuanta);
-            for ii = 1:numel(wave)
-                val(:,ii) = Quanta2Energy(wave, eemQuanta(:,ii)) / exciteEnergy(ii);
-            end
+            wave = 365:5:705;
+            flName = 'elastin_webfluor';
+            thisFluo = fluorophoreRead(flName,'wave',wave');
+            eemEnergy = fluorophoreGet(thisFluo, 'eem energy');
+            
+            % Create a spectrum in photon
+            spd = ones(size(wave));
+            
+            % The number of photons we get based on the eemPhoton will be:
         %}
-        deltaL = fluorophoreGet(fl,'delta wave');
-
-        if isfield(fl,'donaldsonMatrix')
-            % If the fluorophore is defined in terms of the Donaldson matrix,
-            % then return the matrix.
-            warning('Please change the fluorophore file from donaldsonMatrix to eem');
-            warning('Please check whether the matrix is in units of energy.')
-            val = fl.donaldsonMatrix*deltaL;
-        else
-            % Otherwise compute the Donaldson matrix from excitation and
-            % emission vectors.
-            ex = fluorophoreGet(fl,'excitation energy');  % Column
-            em = fluorophoreGet(fl,'emission energy');    % Column
-            
-            % Logic of the EEM is that an excitation photon at some
-            % wavelength produces an emission spectrum.  We make the
-            % emission vector sum to one (every photon goes somewhere, but
-            % no amplificiation). 
-            em = em/sum(em(:));
-            
-            % We scale the excitation vector so that it has a maximum of
-            % one, though we could scale it so that it sums to one.  Either
-            % way is probably OK because, well, there are no units here.
-            ex = ex/max(ex(:));
-            
-            % We take the outer product so that every column of the
-            % Donaldson matrix is the emission, scaled by the relative
-            % excitability
-            eem = em(:)*ex(:)';
-            
-            % Finally, we apply the Stoke's constraint so that only
-            % photons with  energy lower than the energy of the
-            % excitation wavelength (longer wavelengths than the
-            % excitation wavelength) are emitted.
-            %
-            % We leave out the main diagonal (-1 argument) which would
-            % normally contain the reflectance function
-            %
-            % deltaL is the wavelength spacing (delta lambda)
-            val = tril(eem,-1) * deltaL;
-                                    
-        end
+        
+        eemPhoton = fluorophoreGet(fl, 'eem');
+        wave = fluorophoreGet(fl, 'wave');
+        
+        e2q = diag(Energy2Quanta(wave, ones(size(wave))));
+        q2e = diag(Quanta2Energy(wave, ones(size(wave))'));
+        
+        eemEnergy = q2e * eemPhoton * e2q;
+        
+        val = eemEnergy;
         
         % No NaNs on the return.  Make the NaNs 0
         val(isnan(val)) = 0;

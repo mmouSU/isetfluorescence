@@ -51,11 +51,13 @@ solvent    = fluorophoreGet(fl,'solvent');
 excitation = fluorophoreGet(fl,'excitation');
 emission   = fluorophoreGet(fl,'emission');
 wave       = fluorophoreGet(fl,'wave');
+eem        = fluorophoreGet(fl, 'eem');
 comment    = inputs.comment;
 
 % Force normalization
 excitation = excitation/max(excitation(:));
 emission   = emission/max(emission(:));
+eem        = eem / max(eem(:));
 
 % name       = inputs.fl.name;
 % solvent    = inputs.fl.solvent;
@@ -63,7 +65,7 @@ emission   = emission/max(emission(:));
 % emission   = inputs.fl.emission/max(inputs.fl.emission);
 % wave       = inputs.fl.spectrum.wave;
 
-save(fName,'name','solvent','excitation','emission','comment','wave');
+save(fName,'name','solvent','excitation','emission','eem','comment','wave');
 
 end
 

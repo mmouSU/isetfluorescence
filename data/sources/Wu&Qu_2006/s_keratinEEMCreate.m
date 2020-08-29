@@ -11,7 +11,7 @@
 %% 
 ieInit;
 
-%% These are the emissions (energy, arbitrary units) when excited by different wavelengths
+%% These are the emissions (photons, arbitrary units) when excited by different wavelengths
 
 filePath355 = which('Keratin_355nm.mat');
 filePath375 = which('Keratin_375nm.mat');
@@ -57,20 +57,21 @@ keratinEEM = fiEEMInterp(keratin, 'old wave', oldWave,...
 % camera light at 385 nm
 
 [spd,~,comment] = ieReadSpectra('OralEye_385',wave);
-keratinFluoSpd = keratinEEM * spd;
+spdPhoton = Energy2Quanta(wave, spd);
+keratinFluoSpd = keratinEEM * spdPhoton;
 
 %% Plot
 
 ieNewGraphWin; plot(wave, keratinFluoSpd);
 set(gca, 'YScale', 'log'); title('Keratin Emission at 385nm')
 xlabel('wavelength');
-ylabel('Emission energy (normalized to 1)')
+ylabel('Emission Photon (normalized to 1)')
 
-keratinFluo = fluorophoreCreate('type','fromdonaldsonmatrix',...
+keratinFluo = fluorophoreCreate('type','fromeem',...
     'name','keratin',...
     'solvent','none', ...
     'wave', wave, ...
-    'DonaldsonMatrix', keratinEEM);
+    'eem', keratinEEM);
 %{
 
 ieNewGraphWin;
@@ -81,12 +82,11 @@ colorbar
 xticks(350:50:700)
 yticks(350:50:700)
 title('Keratin EEM')
-    
 %}
     
     
-    %% Save
-    savePath = fullfile(fiToolboxRootPath, 'data', 'Keratin', 'KeratinEEM.mat');
-    save(savePath, 'keratinFluo');
-    
-    %% END
+%% Save
+savePath = fullfile(fiToolboxRootPath, 'data', 'Keratin', 'Keratin.mat');
+fiSaveFluorophore(savePath, keratinFluo);
+
+%% END
