@@ -1,3 +1,4 @@
+% s_createKeratinFluorophore
 % Read and analyze data from the webfluor site
 %
 %
@@ -29,31 +30,10 @@
 %
 
 %%  Select a file from the webluor site
+% 
+% chdir(fullfile(fiToolboxRootPath,'data','sources','webfluor'));
 
-chdir(fullfile(fiToolboxRootPath,'data','sources','webfluor'));
-txtFiles = dir('*.txt');
-
-%{
-fname = 'FAD.txt';
-fname = 'Flavin.txt';
-fname = 'NADH.txt'
-fname = 'NADPH.txt';
-fname = 'hemoglobin.txt';
-fname = 'protoporphyrin.txt';
-fname = 'collagen1.txt';
-fname = 'collagen4.txt';
-fname = 'collagen5.txt';
-fname = 'collagen6.txt';
-fname = 'collagen7.txt';
-fname = 'elastin.txt';
-fname = 'keratin.txt';
-fname = 'hemoglobin.txt';
-fname = 'blood.txt';
-fname = 'tryptophan.txt';
-%}
-
-for ff = 1:numel(txtFiles)
-    fname = txtFiles(ff).name;
+     fname = 'keratin.txt'
     [~,fluorophoreName,e]= fileparts(fname);
 
     fprintf('Processing %s\n',fname);
@@ -159,7 +139,3 @@ for ff = 1:numel(txtFiles)
     saveName = fullfile(fiToolboxRootPath,'data','webfluor',fluorophoreName);
     fluorophoreSave(saveName,thisF,comment);
 end
-
-%% END
-
-
