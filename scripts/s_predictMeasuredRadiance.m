@@ -30,6 +30,11 @@
 %
 
 %%
+cd /users/joyce/Github/isetcam/
+addpath(genpath(pwd))
+cd ../isetfluorescence/
+addpath(genpath(pwd))
+
 ieInit
 
 %% Select the range of wavelengths over which this calculation will be made
@@ -49,19 +54,21 @@ for ii=1:numel(fluorophoreList)
     dMatrix(:,:,ii) = fluorophoreGet(fluor(ii),'eem');
 end
 
-%% 2. Read in the light and take the product of the EEM and the light to get the expected radiance
-illName = {'OralEye_385.mat','LED405.mat','LED425.mat', 'LED450.mat' }; % oraleye repository has to be on the path
+%% 2. Read in the light 
+illName = {'light405.mat','light450.mat' }; % repository has to be on the path
 ill = zeros(nWaves,numel(illName));
 for ii=1:length(illName)
     tmp = ieReadSpectra(illName{ii},theseWaves);
     tmp = mean(tmp,2);
     ill(:,ii) = tmp/max(tmp(:));
 end
-% 
-% ieNewGraphWin
-% plot(theseWaves,ill);
-% hold on; grid on; xlabel('Wavelength (nm)');ylabel('Relative radiance');
-% legend(illName,'FontSize',18)
+%{
+ ieNewGraphWin
+plot(theseWaves,ill);
+ hold on; grid on; xlabel('Wavelength (nm)');ylabel('Relative radiance');
+ legend(illName,'FontSize',18)
+%}
+%% and take the product of the EEM and the light to get the expected radiance
 
 radiance = zeros(nWaves,length(illName),numel(fluorophoreList));
 for ii =1:length(illName)
@@ -70,17 +77,18 @@ for ii =1:length(illName)
     end
 end
 
-% for ii = 1:length(illName)
-%     ieNewGraphWin;
-%     for jj = 1:numel(fluorophoreList)
-%         plot(theseWaves,radiance(:,ii,jj));hold on;
-%     end
-%     grid on; xlabel('Wavelength (nm)');ylabel('Relative radiance');
-%     title(illName(ii));
-%     legend(fluorophoreList,'FontSize',18);
-%     ylim([0 4]);
-% end
-
+%{
+ for ii = 1:length(illName)
+     ieNewGraphWin;
+     for jj = 1:numel(fluorophoreList)
+         plot(theseWaves,radiance(:,ii,jj));hold on;
+     end
+     grid on; xlabel('Wavelength (nm)');ylabel('Relative radiance');
+     title(illName(ii));
+     legend(fluorophoreList,'FontSize',18);
+     ylim([0 4]);
+end
+%}
 %% 3. Multiply the expected radiance with the longpass filter to remove light that is not passed to the spectrophotometer
 % Remember that this prediction is assuming that there is no reflected light
 % Place a shortpass filter on the light to minimize reflected light

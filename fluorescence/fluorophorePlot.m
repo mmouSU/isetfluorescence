@@ -71,7 +71,7 @@ switch pType
         % fluorophorePlot(fl,'donaldson mesh');
         
         wave = fluorophoreGet(fl,'wave');
-        dMatrix = fluorophoreGet(fl,'donaldson matrix');
+        dMatrix = fluorophoreGet(fl,'eem');
         mesh(wave,wave,dMatrix);
         line([min(wave),max(wave)],[min(wave),max(wave)],[0 0],'Color','k');
         grid on; xlabel('Excitation wave (nm)'); ylabel('Emission wave (nm)');
