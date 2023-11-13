@@ -8,7 +8,7 @@
 %   Some of the data are stored as Excitation Emission Matrices (EEMs)
 %       in this case, we use the function fiReadFluorophore to read the
 %       excitation and/or emission data
-%   For my own simulatios and those we published, I (Joyce) chose to use the 
+%   For my own analyses and those we published, I (Joyce) chose to use the 
 %   DaCosta data that are stored in the directory called webfluor.  
 %       Unfortunately, the link to the original DaCosta data no longer exists
 
@@ -23,8 +23,8 @@
 %   max which is set to 1 will not be the actual maximum excitation or emission
 %   For this reason, we discard any data for which the entire spectra is not
 %   measured (e.g. Deal et al 2018)
-%   In some cases the data from different sources overlap - 
-%       I will check this again and update the script if necessary
+%   In some cases the data overlap - I will check this again and update the
+%   script if necessary
 
 % This script requires the isetcam and isetfluorescence toolboxes
 %   https://github.com/ISET/isetcam
